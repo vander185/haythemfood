@@ -1,7 +1,7 @@
 
 (function(){
-const ON='Payer en ligne',VR='Virement',OK=()=>/^https?:\/\//.test(CFG.api||'');
-window.pinfo2=()=>pay===ON?'<p class="pi2">🔒 Vous serez redirigé vers une page sécurisée (Bancontact, Payconiq ou carte), puis ramené ici.</p>':pay===VR?'<p class="pi2">Après validation, un QR code s’affiche : scannez-le avec l’app de votre banque, le montant est déjà rempli.</p>':null;
+const ONM={'Bancontact':'bancontact','Carte de crédit':'creditcard','Payconiq':'payconiq'},VR='Virement',OK=()=>/^https?:\/\//.test(CFG.api||'');
+window.pinfo2=()=>ONM[pay]?'<p class="pi2">🔒 Vous serez redirigé vers une page sécurisée '+(pay==='Bancontact'?'pour confirmer dans l’app de votre banque':pay==='Payconiq'?'pour payer avec l’app Payconiq':'pour saisir votre carte')+', puis ramené ici.</p>':pay===VR?'<p class="pi2">Après validation, un QR code s’affiche : scannez-le avec l’app de votre banque, le montant est déjà rempli.</p>':null;
 const done=(t,h)=>esh(t,h+'<button class="btn" data-x="shut" style="width:100%;margin-top:10px">Fermer</button>');
 function qr(o,amt){
  const t=['BCD','002','1','SCT','',CFG.ben||'Haythem Food',(CFG.iban||'').replace(/\s/g,''),'EUR'+amt.toFixed(2),'','','Commande N°'+o.no].join('\n');
@@ -12,12 +12,12 @@ A.gpx=()=>{const it={};for(const k in I){const x=I[k];it[k]={p:x.p,r:bReq(x)?1:0
 const send0=A.send;
 A.send=async()=>{
  if(!L.length)return;
- if(pay!==ON&&pay!==VR)return send0();
+ if(!ONM[pay]&&pay!==VR)return send0();
  const m=pay,amt=tot(),ret=location.href.split('#')[0],lines=L.map(l=>({id:l.id,q:l.q,x:l.x,b:l.b?1:0}));
  send0();const o=OR[OR.length-1];if(!o)return;
  kup(o.id,n=>{n.unpaid=1});
  if(m===VR)return qr(o,amt);
- try{const r=await fetch(CFG.api+'/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:o.id,no:o.no,lines,ret})}).then(x=>x.json());
+ try{const r=await fetch(CFG.api+'/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:o.id,no:o.no,lines,ret,method:ONM[m]})}).then(x=>x.json());
   if(!r.url)throw 0;localStorage.setItem('hfp',JSON.stringify({mp:r.id,o:o.id}));location.href=r.url}
  catch(e){kup(o.id,n=>{n.pay='Espèces';n.unpaid=0});done('Paiement en ligne indisponible','<p>Votre commande N° '+o.no+' est bien enregistrée : réglez-la au comptoir.</p>')}};
 addEventListener('load',()=>setTimeout(async()=>{

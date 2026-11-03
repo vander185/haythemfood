@@ -41,8 +41,8 @@ const toast=m=>{const t=$('#ts');t.textContent=m;t.style.display='block';clearTi
 function upd(){document.querySelectorAll('.ctl[data-c]').forEach(e=>{const h=ctl(e.dataset.c);if(e._h!==h){e._h=h;e.innerHTML=h}});const b=$('#bar');b.classList.toggle('on',cnt()>0);$('#bc').textContent=cnt()+(cnt()>1?' articles':' article');$('#bt').textContent=eur(tot());b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop');save();if($('#dr').classList.contains('on'))draw()}
 const buz=()=>{if(!T&&L.length)T=1+Math.random()*98|0;upd()};
 function text(){return `Commande Haythem Food\n${mode}${nom?' · '+nom:''}${pay?' · '+pay:''}\n\n${L.map(l=>`${l.q}× ${full(I[l.id])} · ${eur(unit(l)*l.q)}`+dsc(l).map(d=>'\n   '+d).join('')).join('\n')}\n\nTotal : ${eur(tot())}`}
-const PAYS=()=>[...(/^https?:\/\//.test(CFG.api||'')?[['Payer en ligne','📲']]:[]),['Carte / Payconiq','💳'],['Espèces','💶']].concat(CFG.iban?[['Virement','🏦']]:[]);
-const pinfo=()=>{const z=pinfo2();if(z!==null)return z;const pq=/^https?:\/\//i.test(CFG.pq||'')?CFG.pq:'';return pay==='Carte / Payconiq'?'<p class="pi2">Réglez au comptoir par carte bancaire ou Payconiq.</p>'+(pq?'<a class="btn g" target="_blank" rel="noopener" href="'+esc(pq)+'">Payer avec Payconiq</a>':''):pay==='Espèces'?'<p class="pi2">Réglez en espèces au comptoir, à la remise de votre commande.</p>':pay==='Virement'?'<div class="pay"><b>Paiement par virement</b><br>'+esc(CFG.ben||'')+'<br><code>'+esc(CFG.iban)+'</code> <button class="ed" data-x="cpi">Copier l’IBAN</button></div>':''};
+const PAYS=()=>[...(/^https?:\/\//.test(CFG.api||'')?[['Bancontact','📱'],['Carte de crédit','💳'],['Payconiq','📲']]:[]),['Carte au comptoir','💳'],['Espèces','💶']].concat(CFG.iban?[['Virement','🏦']]:[]);
+const pinfo=()=>{const z=pinfo2();if(z!==null)return z;const pq=/^https?:\/\//i.test(CFG.pq||'')?CFG.pq:'';return pay==='Carte au comptoir'?'<p class="pi2">Réglez au comptoir par carte bancaire ou Payconiq.</p>'+(pq?'<a class="btn g" target="_blank" rel="noopener" href="'+esc(pq)+'">Payer avec Payconiq</a>':''):pay==='Espèces'?'<p class="pi2">Réglez en espèces au comptoir, à la remise de votre commande.</p>':pay==='Virement'?'<div class="pay"><b>Paiement par virement</b><br>'+esc(CFG.ben||'')+'<br><code>'+esc(CFG.iban)+'</code> <button class="ed" data-x="cpi">Copier l’IBAN</button></div>':''};
 function draw(){const o=$('#tk .tkb'),sc=o?o.scrollTop:0;$('#tk').innerHTML=`<div class="tkh"><div class="th"><h3>Ma commande</h3><button class="chip" data-x="cld" aria-label="Fermer">✕</button></div></div>
 <div class="tkb"><div class="seg"><button class="${mode==='Sur place'?'on':''}" data-x="mode|Sur place">Sur place</button><button class="${mode==='À emporter'?'on':''}" data-x="mode|À emporter">À emporter</button></div>
 <input placeholder="Votre prénom (pour vous appeler)" value="${nom.replace(/"/g,'&quot;')}" oninput="nom=this.value" autocomplete="given-name">
@@ -461,7 +461,7 @@ Personnaliser=Customize|Aanpassen|Personalizar|تخصيص
 Votre prénom (pour vous appeler)=Your first name (so we can call you)|Uw voornaam (om u op te roepen)|Tu nombre (para llamarte)|اسمك (لننادي عليك)
 Envoyer par WhatsApp=Send via WhatsApp|Versturen via WhatsApp|Enviar por WhatsApp|إرسال عبر واتساب
 Mode de paiement=Payment method|Betaalmethode|Método de pago|طريقة الدفع
-Carte / Payconiq=Card / Payconiq|Kaart / Payconiq|Tarjeta / Payconiq|بطاقة / Payconiq
+Carte au comptoir=Card at the counter|Kaart aan de toonbank|Tarjeta en el mostrador|بطاقة عند الصندوق
 Espèces=Cash|Contant|Efectivo|نقدًا
 Virement=Bank transfer|Overschrijving|Transferencia|تحويل بنكي
 Payer avec Payconiq=Pay with Payconiq|Betalen met Payconiq|Pagar con Payconiq|ادفع عبر Payconiq
