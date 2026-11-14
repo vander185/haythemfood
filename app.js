@@ -727,6 +727,11 @@ function applySiteSettings() {
   cb.hidden = oNow.open;
   document.body.classList.toggle('shut', !oNow.open);
   if (!oNow.open) cb.innerHTML = `<b>${esc(T('Nous sommes fermés'))}</b><span>${esc(oNow.next ? T('Ouvre') + ' ' + (oNow.when ? oNow.when + ' ' : '') + T('à') + ' ' + oNow.next : T('Réouverture bientôt'))} · ${esc(T('Vous pouvez préparer votre commande, l’envoi se fera à la réouverture.'))}</span>`;
+  /* la barre des catégories se décale sous le bandeau pour ne pas être cachée */
+  const setCbh = () => document.documentElement.style.setProperty('--cbh', (oNow.open ? 0 : cb.offsetHeight) + 'px');
+  setCbh();
+  requestAnimationFrame(setCbh);
+  if (!setCbh.w) { setCbh.w = 1; addEventListener('resize', () => { const c = $('#cbar'); if (c) document.documentElement.style.setProperty('--cbh', (c.hidden ? 0 : c.offsetHeight) + 'px'); }); }
 
   let lgEl = $('#lg');
   if (!lgEl && $('.hero')) {

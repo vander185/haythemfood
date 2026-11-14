@@ -524,6 +524,7 @@ body.k #trk,body.f #trk{display:none}
 #cbar b::before{content:"🔴 "}
 #cbar span{display:block;font-size:12.5px;line-height:1.4;opacity:.93;margin-top:2px}
 #cbar[hidden],body.k #cbar,body.f #cbar{display:none}
+body.shut .nav{top:var(--cbh,0px)}
 @keyframes cbin{from{transform:translateY(-100%)}}
 body.shut #op{background:#e5484d;border-color:#ff8f93;color:#fff;box-shadow:0 0 0 4px #e5484d2e,0 6px 18px #0007;
   font-size:15px;padding:9px 20px;animation:rise 1s .35s backwards,shutp 2.4s 1.4s ease-in-out infinite}
@@ -536,11 +537,14 @@ body.shut #op{background:#e5484d;border-color:#ff8f93;color:#fff;box-shadow:0 0 
 
 /* « Touchez la photo » : pastille i sur chaque photo de la carte */
 .grid .m{position:relative}
-.grid .ph .pvb{position:absolute;top:4px;right:4px;width:17px;height:17px;border-radius:50%;z-index:2;
-  display:grid;place-items:center;font:700 11px/1 Georgia,serif;color:#f6e27a;
-  background:#040914b8;border:1px solid #e6b42299;box-shadow:0 1px 4px #0009;pointer-events:none;
-  -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
-@media(min-width:900px){.grid .ph .pvb{width:20px;height:20px;font-size:13px;top:6px;right:6px}}
+.grid .ph .pvb{position:absolute;top:5px;right:5px;width:14px;height:14px;border-radius:50%;z-index:2;
+  display:grid;place-items:center;font:600 9.5px/1 Georgia,'Times New Roman',serif;color:#fdf0a6;
+  background:radial-gradient(circle at 32% 26%,#ffffff2b,#040914cc 62%);
+  border:.8px solid #e6b422b3;box-shadow:0 0 7px #d4af3736,0 1px 3px #0009;
+  pointer-events:none;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
+  transition:transform .25s,box-shadow .25s}
+.it:hover .ph .pvb{transform:scale(1.15);box-shadow:0 0 11px #d4af3759,0 1px 3px #0009}
+@media(min-width:900px){.grid .ph .pvb{width:17px;height:17px;font-size:11px;top:6px;right:6px}}
 body:not(.pvseen) .grid section:first-of-type .it:first-child .pvb{animation:pvp 1.8s ease-in-out 3}
 @keyframes pvp{0%,100%{transform:scale(1)}50%{transform:scale(1.4)}}
 .tip{margin:0 0 14px;padding:10px 14px;border-radius:14px;background:#0c1b3e99;border:1px solid #d4af3733;
