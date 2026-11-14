@@ -472,6 +472,7 @@ function parseMenu() {
         out: !!ov.out,
         d: ov.d || '',
         a: ov.a || '',
+        g: ov.g || '',
         cat: c.n,
         pre: c.pre,
         e: c.e
@@ -484,7 +485,7 @@ function parseMenu() {
         if (!ad || ad.del) return;
         const id = 'add-' + ci + '-' + aj;
         base[id] = { n: ad.n, p: +ad.p, cat: c.n };
-        const it = { id, n: ad.n, p: +ad.p, out: !!ad.out, d: ad.d || '', a: ad.a || '', cat: c.n, pre: c.pre, e: c.e, isAdded: true, addIdx: aj };
+        const it = { id, n: ad.n, p: +ad.p, out: !!ad.out, d: ad.d || '', a: ad.a || '', g: ad.g || '', cat: c.n, pre: c.pre, e: c.e, isAdded: true, addIdx: aj };
         I[id] = it;
         c.items.push(it);
       });
@@ -595,6 +596,24 @@ const algSug = it => {
 };
 const algLine = () => String(getCfg('algOn')) === '0' ? '' : String(getCfg('algNote') || '');
 
+/* ---- Goût des sauces ----
+   [force, texte] — force 0 douce, 1 peu relevée, 2 relevée, 3 très piquante.
+   Le texte saisi dans l'admin remplace celui-ci. */
+const SAU_GOUT = {"Mayonnaise":[0,"Douce"],"Ketchup":[0,"Douce et sucrée"],"Andalouse":[1,"Peu relevée"],"Algérienne":[2,"Relevée"],"Samouraï":[3,"Très piquante"],"Blanche":[0,"Douce"],"Harissa":[3,"Très piquante"],"Américaine":[0,"Douce et acidulée"],"Brazil":[0,"Douce et fruitée"],"Bicky":[1,"Acidulée"],"Mammouth":[2,"Relevée"],"Tartare":[0,"Acidulée"],"Cocktail":[0,"Douce et sucrée"],"Curry ketchup":[1,"Douce et épicée"],"Sauce à l’ail":[0,"Douce, à l’ail"],"Barbecue":[0,"Fumée et sucrée"],"Moutarde":[2,"Piquante"],"Piquante":[2,"Piquante"],"Pili-pili":[3,"Très piquante"],"Sweet chili":[1,"Sucrée et piquante"]};
+const goutOf = it => {
+  if (!it) return null;
+  if (it.g) { const m = String(it.g).match(/^([0-3])\s*[|:]\s*(.+)$/); return m ? [+m[1], m[2].trim()] : [0, String(it.g).trim()]; }
+  const n = (base[it.id] && base[it.id].n) || it.n;
+  return SAU_GOUT[n] || SAU_GOUT[n.replace(/^Sauce /i, '')] || null;
+};
+/* même chose à partir du seul nom, pour les boutons de l'étape « Sauces » */
+const goutN = n => {
+  const it = Object.values(I).find(x => x.cat === 'Sauces' && x.n === n);
+  return it ? goutOf(it) : (SAU_GOUT[n] || null);
+};
+const hot = h => h > 0 ? '🌶️'.repeat(Math.min(3, h)) + ' ' : '';
+const goutTxt = g => g ? hot(g[0]) + g[1] : '';
+
 /* ---- Descriptions des plats ----
    Un texte est composé à partir de la garniture (DESC_ING) et du support (DESC_CAT) ;
    certains plats ont leur propre texte (DESC_SOLO). La description saisie dans
@@ -606,7 +625,10 @@ const autoDesc = it => {
   if (!it) return '';
   const n = (base[it.id] && base[it.id].n) || it.n, k = it.cat + '|' + n;
   if (DESC_SOLO[k]) return DESC_SOLO[k];
-  if (it.cat === 'Sauces') return "Sauce {} servie en portion individuelle.".replace('{}', n.replace(/^Sauce /i, '').toLowerCase());
+  if (it.cat === 'Sauces') {
+    const g = goutOf(it);
+    return 'Sauce ' + n.replace(/^Sauce /i, '').toLowerCase() + (g ? ', ' + g[1].toLowerCase() : '') + ', servie en portion individuelle.';
+  }
   const c = DESC_CAT[it.cat], g = DESC_ING[n];
   return c && g ? c.replace('{}', g) : '';
 };
@@ -902,7 +924,8 @@ function openPV(id) {
     document.body.appendChild(el);
   }
   const u = IMG(it), o = opt(it), c = cats.find(c => c.n === it.cat) || {};
-  const feats = [o.includes('r') && T('Garniture au choix'), o.includes('s') && T('Sauces au choix'), o.includes('x') && getSUP().length && T('Suppléments au choix'), o.includes('b') && T('Boisson en option') + ' (+' + eur(getDP()) + ')'].filter(Boolean);
+  const gt = goutOf(it);
+  const feats = [gt && goutTxt(gt), o.includes('r') && T('Garniture au choix'), o.includes('s') && T('Sauces au choix'), o.includes('x') && getSUP().length && T('Suppléments au choix'), o.includes('b') && T('Boisson en option') + ' (+' + eur(getDP()) + ')'].filter(Boolean);
   const desc = descOf(it);
   el.innerHTML = `<div class="pvc"><button class="pvx" data-x="pvc" aria-label="${esc(T('Fermer'))}">✕</button>
 <div class="pvi">${u ? `<i${bg(u, 1)}></i>` : `<span>${it.e}</span>`}<small>${c.e || ''} ${esc(T(c.l || it.cat))}</small></div>
@@ -998,13 +1021,17 @@ function sheet() {
   const N = { t: T('Dürüm ou Sandwich'), r: T('Garniture'), s: T('Sauces'), x: T('Suppléments'), b: T('Boisson') };
   const list = g === 't' ? mTypes() : g === 's' ? ['Sans sauce', ...SAU] : g === 'x' ? SUP.map(z => z.n) : g === 'r' ? ['Sans crudités', 'Toutes les crudités', ...CRU] : DRK;
   const sel = g === 't' ? [ed.t] : g === 'b' ? [ed.b] : g === 'x' ? (ed.x || []) : g === 'r' ? [...ed.r, ...(isAllCru(ed.r) ? ['Toutes les crudités'] : [])] : ed.s;
-  const px = v => g === 'x' ? `<em>+${eur(supP(v))}</em>` : '';
+  const px = v => {
+    if (g === 'x') return `<em>+${eur(supP(v))}</em>`;
+    if (g === 's') { const z = goutN(v); return z ? `<em class="h${z[0]}">${esc(hot(z[0]))}${esc(T(z[1]))}</em>` : ''; }
+    return '';
+  };
   const ttl = g === 't' ? T('Dürüm ou Sandwich ?') : g === 'b' ? T('Ajouter une boisson') + ' (+' + eur(getDP()) + ')'
     : g === 'x' ? T(getCfg('supTitle')) : g === 'r' ? T('Choisissez vos crudités') : T('Choisissez vos sauces');
   const sup = supTot(ed.x);
   $('#shk').innerHTML = `<div class="th"><h3>${esc(full(x))}</h3><button class="chip" data-x="shut">✕</button></div>
  <div class="chips" style="margin:12px 0 0">${ks.map((s, j) => `<button class="chip ${j === k ? 'on' : ''}" data-x="stp|${j}">${N[s]}</button>`).join('')}</div>
- <h4>${ttl}</h4>${g === 'x' ? `<p class="nt" style="margin:-4px 0 8px">${esc(T('En option, payant. Touchez pour ajouter ou retirer.'))}${sup ? ' · <b>+' + eur(sup) + '</b>' : ''}</p>` : ''}
+ <h4>${ttl}</h4>${g === 'x' ? `<p class="nt" style="margin:-4px 0 8px">${esc(T('En option, payant. Touchez pour ajouter ou retirer.'))}${sup ? ' · <b>+' + eur(sup) + '</b>' : ''}</p>` : ''}${g === 's' ? `<p class="nt" style="margin:-4px 0 8px">${esc(T('Le goût est indiqué sous chaque sauce.'))} 🌶️ ${esc(T('peu'))} · 🌶️🌶️ ${esc(T('relevé'))} · 🌶️🌶️🌶️ ${esc(T('très piquant'))}</p>` : ''}
  <div class="opts og${g === 'x' ? ' ox' : ''}">${list.map(v => `<button class="${sel.includes(v) ? 'on' : ''}" data-x="tg|${g}|${esc(v)}">${oi(g, v)}<span>${esc(T(v))}${px(v)}</span></button>`).join('')}</div>
  ${last ? `<textarea rows="2" placeholder="${T('Remarque (ex. sans oignons)')}" oninput="ed.nt=this.value">${esc(ed.nt || '')}</textarea>` : ''}<button class="btn" style="width:100%" data-x="${last ? 'done' : 'nxt'}">${last ? (ed.ei !== undefined ? T('Enregistrer') : T('Ajouter')) + ' · ' + eur(unit(ed)) : T('Suivant')}</button>`;
   $('#sh').classList.add('on');
@@ -1717,6 +1744,7 @@ window.showAdmTab = (tab, btn) => {
               </div>
               <input value="${esc(it.d)}" placeholder="${esc(autoDesc(it) || 'Description du plat')}" onchange="updItem('${it.id}', 'd', this.value)">
               <input value="${esc(it.a)}" placeholder="Allergènes (ex. Gluten, Œufs, Sésame)" onchange="updItem('${it.id}', 'a', this.value)">
+              ${curCat.n === 'Sauces' ? `<input value="${esc(it.g)}" placeholder="${esc('Goût : ' + (goutOf(it) ? goutOf(it)[0] + '|' + goutOf(it)[1] : '0|Douce'))}" onchange="updItem('${it.id}', 'g', this.value)">` : ''}
               <input value="${esc(vTxt(vrs(it)))}" placeholder="Sous-menu : Coca-Cola 2; Fanta 2 (vide = aucun)" onchange="updVar('${it.id}', this.value)">
               <div class="ar">
                 <label class="pl" style="margin:0;color:#fff"><input type="checkbox" ${it.out ? 'checked' : ''} onchange="updItem('${it.id}', 'out', this.checked)"> Épuisé</label>
