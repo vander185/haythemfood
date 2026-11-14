@@ -713,8 +713,20 @@ function applySiteSettings() {
   if (opEl) {
     const o = openNow();
     opEl.className = o.open ? 'on' : '';
-    opEl.textContent = o.open ? getCfg('openText') : getCfg('closedText') + (o.next ? ' · ' + T('Ouvre à') + ' ' + o.next : '');
+    opEl.textContent = o.open ? getCfg('openText') : closedTxt(o);
   }
+
+  /* Bandeau « fermé » bien visible, collé en haut tant que le site est fermé */
+  const oNow = openNow();
+  let cb = $('#cbar');
+  if (!cb) {
+    cb = document.createElement('div');
+    cb.id = 'cbar';
+    document.body.insertBefore(cb, document.body.firstChild);
+  }
+  cb.hidden = oNow.open;
+  document.body.classList.toggle('shut', !oNow.open);
+  if (!oNow.open) cb.innerHTML = `<b>${esc(T('Nous sommes fermés'))}</b><span>${esc(oNow.next ? T('Ouvre') + ' ' + (oNow.when ? oNow.when + ' ' : '') + T('à') + ' ' + oNow.next : T('Réouverture bientôt'))} · ${esc(T('Vous pouvez préparer votre commande, l’envoi se fera à la réouverture.'))}</span>`;
 
   let lgEl = $('#lg');
   if (!lgEl && $('.hero')) {
@@ -822,8 +834,19 @@ function openNow() {
   }).filter(Boolean);
   if (rg.some(r => now >= r[0] && now < (r[1] <= r[0] ? r[1] + 1440 : r[1]))) return { open: true };
   const nx = rg.find(r => r[0] > now);
-  return { open: false, next: nx ? nx[2] : '' };
+  if (nx) return { open: false, next: nx[2], when: T('aujourd’hui') };
+  /* rien d'autre aujourd'hui : on cherche la prochaine ouverture, jusqu'à 7 jours */
+  const DJ = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+  for (let k = 1; k <= 7; k++) {
+    const di = (d.getDay() + 6 + k) % 7;
+    const h = String(String(getCfg('hours')).split(',')[di] || '').split('/')[0].trim();
+    const t = h.match(/^(\d{1,2})[:h.](\d{2})/);
+    if (t) return { open: false, next: t[1].padStart(2, '0') + ':' + t[2], when: k === 1 ? T('demain') : T(DJ[di]).toLowerCase() };
+  }
+  return { open: false };
 }
+/* Phrase complète : « Fermé · Ouvre demain à 11:30 » */
+const closedTxt = o => getCfg('closedText') + (o.next ? ' · ' + T('Ouvre') + ' ' + (o.when ? o.when + ' ' : '') + T('à') + ' ' + o.next : '');
 
 /* ---- Grande bannière publicitaire animée ---- */
 let banT = null, banI = 0;
@@ -1150,7 +1173,8 @@ function draw() {
 <input id="nm" placeholder="${T('Votre prénom (pour vous appeler)')}" value="${esc(nom)}" oninput="nom=this.value">
 ${L.length ? L.map((l, i) => `<div class="ln"><span>${esc(lineN(l))}<em>${esc(dsc(l).join(' · '))}</em><b>${eur(unit(l) * l.q)}</b></span><div class="ctl">${(opt(I[l.id]) || vrs(I[l.id]).length) ? `<button class="lnx" data-x="ced|${i}" title="${esc(T('Modifier'))}" aria-label="${esc(T('Modifier'))}">✏️</button>` : ''}<button class="lnx" data-x="crm|${i}" title="${esc(T('Retirer'))}" aria-label="${esc(T('Retirer'))}">🗑</button><button data-x="ln|${i}|-1">−</button><b>${l.q}</b><button data-x="ln|${i}|1">+</button></div></div>`).join('') : `<p class="nt">${T('Votre panier est vide.')}</p>${(st('hflast') || []).some(l => I[l.id] && !I[l.id].out) ? `<button class="btn g" style="width:100%;margin-bottom:10px" data-x="re">🔁 ${esc(T('Recommander ma dernière commande'))}</button>` : ''}`}
 ${upsell()}${loyLine()}<textarea id="gn" rows="2" placeholder="${T('Remarque pour la commande')}" oninput="gnote=this.value">${esc(gnote)}</textarea><div class="tot"><span>${T('Total')}</span><span>${eur(tot())}</span></div>
-<button class="btn" style="width:100%" data-x="send" ${L.length && getCfg('openStatus') !== 'closed' ? '' : 'disabled'}>${getCfg('openStatus') === 'closed' ? T('Fermé') : T('Valider ma commande')}</button>
+${(() => { const o = openNow(); return o.open ? '' : `<p class="shutn">🔴 <b>${esc(T('Nous sommes fermés'))}</b> · ${esc(o.next ? T('Ouvre') + ' ' + (o.when ? o.when + ' ' : '') + T('à') + ' ' + o.next : T('Réouverture bientôt'))}<em>${esc(T('Votre panier est gardé : revenez à l’ouverture pour l’envoyer.'))}</em></p>`; })()}
+<button class="btn" style="width:100%" data-x="send" ${L.length && openNow().open ? '' : 'disabled'}>${openNow().open ? T('Valider ma commande') : T('Fermé · commande impossible')}</button>
 <h4>${esc(T(getCfg('payTitle')))}</h4><div class="opts">${PAYS().map(p => `<button class="${payOf() === p[1] ? 'on' : ''}" data-x="pay|${esc(p[1])}">${esc(p[0])} ${esc(p[1])}</button>`).join('')}</div>${payBox()}`;
 }
 /* Détails du mode de paiement choisi (message, lien, compte bancaire) */
