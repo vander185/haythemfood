@@ -516,6 +516,21 @@ body.k #trk,body.f #trk{display:none}
 .alg b{color:#ffcf8a}
 .og button>span em{display:block;margin-top:3px;font-style:normal;font-weight:800;font-size:12.5px;color:var(--g300);letter-spacing:.02em}
 .og .on>span em{color:#fde68a}
+/* « Touchez la photo » : pastille i sur chaque photo de la carte */
+.grid .m{position:relative}
+.grid .ph .pvb{position:absolute;top:4px;right:4px;width:17px;height:17px;border-radius:50%;z-index:2;
+  display:grid;place-items:center;font:700 11px/1 Georgia,serif;color:#f6e27a;
+  background:#040914b8;border:1px solid #e6b42299;box-shadow:0 1px 4px #0009;pointer-events:none;
+  -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+@media(min-width:900px){.grid .ph .pvb{width:20px;height:20px;font-size:13px;top:6px;right:6px}}
+body:not(.pvseen) .grid section:first-of-type .it:first-child .pvb{animation:pvp 1.8s ease-in-out 3}
+@keyframes pvp{0%,100%{transform:scale(1)}50%{transform:scale(1.4)}}
+.tip{margin:0 0 14px;padding:10px 14px;border-radius:14px;background:#0c1b3e99;border:1px solid #d4af3733;
+  color:#cbd8f0;font-size:13.5px;line-height:1.45;transition:opacity .4s,transform .4s}
+.tip::before{content:"👆 ";font-size:15px}
+.tip.go{opacity:0;transform:translateY(-6px)}
+@media(prefers-reduced-motion:reduce){body:not(.pvseen) .grid section:first-of-type .it:first-child .pvb{animation:none}}
+
 /* goût des sauces : vert doux → rouge très piquant */
 .og button>span em.h0{color:#86d9a8}
 .og button>span em.h1{color:#f2c75c}

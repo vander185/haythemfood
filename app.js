@@ -510,9 +510,9 @@ const IMG = it => {
   if (PH.c && typeof PH.c[it.cat] === 'string' && PH.c[it.cat]) return PH.c[it.cat];
   return '';
 };
-const th = it => {
-  const u = IMG(it);
-  return u ? `<i class="ph"${bg(u)}></i>` : `<i class="ph">${it.e}</i>`;
+const th = (it, extra) => {
+  const u = IMG(it), x = extra || '';
+  return u ? `<i class="ph"${bg(u)}>${x}</i>` : `<i class="ph">${it.e}${x}</i>`;
 };
 /* ---- Chargement paresseux des photos ----
    Les photos ne sont téléchargées qu'au moment où elles approchent de l'écran.
@@ -539,6 +539,7 @@ const LZ = (() => {
 /* fond de photo à poser plus tard ; eager=1 pour les photos tout de suite visibles */
 const bg = (u, eager) => u ? (eager ? ` style="background-image:url('${cssu(u)}')" class="lzon"` : ` data-bg="${esc(u)}"`) : '';
 addEventListener('DOMContentLoaded', () => {
+  if (st('hfpv')) document.body.classList.add('pvseen');
   LZ.scan();
   try {
     new MutationObserver(ms => {
@@ -913,6 +914,7 @@ function renderDelv() {
 
 /* ---- Fiche produit : grande photo animée + informations ---- */
 function openPV(id) {
+  if (!st('hfpv')) { st('hfpv', 1); const t = $('#pvtip'); if (t) { t.classList.add('go'); setTimeout(() => t.remove(), 500); } document.body.classList.add('pvseen'); }
   const it = I[id];
   if (!it) return;
   let el = $('#pv');
@@ -952,7 +954,7 @@ function build() {
   const vis = cats.filter(c => !c.hide && c.items.length);
   $('#chips').innerHTML = vis.map(c => `<button class="chip" data-k="c${c.i}">${c.e} ${esc(T(c.l))}</button>`).join('');
   trkDraw();
-  $('#carte').innerHTML = vis.map(c => `<section id="c${c.i}"><h2>${c.e} ${esc(T(c.l))}</h2>${c.d ? `<p class="nt">${esc(c.d)}</p>` : ''}${opt(c.items[0]) ? `<p class="nt">${esc(T(getCfg('accNote')))}</p>` : ''}<div class="grid">${c.items.map(it => `<div class="it v ${it.out ? 'out' : ''}" data-s="${esc(norm(c.n + ' ' + c.l + ' ' + T(c.l) + ' ' + full(it) + ' ' + vrs(it).map(v => v.n).join(' ')))}"><div class="m" data-pv="${it.id}">${th(it)}<div><b>${esc(full(it))}</b><small>${eur(it.p)}</small></div></div><div class="ctl" data-c="${it.id}"></div></div>`).join('')}</div></section>`).join('');
+  $('#carte').innerHTML = (st('hfpv') ? '' : `<p class="tip" id="pvtip">${esc(T('Touchez la photo d’un plat pour voir sa description, ses ingrédients et ses allergènes.'))}</p>`) + vis.map(c => `<section id="c${c.i}"><h2>${c.e} ${esc(T(c.l))}</h2>${c.d ? `<p class="nt">${esc(c.d)}</p>` : ''}${opt(c.items[0]) ? `<p class="nt">${esc(T(getCfg('accNote')))}</p>` : ''}<div class="grid">${c.items.map(it => `<div class="it v ${it.out ? 'out' : ''}" data-s="${esc(norm(c.n + ' ' + c.l + ' ' + T(c.l) + ' ' + full(it) + ' ' + vrs(it).map(v => v.n).join(' ')))}"><div class="m" data-pv="${it.id}">${th(it, '<b class="pvb" aria-hidden="true">i</b>')}<div><b>${esc(full(it))}</b><small>${eur(it.p)}</small></div></div><div class="ctl" data-c="${it.id}"></div></div>`).join('')}</div></section>`).join('');
 }
 
 const ctl = id => {
