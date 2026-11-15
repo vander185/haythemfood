@@ -176,6 +176,8 @@ section h2::after{content:"";position:absolute;left:0;bottom:0;width:90px;height
 .ct{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:14px}.ct .btn{min-height:44px;padding:10px 16px}
 .it.out{opacity:.55}.so{padding:8px 12px;border-radius:999px;background:#e5484d;color:#fff;font-weight:700;font-size:13px}
 .chip{scroll-margin:0 40px}html{scroll-behavior:smooth}
+/* le titre de catégorie ne passe plus sous la barre collée en haut */
+#carte section{scroll-margin-top:calc(var(--cbh,0px) + 62px)}
 
 #lg{position:absolute!important;top:12px;right:12px;display:flex;gap:6px;z-index:3}#lg button{padding:5px 10px;border-radius:999px;border:1px solid #e6b42288;font-size:12px;font-weight:700;color:var(--tx);background:#0a246899}#lg button.on{background:var(--gold);color:#1d1500}
 .tk textarea{resize:none}
@@ -537,15 +539,18 @@ body.shut #op{background:#e5484d;border-color:#ff8f93;color:#fff;box-shadow:0 0 
 
 /* « Touchez la photo » : pastille i sur chaque photo de la carte */
 .grid .m{position:relative}
-.grid .ph .pvb{position:absolute;top:5px;right:5px;width:14px;height:14px;border-radius:50%;z-index:2;
-  display:grid;place-items:center;font:600 9.5px/1 Georgia,'Times New Roman',serif;color:#fdf0a6;
-  background:radial-gradient(circle at 32% 26%,#ffffff2b,#040914cc 62%);
-  border:.8px solid #e6b422b3;box-shadow:0 0 7px #d4af3736,0 1px 3px #0009;
-  pointer-events:none;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
+/* pastille « i » posée à côté du prix : elle ne couvre aucune photo */
+.grid .m .prow{display:flex;align-items:center;gap:7px;flex-wrap:nowrap}
+.grid .m .pvb{display:grid;place-items:center;flex:none;
+  width:13px;height:13px;border-radius:50%;
+  font:600 8.5px/1 Georgia,'Times New Roman',serif;font-style:normal;color:#fdf0a6;
+  background:radial-gradient(circle at 32% 26%,#ffffff14,#0c1b3e 62%);
+  border:.5px solid #e6b4228c;box-shadow:0 0 5px #d4af3726;
   transition:transform .25s,box-shadow .25s}
-.it:hover .ph .pvb{transform:scale(1.15);box-shadow:0 0 11px #d4af3759,0 1px 3px #0009}
-@media(min-width:900px){.grid .ph .pvb{width:17px;height:17px;font-size:11px;top:6px;right:6px}}
+.it:hover .m .pvb{transform:scale(1.18);box-shadow:0 0 9px #d4af3747}
+@media(min-width:900px){.grid .m .pvb{width:15px;height:15px;font-size:10px}}
 body:not(.pvseen) .grid section:first-of-type .it:first-child .pvb{animation:pvp 1.8s ease-in-out 3}
+.grid .m>div{min-width:0}
 @keyframes pvp{0%,100%{transform:scale(1)}50%{transform:scale(1.4)}}
 .tip{margin:0 0 14px;padding:10px 14px;border-radius:14px;background:#0c1b3e99;border:1px solid #d4af3733;
   color:#cbd8f0;font-size:13.5px;line-height:1.45;transition:opacity .4s,transform .4s}
