@@ -33,4 +33,5 @@
 <script src="app.js"></script>
 <script src="fx.js"></script>
 <script>(function(){var L=window.HF_LOGO;if(!L)return;var H=document.querySelector('.hero .logo');if(H)H.src=L;function f(i){if(i.dataset.fb)return;i.dataset.fb=1;i.src=L}function c(){document.querySelectorAll('.hero .logo,.mini,.flogo,#splash img').forEach(function(i){i.addEventListener('error',function(){f(i)});if(i.complete&&i.naturalWidth===0)f(i)})}c();addEventListener('load',function(){setTimeout(c,300)})})();</script>
+<script>if('serviceWorker'in navigator&&location.protocol==='https:')addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))</script>
 </body></html>
