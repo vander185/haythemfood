@@ -543,12 +543,12 @@ body.shut #op{background:#e5484d;border-color:#ff8f93;color:#fff;box-shadow:0 0 
 .grid .m .prow{display:flex;align-items:center;gap:7px;flex-wrap:nowrap}
 .grid .m .pvb{display:grid;place-items:center;flex:none;
   width:13px;height:13px;border-radius:50%;
-  font:600 8.5px/1 Georgia,'Times New Roman',serif;font-style:normal;color:#fdf0a6;
+  font:600 11.5px/1 Georgia,'Times New Roman',serif;font-style:normal;color:#fdf0a6;
   background:radial-gradient(circle at 32% 26%,#ffffff14,#0c1b3e 62%);
   border:.5px solid #e6b4228c;box-shadow:0 0 5px #d4af3726;
   transition:transform .25s,box-shadow .25s}
 .it:hover .m .pvb{transform:scale(1.18);box-shadow:0 0 9px #d4af3747}
-@media(min-width:900px){.grid .m .pvb{width:15px;height:15px;font-size:10px}}
+@media(min-width:900px){.grid .m .pvb{width:15px;height:15px;font-size:13px}}
 body:not(.pvseen) .grid section:first-of-type .it:first-child .pvb{animation:pvp 1.8s ease-in-out 3}
 .grid .m>div{min-width:0}
 @keyframes pvp{0%,100%{transform:scale(1)}50%{transform:scale(1.4)}}
