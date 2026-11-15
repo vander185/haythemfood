@@ -123,6 +123,8 @@ const DEFAULT_CFG = {
   noOff: 900,
   algOn: '1',
   algNote: 'Allergènes : demandez-nous, nous vous renseignons plat par plat.',
+  algChecked: '0',
+  algCross: 'Préparé dans une cuisine où sont manipulés gluten, œufs, lait, sésame, poisson et fruits à coque : une trace est toujours possible.',
   bce: '',
   mail: '',
   mTypeCat: 'Menus',
@@ -572,29 +574,29 @@ const supTot = a => (a || []).reduce((s, n) => s + supP(n), 0);
    affichés sur sa fiche. */
 const ALG14 = ['Gluten', 'Crustacés', 'Œufs', 'Poissons', 'Arachides', 'Soja', 'Lait', 'Fruits à coque', 'Céleri', 'Moutarde', 'Sésame', 'Sulfites', 'Lupin', 'Mollusques'];
 /* Suggestions de départ, à vérifier et corriger par le restaurant */
-const ALG_SUG = {
-  'Dürüms': 'Gluten, Sésame', 'Sandwichs': 'Gluten, Sésame', 'Panini': 'Gluten, Lait',
-  'Tacos': 'Gluten, Lait, Œufs', 'Kapsalon': 'Lait, Œufs', 'Menus': 'Gluten, Sésame, Œufs',
-  'Bicky': 'Gluten, Œufs, Moutarde, Sésame', 'Assiettes': 'Œufs, Moutarde',
-  'Grillades': 'Œufs, Moutarde', 'Salades': 'Œufs, Moutarde', 'Spécialités': 'Fruits à coque, Céleri',
-  'Frites & plus': 'Gluten', 'Sauces': 'Œufs, Moutarde, Sulfites', 'Suppléments': 'Lait',
-  'Desserts': 'Lait, Œufs, Gluten, Fruits à coque', 'Boissons': ''
-};
-const ALG_IT = {
-  'Poisson': 'Poissons, Gluten', 'Fish': 'Poissons, Gluten', 'Fallafels': 'Gluten, Sésame',
-  'Falafels': 'Gluten, Sésame', 'Feta': 'Lait', 'Cheddar': 'Lait',
-  'Tajine agneau pruneaux': 'Fruits à coque', 'Dame blanche': 'Lait, Œufs, Soja',
-  'Pâtisserie marocaine': 'Fruits à coque, Gluten, Œufs', 'Tiramisu maison': 'Lait, Œufs, Gluten'
-};
+/* Allergènes probables, déduits des recettes habituelles : le support
+   (pain, panure) plus la garniture. À VÉRIFIER par le restaurant avec
+   ses propres recettes et les étiquettes de ses fournisseurs. */
+const ALG_CAT = {"Dürüms":"Gluten","Sandwichs":"Gluten","Panini":"Gluten,Lait","Tacos":"Gluten,Lait","Kapsalon":"Lait","Menus":"Gluten","Bicky":"Gluten,Sésame,Œufs,Moutarde","Assiettes":"","Grillades":"","Salades":"Moutarde,Sulfites","Spécialités":"","Frites & plus":"","Suppléments":"","Boissons":"","Desserts":"","Sauces":""};
+const ALG_ING = {"Chawarma":"","Viande":"","Viande au choix":"","Poulet":"","Dinde":"","Merguez":"","Foie":"","Kebda":"","Brochettes":"","Kefta":"Gluten,Œufs","Hamburger":"Gluten,Œufs","Poulet pané":"Gluten,Œufs,Lait","Tenders":"Gluten,Œufs,Lait","Fallafels":"Gluten,Sésame","Falafels":"Gluten,Sésame","Poisson":"Poissons,Gluten,Œufs","Fish":"Poissons,Gluten,Œufs","Mixte":"Gluten,Œufs","Pita":"Gluten,Sésame","Bicky":"Gluten,Sésame,Œufs,Moutarde","Meze maison":"Sésame,Gluten","Grillade maison":"","Feta":"Lait","Cheddar":"Lait","Extra sauce":"Œufs,Moutarde","Côte d’agneau":"","Caprice":"","Maison":""};
+const ALG_SOLO = {"Menus|Menu enfant":"Gluten","Grillades|Grillade (shawarma, poulet)":"","Grillades|Grillade maison (merguez, shawarma, poulet)":"","Grillades|Grillade du chef (kefta, shawarma, brochettes)":"Gluten,Œufs","Grillades|Grillade pacha (kefta, shawarma, poulet, brochettes)":"Gluten,Œufs","Salades|Caprice":"Moutarde,Sulfites","Salades|Mixte":"Moutarde,Sulfites","Salades|Maison":"Moutarde,Sulfites","Salades|Poulet":"Moutarde,Sulfites","Salades|Viande au choix":"Moutarde,Sulfites","Spécialités|Tajine kefta":"Gluten,Œufs","Spécialités|Tajine poulet légumes":"Céleri","Spécialités|Tajine poulet citron olives":"Céleri","Spécialités|Tajine agneau pruneaux":"Fruits à coque","Spécialités|Couscous viande au choix":"Gluten,Céleri","Frites & plus|Frites petite":"","Frites & plus|Frites moyenne":"","Frites & plus|Frites grande":"","Frites & plus|Ailes de poulet":"","Frites & plus|Bouchettes viande":"Gluten,Œufs,Lait,Moutarde","Frites & plus|Poulycroc":"Gluten,Œufs,Lait","Frites & plus|Boulettes":"Gluten,Œufs,Lait,Moutarde","Frites & plus|Fricadelles":"Gluten,Œufs,Lait,Moutarde,Soja","Boissons|Café au lait":"Lait","Boissons|Thé à la menthe 1 pers.":"","Boissons|Thé à la menthe 2 pers.":"","Boissons|Thé à la menthe 5 pers.":"","Boissons|Café noir":"","Boissons|Redbull":"","Boissons|Freez":"","Boissons|Softs 0,33 L":"","Boissons|Caprisun":"","Desserts|Dame blanche":"Lait,Œufs,Soja","Desserts|Pâtisserie marocaine":"Fruits à coque,Gluten,Œufs,Sésame","Desserts|Tiramisu maison":"Lait,Œufs,Gluten"};
+const ALG_SAU = {"Mayonnaise":"Œufs,Moutarde","Ketchup":"","Andalouse":"Œufs,Moutarde","Algérienne":"Œufs,Moutarde","Samouraï":"Œufs,Moutarde","Blanche":"Œufs","Harissa":"","Américaine":"Œufs,Moutarde,Céleri","Brazil":"Œufs,Moutarde","Bicky":"Œufs,Moutarde","Mammouth":"Œufs,Moutarde","Tartare":"Œufs,Moutarde","Cocktail":"Œufs,Moutarde","Curry ketchup":"Céleri,Moutarde","Sauce à l’ail":"Œufs,Moutarde","Barbecue":"Moutarde,Céleri,Sulfites","Moutarde":"Moutarde,Sulfites","Piquante":"Sulfites","Pili-pili":"","Sweet chili":""};
+const algSplit = t => String(t || '').split(',').map(x => x.trim()).filter(Boolean);
 const algOf = it => String((it && it.a) || '').trim();
 const algSug = it => {
   if (!it) return '';
-  const n = (base[it.id] && base[it.id].n) || it.n;
+  const n = (base[it.id] && base[it.id].n) || it.n, k = it.cat + '|' + n;
   const a = new Set();
-  String(ALG_SUG[it.cat] || '').split(',').forEach(x => x.trim() && a.add(x.trim()));
-  String(ALG_IT[n] || '').split(',').forEach(x => x.trim() && a.add(x.trim()));
+  if (it.cat === 'Sauces') algSplit(ALG_SAU[n] || ALG_SAU[n.replace(/^Sauce /i, '')]).forEach(x => a.add(x));
+  else if (ALG_SOLO[k] !== undefined) algSplit(ALG_SOLO[k]).forEach(x => a.add(x));
+  else {
+    algSplit(ALG_CAT[it.cat]).forEach(x => a.add(x));
+    algSplit(ALG_ING[n]).forEach(x => a.add(x));
+  }
   return [...a].join(', ');
 };
+/* Allergènes affichés : ceux saisis dans l'admin, sinon les probables */
+const algShow = it => algOf(it) || algSug(it);
 const algLine = () => String(getCfg('algOn')) === '0' ? '' : String(getCfg('algNote') || '');
 
 /* ---- Goût des sauces ----
@@ -961,7 +963,11 @@ function openPV(id) {
 <div class="pvi">${u ? `<i${bg(u, 1)}></i>` : `<span>${it.e}</span>`}<small>${c.e || ''} ${esc(T(c.l || it.cat))}</small></div>
 <div class="pvb"><h3>${esc(full(it))}</h3><div class="pvp">${eur(it.p)}</div>${desc ? `<p>${esc(desc)}</p>` : ''}
 ${feats.length ? `<div class="pvf">${feats.map(f => `<span>✦ ${esc(f)}</span>`).join('')}</div>` : ''}${o ? `<p class="nt">${esc(T(getCfg('accNote')))}</p>` : ''}
-${algLine() || algOf(it) ? `<p class="alg">${algOf(it) ? '⚠️ <b>' + esc(T('Allergènes')) + '</b> : ' + esc(algOf(it)) : esc(T(algLine()))}</p>` : ''}
+${(() => {
+  const a = algShow(it), ck = String(getCfg('algChecked')) === '1';
+  if (!a) return algLine() ? `<p class="alg">${esc(T(algLine()))}</p>` : '';
+  return `<p class="alg">⚠️ <b>${esc(T('Allergènes'))}</b> : ${esc(a)}<em>${esc(T(ck ? getCfg('algCross') : 'Liste indicative : en cas d’allergie, confirmez avec nous avant de commander.'))}</em></p>`;
+})()}
 ${it.out ? `<span class="so">${esc(T('Épuisé'))}</span>` : `<button class="btn" style="width:100%" data-x="pva|${id}">${vrs(it).length ? T('Choisir') : o ? T('Composer') : T('Ajouter')} · ${eur(it.p)}</button>`}</div></div>`;
   requestAnimationFrame(() => el.classList.add('on'));
 }
@@ -1759,7 +1765,7 @@ window.showAdmTab = (tab, btn) => {
 
       <h4>🍽️ Plats de la catégorie</h4>
       <p class="nt">Nom, prix, description et allergènes (affichés quand le client touche la photo), photo 📷, épuisé ou supprimer. La description en gris est celle proposée par défaut : laissez le champ vide pour la garder.</p>
-      <button type="button" class="btn g" style="width:100%;margin-bottom:10px" onclick="fillAlg(${curCat.i})">⚠️ Pré-remplir les allergènes probables de cette catégorie</button>
+      <button type="button" class="btn g" style="width:100%;margin-bottom:10px" onclick="fillAlg(${curCat.i})">✏️ Recopier les allergènes probables dans les champs (pour les corriger)</button>
       <div id="adm-items">
         ${curCat.items.map(it => {
           const curImg = IMG(it);
@@ -1964,7 +1970,11 @@ window.showAdmTab = (tab, btn) => {
       <label class="pl"><input type="checkbox" ${String(getCfg('algOn')) !== '0' ? 'checked' : ''} onchange="CF.cfg=CF.cfg||{};CF.cfg.algOn=this.checked?'1':'0'"> Afficher la mention allergènes</label>
       <label>Mention affichée</label>
       <input id="c_algNote" value="${esc(getCfg('algNote'))}">
-      <p class="nt">Plats avec allergènes renseignés : <b>${Object.values(I).filter(it => algOf(it)).length}</b> sur ${Object.keys(I).length}. Les 14 allergènes à déclarer : ${esc(ALG14.join(', '))}.</p>
+      <p class="nt">Chaque plat affiche déjà des allergènes probables, déduits des recettes habituelles. <b>Ce sont des suggestions.</b> Tant que vous n'avez pas coché la case ci-dessous, la fiche du plat prévient le client que la liste est indicative.</p>
+      <label class="pl"><input type="checkbox" ${String(getCfg('algChecked')) === '1' ? 'checked' : ''} onchange="CF.cfg=CF.cfg||{};CF.cfg.algChecked=this.checked?'1':'0'"> ✅ J'ai vérifié les allergènes de tous mes plats</label>
+      <label>Phrase affichée une fois vérifié (traces en cuisine)</label>
+      <input id="c_algCross" value="${esc(getCfg('algCross'))}">
+      <p class="nt">Corrigés à la main : <b>${Object.values(I).filter(it => algOf(it)).length}</b> plats sur ${Object.keys(I).length} — les autres gardent la liste probable. Les 14 allergènes à déclarer : ${esc(ALG14.join(', '))}.</p>
 
       <h4>⚖️ Mentions légales</h4>
       <p class="nt">Un site d'entreprise belge doit afficher le numéro d'entreprise (BCE), une adresse e-mail et un numéro de téléphone. Ils apparaissent en bas du site.</p>
@@ -2248,7 +2258,7 @@ window.saveDesignCfg = () => {
 
 window.saveOptCfg = () => {
   CF.cfg = CF.cfg || {};
-  ['payTitle', 'bankHolder', 'bankIban', 'bankBic', 'bankName', 'bankNote', 'accNote', 'upTitle', 'upCats', 'loyGift', 'mTypeCat', 'mTypes', 'mTypeNo', 'cruNo', 'supCat', 'supNo', 'supTitle', 'noPre', 'algNote', 'bce', 'mail'].forEach(k => {
+  ['payTitle', 'bankHolder', 'bankIban', 'bankBic', 'bankName', 'bankNote', 'accNote', 'upTitle', 'upCats', 'loyGift', 'mTypeCat', 'mTypes', 'mTypeNo', 'cruNo', 'supCat', 'supNo', 'supTitle', 'noPre', 'algNote', 'algCross', 'bce', 'mail'].forEach(k => {
     const el = $('#c_' + k);
     if (el) CF.cfg[k] = el.value.trim();
   });
@@ -2294,7 +2304,7 @@ window.fillAlg = i => {
   if (!c) return;
   const todo = c.items.filter(it => !algOf(it) && algSug(it));
   if (!todo.length) { toast('Rien à pré-remplir ici'); return; }
-  if (!confirm('⚠️ IMPORTANT\n\nJe vais proposer les allergènes les plus probables pour ' + todo.length + ' plat(s) de « ' + c.l + ' », d\'après les ingrédients habituels.\n\nCe sont des SUGGESTIONS. Vous devez les vérifier une par une avec vos recettes et les étiquettes de vos fournisseurs avant de les publier : une erreur peut être dangereuse pour un client allergique.\n\nContinuer ?')) return;
+  if (!confirm('Je recopie les allergènes probables de ' + todo.length + ' plat(s) de « ' + c.l + ' » dans leurs champs, pour que vous puissiez les corriger un par un.\n\nRien ne change pour le client : ces allergènes sont déjà affichés. Continuer ?')) return;
   todo.forEach(it => updItem(it.id, 'a', algSug(it)));
   Store.saveConfig(CF);
   build();
