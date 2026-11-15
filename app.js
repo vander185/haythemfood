@@ -519,14 +519,21 @@ const th = (it, extra) => {
 /* ---- Chargement paresseux des photos ----
    Les photos ne sont téléchargées qu'au moment où elles approchent de l'écran.
    Chaque élément porte data-bg ; l'observateur pose le fond puis l'oublie. */
+const LZOK = new Set();
 const bgOn = el => {
   const u = el.getAttribute('data-bg');
   if (!u) return;
-  el.removeAttribute('data-bg');
-  el.style.backgroundImage = "url('" + cssu(u) + "')";
+  const put = () => {
+    el.removeAttribute('data-bg');
+    el.style.backgroundImage = "url('" + cssu(u) + "')";
+    el.classList.add('lzon');
+  };
+  /* photo déjà vue : posée tout de suite, sans fondu (pas de clignotement) */
+  if (LZOK.has(u)) { put(); return; }
   const im = new Image();
-  im.onload = () => el.classList.add('lzon');
-  im.onerror = () => el.classList.add('lzon');
+  const done = () => { LZOK.add(u); put(); };
+  im.onload = () => (im.decode ? im.decode().catch(() => {}).then(done) : done());
+  im.onerror = put;
   im.src = u;
 };
 const LZ = (() => {
@@ -535,19 +542,22 @@ const LZ = (() => {
   if (!('IntersectionObserver' in window)) return { scan: r => (r || document).querySelectorAll('[data-bg]').forEach(el => skip(el) || bgOn(el)) };
   const io = new IntersectionObserver((es) => es.forEach(e => {
     if (e.isIntersecting) { bgOn(e.target); io.unobserve(e.target); }
-  }), { rootMargin: '400px 200px' });
+  }), { rootMargin: '1200px 400px' });
   return { scan: r => (r || document).querySelectorAll('[data-bg]').forEach(el => skip(el) || io.observe(el)) };
 })();
 /* fond de photo à poser plus tard ; eager=1 pour les photos tout de suite visibles */
-const bg = (u, eager) => u ? (eager ? ` style="background-image:url('${cssu(u)}')" class="lzon"` : ` data-bg="${esc(u)}"`) : '';
+const bg = (u, eager) => u ? ((eager || LZOK.has(u)) ? ` style="background-image:url('${cssu(u)}')" class="lzon"` : ` data-bg="${esc(u)}"`) : '';
+/* les cadres lumineux ne tournent que pour les plats à l'écran (moins de travail pour le téléphone) */
+const VIS = 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(e => e.target.classList.toggle('vis', e.isIntersecting)), { rootMargin: '100px 0px' }) : null;
+const visScan = r => VIS && (r || document).querySelectorAll('.it:not([data-vo]),.gc:not([data-vo])').forEach(x => { x.setAttribute('data-vo', ''); VIS.observe(x); });
 addEventListener('DOMContentLoaded', () => {
   if (st('hfpv')) document.body.classList.add('pvseen');
-  LZ.scan();
+  LZ.scan(); visScan();
   try {
     new MutationObserver(ms => {
       let n = 0;
       ms.forEach(m => m.addedNodes.forEach(x => { if (x.nodeType === 1) n++; }));
-      if (n) LZ.scan();
+      if (n) { LZ.scan(); visScan(); }
     }).observe(document.body, { childList: true, subtree: true });
   } catch (e) {}
 });

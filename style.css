@@ -607,3 +607,22 @@ section.hit h2{animation:secHit 1.4s ease-out}
 .it:nth-child(3n) .ph::after{animation-delay:-6s}
 .gc:nth-child(even)::after{animation-delay:-4.5s}
 @media (prefers-reduced-motion:reduce){.it .ph::after,.gc::after,.bn::after{animation:none}}
+
+/* Anti-clignotement : pas de fondu sur les photos, cadres lumineux légers et arrêtés hors écran */
+.lzon{animation:none!important}
+[data-bg]{animation:none!important;background-image:radial-gradient(circle at 50% 45%,#15284f,#0c1b3e 70%)!important}
+.it .ph::after,.gc::after{filter:none!important;animation-play-state:paused}
+.it.vis .ph::after,.gc.vis::after{animation-play-state:running}
+.it .ph{box-shadow:0 0 0 2px #e6b42280,0 0 12px #f3cf6333,0 6px 14px #0006}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{overflow-x:hidden}
+img,video,canvas{max-width:100%}
+/* petits téléphones : prix sur une ligne, bouton plus compact */
+.it small,.prow small{white-space:nowrap}
+@media (max-width:400px){
+ .it h3,.it b{font-size:16px}
+ .ctl .add,.it .btn{padding:8px 14px!important;min-height:42px;font-size:15px}
+ .it small{font-size:15px;padding:1px 8px}
+ .it .ph{width:68px;height:68px}
+}
+@media (max-width:340px){.ctl .add,.it .btn{padding:8px 10px!important;font-size:14px}}
