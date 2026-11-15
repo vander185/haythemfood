@@ -677,3 +677,14 @@ img,video,canvas{max-width:100%}
  #cbar b,#cbar span{display:inline!important;font-size:12px!important}
  #cbar span{margin-left:6px}
 }
+
+/* ===== Anti-clignotement de la fenêtre « Composer » (téléphones Android) =====
+   Trop d'effets animés en même temps (flou derrière la fenêtre + cadres lumineux de toutes les options
+   + plats derrière) saturaient la carte graphique : l'écran se vidait par moments. */
+.ov{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;background:#020610e6!important}
+.og button::before{animation:none!important;filter:none!important;background:linear-gradient(135deg,#e6b42299,#fff6c955 50%,#e6b42299)!important;opacity:.9}
+.og .on::before{animation:rg 6s linear infinite!important;background:conic-gradient(from var(--a),#e6b42240 0 40%,#e6b422 62%,#fff6c9 76%,#ffffff 79%,#f3cf63 86%,#e6b42240 100%)!important}
+body:has(.ov.on) .it .ph::after,body:has(.ov.on) .gc::after,body:has(.ov.on) .bn::after,body:has(.ov.on) .fl,body:has(.ov.on) .fx *,body:has(.ov.on) .logo{animation-play-state:paused!important}
+body:has(.ov.on) #fx,body:has(.ov.on) canvas{visibility:hidden}
+.ov .tk{transform:translateZ(0);contain:layout paint}
+body:has(.ov.on) *:not(.ov):not(.ov *),body:has(.ov.on) *:not(.ov):not(.ov *)::before,body:has(.ov.on) *:not(.ov):not(.ov *)::after,body:has(.ov.on)::before,body:has(.ov.on)::after{animation-play-state:paused!important}
