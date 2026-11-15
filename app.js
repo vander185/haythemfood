@@ -1047,7 +1047,7 @@ const oUrl = (g, v) => {
 };
 const oi = (g, v) => {
   const u = oUrl(g, v);
-  return u ? `<i class="pi"${bg(u)}></i>` : `<i class="pi">${v.startsWith('Sans') ? '🚫' : g === 's' ? '🥫' : g === 'r' ? '🥗' : g === 'x' ? '➕' : '🥤'}</i>`;
+  return u ? `<i class="pi" style="background-image:url('${cssu(u)}')"></i>` : `<i class="pi">${v.startsWith('Sans') ? '🚫' : g === 's' ? '🥫' : g === 'r' ? '🥗' : g === 'x' ? '➕' : '🥤'}</i>`;
 };
 
 function sheet() {
