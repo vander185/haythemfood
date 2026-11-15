@@ -598,3 +598,12 @@ section.hit h2{animation:secHit 1.4s ease-out}
 .nav .chip{transition:background-color .25s,color .25s,border-color .25s,transform .25s cubic-bezier(.2,.9,.3,1.4)}
 .nav .chip.on{transform:scale(1.05)}
 @media(prefers-reduced-motion:reduce){.stepw.mv-fw,.stepw.mv-bk,section.hit h2{animation:none}.chip.on{transform:none!important}}
+
+/* Contour animé des photos : une lumière dorée bien visible qui fait le tour, lentement */
+.it .ph::after,.gc::after,.bn::after{padding:3px;background:conic-gradient(from var(--a),#d4af3733 0 52%,#e6b422 66%,#fff6c9 76%,#ffffff 79%,#f3cf63 86%,#d4af3733 100%);filter:drop-shadow(0 0 6px #f3cf63cc);animation:rg 9s linear infinite}
+.it .ph::after{inset:-5px;border-radius:21px}
+.bn::after{padding:4px;animation-duration:12s}
+.it:nth-child(3n+2) .ph::after{animation-delay:-3s}
+.it:nth-child(3n) .ph::after{animation-delay:-6s}
+.gc:nth-child(even)::after{animation-delay:-4.5s}
+@media (prefers-reduced-motion:reduce){.it .ph::after,.gc::after,.bn::after{animation:none}}
