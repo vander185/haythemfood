@@ -67,7 +67,7 @@
   var tick=false,lastK='';
   var spy=function(){
     tick=false;var secs=document.querySelectorAll('main section:not([hidden])');if(!secs.length)return;
-    var y=(nav?nav.offsetHeight:90)+30,cur=secs[0];
+    var y=(nav?nav.getBoundingClientRect().bottom:90)+30,cur=secs[0];
     for(var i=0;i<secs.length;i++){if(secs[i].getBoundingClientRect().top<=y+4)cur=secs[i]}
     if(cur.id===lastK)return;lastK=cur.id;
     var chips=document.querySelectorAll('.chip[data-k]'),on=null;

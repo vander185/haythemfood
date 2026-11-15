@@ -177,7 +177,7 @@ section h2::after{content:"";position:absolute;left:0;bottom:0;width:90px;height
 .it.out{opacity:.55}.so{padding:8px 12px;border-radius:999px;background:#e5484d;color:#fff;font-weight:700;font-size:13px}
 .chip{scroll-margin:0 40px}html{scroll-behavior:smooth}
 /* le titre de catégorie ne passe plus sous la barre collée en haut */
-#carte section{scroll-margin-top:calc(var(--cbh,0px) + 62px)}
+#carte section{scroll-margin-top:calc(var(--cbh,0px) + 6px)}
 
 #lg{position:absolute!important;top:12px;right:12px;display:flex;gap:6px;z-index:3}#lg button{padding:5px 10px;border-radius:999px;border:1px solid #e6b42288;font-size:12px;font-weight:700;color:var(--tx);background:#0a246899}#lg button.on{background:var(--gold);color:#1d1500}
 .tk textarea{resize:none}
@@ -582,3 +582,19 @@ body:not(.pvseen) .grid section:first-of-type .it:first-child .pvb{animation:pvp
 .pq span{font-weight:700;color:var(--g300);font-size:14px;line-height:1.35}
 .pq em{display:block;margin-top:4px;font-style:normal;font-weight:500;color:var(--mu);font-size:12.5px}
 @media(max-width:400px){.pq{flex-direction:column;align-items:flex-start}}
+
+/* ====== Passer d'une étape ou d'une catégorie à l'autre ====== */
+/* étapes de composition : la page glisse dans le sens du déplacement */
+#shk{overflow-x:hidden}
+.stepw.mv-fw{animation:stF .34s cubic-bezier(.2,.9,.3,1) both}
+.stepw.mv-bk{animation:stB .34s cubic-bezier(.2,.9,.3,1) both}
+@keyframes stF{from{opacity:0;transform:translateX(48px)}to{opacity:1;transform:none}}
+@keyframes stB{from{opacity:0;transform:translateX(-48px)}to{opacity:1;transform:none}}
+#shk .chips .chip{transition:background-color .25s,color .25s,transform .25s cubic-bezier(.2,.9,.3,1.4)}
+#shk .chips .chip.on{transform:scale(1.06)}
+/* arrivée sur une catégorie : son titre s'allume un instant */
+section.hit h2{animation:secHit 1.4s ease-out}
+@keyframes secHit{0%{text-shadow:0 0 0 #f9e29c00;transform:translateX(-10px);opacity:.4}25%{text-shadow:0 0 22px #f9e29ccc;transform:none;opacity:1}100%{text-shadow:0 0 0 #f9e29c00}}
+.nav .chip{transition:background-color .25s,color .25s,border-color .25s,transform .25s cubic-bezier(.2,.9,.3,1.4)}
+.nav .chip.on{transform:scale(1.05)}
+@media(prefers-reduced-motion:reduce){.stepw.mv-fw,.stepw.mv-bk,section.hit h2{animation:none}.chip.on{transform:none!important}}
