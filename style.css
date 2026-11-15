@@ -626,3 +626,21 @@ img,video,canvas{max-width:100%}
  .it .ph{width:68px;height:68px}
 }
 @media (max-width:340px){.ctl .add,.it .btn{padding:8px 10px!important;font-size:14px}}
+
+/* Sous-menus (garnitures, sauces, suppléments, boissons) : contour or et lumière qui tourne */
+.og button{border:1px solid #d4af3766;background:linear-gradient(180deg,#132a5e66,#0c1b3e99)}
+.og button::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:2px;pointer-events:none;z-index:2;
+ background:conic-gradient(from var(--a),#0000 0 55%,#e6b42288 68%,#fff6c9 78%,#e6b422 86%,#0000 94%);
+ -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;
+ animation:rg 9s linear infinite;opacity:1;filter:drop-shadow(0 0 3px #f3cf6399)}
+.og button:nth-child(3n+2)::before{animation-delay:-3s}
+.og button:nth-child(3n)::before{animation-delay:-6s}
+.og .on::before{padding:3px;opacity:1;animation-duration:4.5s;background:conic-gradient(from var(--a),#e6b42240 0 40%,#e6b422 62%,#fff6c9 76%,#ffffff 79%,#f3cf63 86%,#e6b42240 100%)}
+.og .on{border-color:#f3cf63;box-shadow:0 0 18px #d4af3780,0 6px 16px #0008}
+.og .pi{transition:transform .35s cubic-bezier(.2,.9,.3,1)}
+.og .on .pi{transform:scale(1.04)}
+/* arrivée en cascade quand on change d'étape (pas quand on coche, pour éviter le clignotement) */
+@keyframes ogIn{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
+.stepw.mv-fw .og button,.stepw.mv-bk .og button{animation:ogIn .42s cubic-bezier(.2,.9,.3,1) both}
+.stepw .og button:nth-child(2){animation-delay:.03s}.stepw .og button:nth-child(3){animation-delay:.06s}.stepw .og button:nth-child(4){animation-delay:.09s}.stepw .og button:nth-child(5){animation-delay:.12s}.stepw .og button:nth-child(6){animation-delay:.15s}.stepw .og button:nth-child(n+7){animation-delay:.18s}
+@media(prefers-reduced-motion:reduce){.og button::before,.stepw .og button{animation:none!important}}
