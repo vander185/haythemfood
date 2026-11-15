@@ -612,7 +612,7 @@ const algLine = () => String(getCfg('algOn')) === '0' ? '' : String(getCfg('algN
 /* ---- Goût des sauces ----
    [force, texte] — force 0 douce, 1 peu relevée, 2 relevée, 3 très piquante.
    Le texte saisi dans l'admin remplace celui-ci. */
-const SAU_GOUT = {"Mayonnaise":[0,"Douce"],"Ketchup":[0,"Douce et sucrée"],"Andalouse":[1,"Peu relevée"],"Algérienne":[2,"Relevée"],"Samouraï":[3,"Très piquante"],"Blanche":[0,"Douce"],"Harissa":[3,"Très piquante"],"Américaine":[0,"Douce et acidulée"],"Brazil":[0,"Douce et fruitée"],"Bicky":[1,"Acidulée"],"Mammouth":[2,"Relevée"],"Tartare":[0,"Acidulée"],"Cocktail":[0,"Douce et sucrée"],"Curry ketchup":[1,"Douce et épicée"],"Sauce à l’ail":[0,"Douce, à l’ail"],"Barbecue":[0,"Fumée et sucrée"],"Moutarde":[2,"Piquante"],"Piquante":[2,"Piquante"],"Pili-pili":[3,"Très piquante"],"Sweet chili":[1,"Sucrée et piquante"],"Pita":[0,"Douce, aux herbes"]};
+const SAU_GOUT = {"Mayonnaise":[0,"Douce"],"Ketchup":[0,"Douce et sucrée"],"Andalouse":[0,"Douce"],"Algérienne":[2,"Relevée"],"Samouraï":[3,"Très piquante"],"Blanche":[0,"Douce"],"Harissa":[3,"Très piquante"],"Américaine":[0,"Douce et acidulée"],"Brazil":[0,"Douce et fruitée"],"Bicky":[1,"Acidulée"],"Mammouth":[2,"Relevée"],"Tartare":[0,"Acidulée"],"Cocktail":[0,"Douce et sucrée"],"Curry ketchup":[1,"Douce et épicée"],"Sauce à l’ail":[0,"Douce, à l’ail"],"Barbecue":[0,"Fumée et sucrée"],"Moutarde":[2,"Piquante"],"Piquante":[2,"Piquante"],"Pili-pili":[3,"Très piquante"],"Sweet chili":[1,"Sucrée et piquante"],"Pita":[0,"Douce, aux herbes"]};
 const goutOf = it => {
   if (!it) return null;
   if (it.g) { const m = String(it.g).match(/^([0-3])\s*[|:]\s*(.+)$/); return m ? [+m[1], m[2].trim()] : [0, String(it.g).trim()]; }
