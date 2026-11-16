@@ -34,7 +34,7 @@ const TR = {
     'Sandwichs': 'Broodjes', 'Menus': 'Menu’s', 'Assiettes': 'Schotels', 'Grillades': 'Grillgerechten',
     'Spécialités': 'Specialiteiten', 'Frites & plus': 'Frieten & meer', 'Suppléments': 'Extra’s', 'Boissons': 'Dranken',
     'Accompagnement : salade composée, frites, sauces': 'Bijgerecht: gemengde salade, frieten, sauzen',
-    'Une boisson ou un dessert ?': 'Een drankje of een dessert?', 'Recommander ma dernière commande': 'Mijn laatste bestelling opnieuw',
+    'Une boisson ou un dessert ?': 'Een drankje of een dessert?', 'Une boisson fraîche avec ça ?': 'Een fris drankje erbij?', 'Un petit dessert pour finir ?': 'Een dessertje als afsluiter?', 'Bien choisi ! Autre chose ?': 'Goede keuze! Nog iets?', 'Juste avant d’envoyer votre commande…': 'Net voor u uw bestelling verstuurt…', 'Non merci, envoyer ma commande': 'Nee bedankt, bestelling versturen', 'Envoyer ma commande': 'Mijn bestelling versturen', 'Recommander ma dernière commande': 'Mijn laatste bestelling opnieuw',
     'Commande envoyée': 'Bestelling verzonden', 'Votre numéro de commande': 'Uw bestelnummer',
     'Reçue': 'Ontvangen', 'En préparation': 'In bereiding', 'Prête': 'Klaar',
     'Votre commande est prête !': 'Uw bestelling is klaar!', 'Présentez ce numéro au comptoir.': 'Toon dit nummer aan de toonbank.',
@@ -73,7 +73,7 @@ const TR = {
     'Sandwichs': 'Sandwiches', 'Assiettes': 'Platters', 'Grillades': 'Grills', 'Salades': 'Salads',
     'Spécialités': 'Specialities', 'Frites & plus': 'Fries & more', 'Suppléments': 'Extras', 'Boissons': 'Drinks',
     'Accompagnement : salade composée, frites, sauces': 'Side: mixed salad, fries, sauces',
-    'Une boisson ou un dessert ?': 'A drink or a dessert?', 'Recommander ma dernière commande': 'Reorder my last order',
+    'Une boisson ou un dessert ?': 'A drink or a dessert?', 'Une boisson fraîche avec ça ?': 'A cold drink with that?', 'Un petit dessert pour finir ?': 'A little dessert to finish?', 'Bien choisi ! Autre chose ?': 'Great choice! Anything else?', 'Juste avant d’envoyer votre commande…': 'Just before you send your order…', 'Non merci, envoyer ma commande': 'No thanks, send my order', 'Envoyer ma commande': 'Send my order', 'Recommander ma dernière commande': 'Reorder my last order',
     'Commande envoyée': 'Order sent', 'Votre numéro de commande': 'Your order number',
     'Reçue': 'Received', 'En préparation': 'Being prepared', 'Prête': 'Ready',
     'Votre commande est prête !': 'Your order is ready!', 'Présentez ce numéro au comptoir.': 'Show this number at the counter.',
@@ -138,6 +138,7 @@ const DEFAULT_CFG = {
   upOn: '1',
   upTitle: 'Une boisson ou un dessert ?',
   upCats: 'Boissons, Desserts',
+  upAsk: '1',
   loyOn: '1',
   loyN: 10,
   loyGift: 'Un dürüm offert',
@@ -1022,7 +1023,9 @@ function upd() {
   void b.offsetWidth;
   b.classList.add('pop');
   st('hfl', L);
+  if (!L.length) { upAsk = 0; upKeep = []; }
   if ($('#dr').classList.contains('on')) draw();
+  if ($('#sh').classList.contains('on') && $('#shk .upsh')) upDraw();
 }
 
 const lkey = o => JSON.stringify([o.id, o.s || [], o.r || [], o.b || '', o.nt || '', o.v || '', o.t || '', o.x || []]);
@@ -1237,14 +1240,66 @@ function copyTxt(v) {
     t.value = v; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); ok();
   } catch (e) {}
 }
-/* Suggestion boisson / dessert dans le panier */
+/* ---- Suggestions boisson / dessert ----
+   1) dans le panier : une rangée de photos à toucher (+ / −), qui reste affichée après un ajout ;
+   2) juste avant l'envoi : une petite fenêtre, une seule fois par commande, s'il manque encore
+      une boisson ou un dessert. Les boissons d'un menu comptent comme boisson. */
+let upKeep = [], upAsk = 0, upBmp = '';
+const upCatsL = () => {
+  const names = String(getCfg('upCats')).split(',').map(x => norm(x.trim())).filter(Boolean);
+  return cats.filter(c => !c.hide && (names.includes(norm(c.n)) || names.includes(norm(c.l))));
+};
+const upDrink = c => /boisson|drank|drink|soft/.test(norm(c.n));
+const upMiss = () => upCatsL().filter(c => !L.some(l => I[l.id] && I[l.id].cat === c.n) && !(upDrink(c) && L.some(l => l.b)));
+/* une suggestion = un plat simple, ou une boisson précise d'un sous-menu (ex. Coca-Cola dans « Softs 0,33 L ») */
+function upPick(c, n) {
+  const r = [];
+  c.items.filter(i => !i.out && !opt(i)).forEach(i => {
+    const vs = vrs(i);
+    if (vs.length) vs.forEach(v => r.push({ id: i.id, v: v.n, n: T(v.n), p: vprice(i, v), u: oUrl('b', v.n) || IMG(i), e: i.e }));
+    else r.push({ id: i.id, v: '', n: full(i), p: i.p, u: IMG(i), e: i.e });
+  });
+  /* d'abord les petits prix (achat « coup de cœur »), une seule fois la même photo, les photos avant les icônes */
+  const seen = new Set(), u = [];
+  r.sort((x, y) => (!!y.v - !!x.v) || (x.p - y.p)).forEach(x => { if (!x.u || !seen.has(x.u)) { if (x.u) seen.add(x.u); u.push(x); } });
+  return [...u.filter(x => x.u), ...u.filter(x => !x.u)].slice(0, n);
+}
+function upItems(cs, n) {
+  if (!cs.length) return [];
+  const ls = cs.map(c => upPick(c, upDrink(c) ? Math.ceil(n * .6) : n)), r = [];
+  for (let k = 0; r.length < n && ls.some(x => x[k]); k++) ls.forEach(x => { if (x[k] && r.length < n) r.push(x[k]); });
+  return r;
+}
+const upTtl = cs => !cs.length ? '✨ ' + T('Bien choisi ! Autre chose ?')
+  : cs.length > 1 ? T(getCfg('upTitle')) : upDrink(cs[0]) ? '🥤 ' + T('Une boisson fraîche avec ça ?') : '🍰 ' + T('Un petit dessert pour finir ?');
+const upQ = x => L.filter(l => l.id === x.id && (l.v || '') === x.v).reduce((s, l) => s + l.q, 0);
+const upCard = (x, k) => {
+  const q = upQ(x), a = 'upa|' + x.id + '|' + esc(x.v), d = 'upd|' + x.id + '|' + esc(x.v);
+  return `<div class="upc${q ? ' in' : ''}${upBmp === x.id + '|' + x.v ? ' bmp' : ''}" style="--k:${k}"><button class="upb" data-x="${a}" aria-label="${esc(T('Ajouter'))} : ${esc(x.n)}"><i class="upi"${bg(x.u, 1)}>${x.u ? '' : x.e}</i><span class="upn">${esc(x.n)}</span><b class="upp">${eur(x.p)}</b></button>${q
+    ? `<div class="upq"><button data-x="${d}" aria-label="−">−</button><b>${q}</b><button data-x="${a}" aria-label="+">+</button></div>`
+    : `<button class="upplus" data-x="${a}" tabindex="-1" aria-hidden="true">+</button>`}</div>`;
+};
 function upsell() {
   if (!L.length || String(getCfg('upOn')) === '0') return '';
-  const names = String(getCfg('upCats')).split(',').map(x => norm(x.trim())).filter(Boolean);
-  const cs = cats.filter(c => !c.hide && (names.includes(norm(c.n)) || names.includes(norm(c.l))));
-  if (!cs.length || L.some(l => cs.some(c => c.n === I[l.id].cat))) return '';
-  const its = cs.flatMap(c => c.items.filter(i => !i.out && !opt(i)).slice(0, 4)).slice(0, 8);
-  return its.length ? `<h4>${esc(T(getCfg('upTitle')))}</h4><div class="opts ups">${its.map(i => `<button data-x="inc|${i.id}">${i.e} ${esc(full(i))} · <b>${eur(i.p)}</b></button>`).join('')}</div>` : '';
+  upMiss().forEach(c => upKeep.includes(c.n) || upKeep.push(c.n));
+  const its = upItems(upCatsL().filter(c => upKeep.includes(c.n)), 8);
+  return its.length ? `<div class="ups2"><h4>${esc(upTtl(upMiss()))}</h4><div class="uprow">${its.map(upCard).join('')}</div></div>` : '';
+}
+/* fenêtre « juste avant d'envoyer » */
+const upNeed = () => !upAsk && L.length && String(getCfg('upOn')) !== '0' && String(getCfg('upAsk')) !== '0' && upItems(upMiss(), 1).length;
+function upSheet() {
+  upKeep = [];
+  upMiss().forEach(c => upKeep.push(c.n));
+  upDraw();
+  $('#sh').classList.add('on');
+}
+function upDraw() {
+  const its = upItems(upCatsL().filter(c => upKeep.includes(c.n)), 6), added = L.some(l => upKeep.includes((I[l.id] || {}).cat));
+  $('#shk').innerHTML = `<div class="upsh"><div class="th"><h3>${esc(upTtl(upMiss()))}</h3><button class="chip" data-x="shut">✕</button></div>
+<p class="nt">${esc(T('Juste avant d’envoyer votre commande…'))}</p>
+<div class="upgrid">${its.map(upCard).join('')}</div>
+<div class="tot"><span>${T('Total')}</span><span>${eur(tot())}</span></div>
+<button class="btn${added ? '' : ' g'}" style="width:100%" data-x="upgo">${esc(T(added ? 'Envoyer ma commande' : 'Non merci, envoyer ma commande'))}</button></div>`;
 }
 /* Carte de fidélité (comptée sur le téléphone du client) */
 const loyN = () => Math.max(2, Math.round(+getCfg('loyN')) || 10);
@@ -1383,7 +1438,10 @@ document.addEventListener('click', e => {
     else if (a === 'wh') { when = b; draw(); }
     else if (a === 'ln') { L[+b].q += +c; if (L[+b].q < 1) L.splice(+b, 1); upd(); }
     else if (a === 'cld') closeD();
-    else if (a === 'send') send();
+    else if (a === 'send') { if (upNeed()) { upAsk = 1; upSheet(); } else send(); }
+    else if (a === 'upgo') { shut(); send(); }
+    else if (a === 'upa') { upBmp = b + '|' + (c || ''); addLine({ id: b, s: [], r: [], b: '', ...(c ? { v: c } : {}) }); upBmp = ''; }
+    else if (a === 'upd') { const i = L.findLastIndex(l => l.id === b && (l.v || '') === (c || '')); if (i > -1) { L[i].q--; if (!L[i].q) L.splice(i, 1); } upd(); }
     return;
   }
   const pv = e.target.closest('[data-pv]');
@@ -1949,6 +2007,11 @@ window.showAdmTab = (tab, btn) => {
       <input id="c_upTitle" value="${esc(getCfg('upTitle'))}">
       <label>Catégories proposées (séparées par une virgule)</label>
       <input id="c_upCats" value="${esc(getCfg('upCats'))}">
+      <label>Petite fenêtre juste avant l'envoi (une fois par commande, s'il manque une boisson ou un dessert)</label>
+      <div class="seg">
+        <button type="button" class="${String(getCfg('upAsk')) !== '0' ? 'on' : ''}" onclick="setCfg('upAsk','1');showAdmTab('opt')">✅ Activée</button>
+        <button type="button" class="${String(getCfg('upAsk')) === '0' ? 'on' : ''}" onclick="setCfg('upAsk','0');showAdmTab('opt')">🚫 Désactivée</button>
+      </div>
 
       <h4>🌯 Choix Dürüm ou Sandwich</h4>
       <p class="nt">Proposé au client dès qu'il compose un plat de la catégorie indiquée. Laissez les choix vides pour supprimer cette étape.</p>
