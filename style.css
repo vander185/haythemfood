@@ -762,3 +762,14 @@ body:has(.ov.on) .nav{-webkit-backdrop-filter:none!important;backdrop-filter:non
 @media(prefers-reduced-motion:reduce){.spb i,.stepw.mv-fw,.stepw.mv-bk,.stepw>h4,.stepw>h4::after,#shk .chips .chip{animation:none!important;filter:none!important}}
 #kopn{display:flex;align-items:center;gap:8px;flex-wrap:wrap}#kopn .seg{margin:0;min-width:300px}#kopn .seg button{padding:8px 10px;font-size:14px}
 #kopn .kos{padding:6px 12px;border-radius:999px;font-weight:800;font-size:14px;background:#e5484d;color:#fff}#kopn .kos.on{background:#1f9d55}
+/* Écran cuisine sur téléphone / tablette en portrait : toute la page défile, les colonnes prennent la hauteur de leurs commandes */
+@media(max-width:800px){
+  body.k #kt{overflow-y:auto;-webkit-overflow-scrolling:touch;padding-top:calc(env(safe-area-inset-top,0px) + 14px)}
+  body.k .kg{flex:none;overflow:visible}body.k .kc{min-height:0}body.k .kls{flex:none;overflow:visible}
+  .kbar{gap:6px 8px}.kbar h2{font-size:20px;flex-basis:100%}.kbar .btn{padding:8px 12px;font-size:13px}
+  #kopn .seg{min-width:0;flex:1}#kopn .seg button{padding:7px 6px;font-size:13px}
+}
+/* Petit écran (320 px) : le titre du panier reste sur une ligne */
+@media(max-width:360px){.th h3{font-size:19px;white-space:nowrap}}
+/* Grand écran : fenêtres (panier, composition) un peu plus larges */
+@media(min-width:1600px){.ov .tk:not(.big){max-width:640px}}

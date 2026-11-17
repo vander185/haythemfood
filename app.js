@@ -1774,11 +1774,12 @@ body.f #fs{display:flex}body.f{overflow:hidden}body.f #bar{display:none}
 #fs .fn{min-width:2.2em;text-align:center;padding:6px 18px;border-radius:18px;background:#132a5e;border:1px solid #d4af3766;font:700 clamp(36px,7vw,84px)/1.1 Cinzel,Georgia,serif;color:#f9e29c}
 #fs .fn small{display:block;font:600 clamp(12px,1.6vw,20px) system-ui;opacity:.85}
 #fs .fc.r .fn{background:#1f9d55;color:#fff;animation:fpop 1s ease-in-out infinite}
+#fs .fc.r .fn{font-size:clamp(44px,7.5vw,150px)}#fs .fc.r .fn small{font-size:clamp(13px,1.8vw,30px)}
 @keyframes fpop{50%{transform:scale(1.06)}}
 @media(max-width:700px){#fs .fg{grid-template-columns:1fr}}`;
   document.head.appendChild(s);
   const d = document.createElement('div'); d.id = 'fs';
-  d.innerHTML = `<div class="fh"><h2>🍽️ ${esc(getCfg('title'))} · Vos commandes</h2><span id="fclk" style="font:700 clamp(22px,3vw,36px) Georgia,serif"></span><button class="btn g" id="fv" onclick="fvoice()">🔊 Activer la voix</button><button class="btn g" onclick="go('')">⬅ Retour</button></div><div class="fg"><div class="fc"><h3>⏳ En préparation</h3><div class="fl" id="fp"></div></div><div class="fc r"><h3>✅ Prêtes · venez les récupérer</h3><div class="fl" id="fr"></div></div></div>`;
+  d.innerHTML = `<div class="fh"><h2>🍽️ ${esc(getCfg('title'))} · Vos commandes</h2><span id="fclk" style="font:700 clamp(22px,3vw,36px) Georgia,serif"></span><button class="btn g" id="fv" onclick="fvoice()">🔊 Activer la voix</button>${window.HF_SCREEN === 'file' ? '' : `<button class="btn g" onclick="go('')">⬅ Retour</button>`}</div><div class="fg"><div class="fc"><h3>⏳ En préparation</h3><div class="fl" id="fp"></div></div><div class="fc r"><h3>✅ Prêtes · venez les récupérer</h3><div class="fl" id="fr"></div></div></div>`;
   document.body.appendChild(d);
 })();
 
