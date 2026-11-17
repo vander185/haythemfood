@@ -716,3 +716,16 @@ body:has(.ov.on) *:not(.ov):not(.ov *),body:has(.ov.on) *:not(.ov):not(.ov *)::b
 @keyframes upbmp{40%{transform:scale(1.07)}}
 @keyframes uppl{0%,100%{transform:scale(1)}50%{transform:scale(1.12);box-shadow:0 0 0 6px #d4af3726,0 3px 10px #0008}}
 @media(prefers-reduced-motion:reduce){.upc,.upc.bmp,.upplus{animation:none}}
+
+/* ===== Anti-clignotement v2 : sous-menus (Garniture, Sauces…) =====
+   Chaque choix sélectionné avait sa propre lumière tournante masquée : avec 8 crudités cochées,
+   le téléphone devait redessiner 8 calques animés en continu et effaçait des morceaux d'écran.
+   → cadre or fixe, aucune animation continue dans la fenêtre. */
+.og button::before,.og .on::before{content:none!important;animation:none!important}
+.og button{border:1.5px solid #d4af3766!important;transition:border-color .2s,box-shadow .2s!important}
+.og .on{border:2.5px solid #f3cf63!important;box-shadow:0 0 0 1px #fff6c955 inset,0 0 14px #d4af3770!important}
+.og .on .pi{transform:none!important}
+.og em,.og .h0,.og .h1,.og .h2,.og .h3{filter:none!important}
+.ov .tk{contain:none!important;will-change:auto}
+.ov.on .tk{transform:none!important}
+.ov *{animation-iteration-count:1!important}
