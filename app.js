@@ -1764,6 +1764,8 @@ window.showAdmTab = (tab, btn) => {
         <button class="btn g" onclick="go('file')">📺 Écran d'attente clients (TV)</button>
         <button class="btn g" onclick="go('')">🛍️ Écran client</button>
       </div>
+      <label class="pl" style="margin-top:12px"><input type="checkbox" ${st('hfkiosk') !== 0 ? 'checked' : ''} onchange="st('hfkiosk', this.checked ? 1 : 0); kioskSync()"> 🔒 Mode kiosque sur l'écran cuisine et l'écran d'attente (plein écran, écran toujours allumé, code PIN pour sortir)</label>
+      <p class="nt">Réglage propre à cet appareil. Sur iPhone/iPad, utilisez en plus l'« Accès guidé » (Réglages → Accessibilité).</p>
       <h4>🔔 Son d'arrivée d'une commande (écran cuisine)</h4>
       <div class="opts">
         ${[['carillon', '✨ Carillon'], ['cloche', '🔔 Cloche'], ['sonnerie', '🛎️ Ding-dong'], ['alerte', '🚨 Alerte'], ['bip', '📟 Bips']]
@@ -2491,3 +2493,92 @@ $('.logo').addEventListener('click', () => {
 build();
 upd();
 route();
+
+
+/* =====================================================================
+   MODE KIOSQUE : écran cuisine (#cuisine) et écran d'attente (#file)
+   Plein écran au premier toucher, écran toujours allumé, retour bloqué,
+   sortie uniquement avec le code PIN.
+   ===================================================================== */
+(() => {
+  const css = document.createElement('style');
+  css.textContent = `#kso{position:fixed;inset:0;z-index:99990;display:none;align-items:center;justify-content:center;background:#05070dee;color:#f3cf63;text-align:center;cursor:pointer}
+#kso.on{display:flex}#kso b{display:block;font-size:64px;margin-bottom:8px;animation:pvp 2s ease-in-out infinite}#kso p{margin:0;font:700 26px/1.3 Cinzel,Georgia,serif}#kso small{display:block;margin-top:8px;color:#cfd6e4;font-size:16px}
+#ksx{position:fixed;right:12px;bottom:12px;z-index:99980;width:44px;height:44px;border-radius:50%;border:1px solid #d4af3766;background:#0b1430cc;color:#f3cf63;font-size:20px;display:none;opacity:.55;cursor:pointer}
+body.ks #ksx{display:block}body:has(#pin) #kso,body:has(#pin) #ksx{display:none!important}#ksx:hover{opacity:1}
+body.ks{user-select:none;-webkit-user-select:none;overscroll-behavior:none}`;
+  document.head.appendChild(css);
+  const ov = document.createElement('div');
+  ov.id = 'kso';
+  ov.innerHTML = '<div><b>🔒</b><p>Mode kiosque</p><small>Touchez l’écran pour revenir en plein écran</small></div>';
+  const bx = document.createElement('button');
+  bx.id = 'ksx'; bx.type = 'button'; bx.title = 'Quitter le mode kiosque'; bx.textContent = '🔒';
+  document.body.append(ov, bx);
+
+  const view = () => document.body.classList.contains('k') || document.body.classList.contains('f');
+  const pref = () => st('hfkiosk') !== 0;
+  const de = document.documentElement;
+  const canFS = () => !!(de.requestFullscreen || de.webkitRequestFullscreen);
+  const inFS = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
+  let paused = false, armed = false, allow = false, wl = null, lockH = null;
+  const active = () => view() && pref() && !paused;
+  const goFS = () => { try { const r = de.requestFullscreen ? de.requestFullscreen({ navigationUI: 'hide' }) : de.webkitRequestFullscreen(); if (r && r.catch) r.catch(() => {}); } catch (e) {} };
+  const exitFS = () => { try { if (document.exitFullscreen && document.fullscreenElement) document.exitFullscreen(); else if (document.webkitExitFullscreen && document.webkitFullscreenElement) document.webkitExitFullscreen(); } catch (e) {} };
+  const wake = async () => { try { if (navigator.wakeLock && (!wl || wl.released)) wl = await navigator.wakeLock.request('screen'); } catch (e) {} };
+  const sync = window.kioskSync = () => {
+    const a = active();
+    if (a) lockH = location.hash; else if (paused || !pref()) lockH = null;
+    document.body.classList.toggle('ks', a);
+    ov.classList.toggle('on', a && armed && canFS() && !inFS());
+    if (a) wake();
+    else if (!pref() && inFS() && view()) exitFS();
+  };
+  const unlock = async title => {
+    const ok = await askPin(title || 'Code pour quitter le mode kiosque');
+    if (ok) { allow = true; lockH = null; setTimeout(() => { allow = false; }, 1500); }
+    return ok;
+  };
+
+  // premier toucher : plein écran
+  document.addEventListener('pointerdown', e => {
+    if (!active() || inFS() || !canFS() || e.target.closest('#pin')) return;
+    armed = true; goFS(); setTimeout(sync, 300);
+  }, true);
+  ov.addEventListener('click', () => { goFS(); setTimeout(sync, 300); });
+  ['fullscreenchange', 'webkitfullscreenchange'].forEach(ev => document.addEventListener(ev, () => setTimeout(sync, 60)));
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) { wl = null; sync(); } });
+  document.addEventListener('contextmenu', e => { if (active()) e.preventDefault(); });
+
+  // bouton 🔒 : quitter le kiosque (on reste sur l'écran)
+  bx.addEventListener('click', async e => {
+    e.stopPropagation();
+    if (await unlock()) { paused = true; exitFS(); sync(); }
+  });
+
+  // boutons de navigation (ex. « ⬅ Écran client ») : code PIN demandé
+  const _go = go;
+  go = async h => {
+    if (active() && '#' + h !== location.hash && !allow) {
+      if (!(await unlock())) return;
+      exitFS();
+    }
+    _go(h);
+  };
+
+  // retour arrière / changement d'adresse : bloqué sans code
+  addEventListener('hashchange', () => {
+    if (lockH !== null && location.hash !== lockH && !allow) {
+      const target = location.hash, back = lockH;
+      history.replaceState(null, '', back || location.pathname + location.search);
+      route();
+      unlock().then(ok => { if (ok) { exitFS(); location.hash = target; } });
+      return;
+    }
+    setTimeout(sync, 80);
+  });
+  // l'écran change (cuisine / file / client) : on réévalue le kiosque
+  let lastV = view();
+  new MutationObserver(() => { const v = view(); if (v !== lastV) { lastV = v; if (v) paused = false; sync(); } })
+    .observe(document.body, { attributes: true, attributeFilter: ['class'] });
+  setTimeout(sync, 500);
+})();
