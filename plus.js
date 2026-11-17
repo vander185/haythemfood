@@ -134,15 +134,21 @@
     if (a === 'mono') { moNo++; moLine = null; $('#sh').classList.remove('on'); }
     else if (a === 'moyes' && moLine) {
       const { n, f } = moLine; moLine = null;
-      const k = lkey(n), i = L.findIndex(l => lkey(l) === k);
-      if (i > -1) { L[i].q--; if (!L[i].q) L.splice(i, 1); }
       const nl = { id: f.m.id, s: n.s || [], r: n.r || [], x: n.x || [], b: '', nt: n.nt || '', t: f.type };
-      L.push({ ...nl, q: 1 }); upd();
+      window._moRepl = { mid: f.m.id, k: lkey(n) };
       const x = I[f.m.id], ks = [...'trsxb'].filter(c => opt(x).includes(c) && (c !== 'x' || getSUP().length));
-      ed = { ...nl, k: Math.max(0, ks.indexOf('b')), ei: L.length - 1 };
+      ed = { ...nl, k: Math.max(0, ks.indexOf('b')) };
       sheet();
     }
   });
+
+  /* le plat n'est remplacé par le menu qu'une fois le menu validé */
+  window.hfMoDone = o => {
+    const r = window._moRepl; window._moRepl = null;
+    if (!r || !o || o.id !== r.mid || o.ei !== undefined) return;
+    const i = L.findIndex(l => lkey(l) === r.k);
+    if (i > -1) { L[i].q--; if (!L[i].q) L.splice(i, 1); }
+  };
 
   /* ---------- 3. Temps d'attente estimé ---------- */
   async function etaTick() {

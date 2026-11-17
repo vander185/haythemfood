@@ -670,7 +670,7 @@ const unit = l => {
   const it = I[l.id];
   if (!it) return 0;
   const v = l.v && vrs(it).find(z => z.n === l.v);
-  return (v ? vprice(it, v) : it.p) + (l.b ? getDP() : 0) + supTot(l.x);
+  return (v ? vprice(it, v) : it.p) + (l.b && !/^menus?$/i.test(norm(it.cat || '')) ? getDP() : 0) + supTot(l.x);
 };
 const lineN = l => I[l.id] ? full(I[l.id]) + (l.v ? ' · ' + l.v : '') : '';
 const cnt = () => L.reduce((n, l) => n + l.q, 0);
@@ -1077,7 +1077,7 @@ function sheet() {
     if (g === 's') { const z = goutN(v); return z ? `<em class="h${z[0]}">${esc(hot(z[0]))}${esc(T(z[1]))}</em>` : ''; }
     return '';
   };
-  const ttl = g === 't' ? T('Dürüm ou Sandwich ?') : g === 'b' ? T('Ajouter une boisson') + ' (+' + eur(getDP()) + ')'
+  const ttl = g === 't' ? T('Dürüm ou Sandwich ?') : g === 'b' ? (/^menus?$/i.test(norm(x.cat || '')) ? T('Boisson incluse dans le menu') : T('Ajouter une boisson') + ' (+' + eur(getDP()) + ')')
     : g === 'x' ? T(getCfg('supTitle')) : g === 'r' ? T('Choisissez vos crudités') : T('Choisissez vos sauces');
   const sup = supTot(ed.x);
   $('#shk').innerHTML = `<div class="th"><h3>${esc(full(x))}</h3><button class="chip" data-x="shut">✕</button></div>
@@ -1447,7 +1447,7 @@ document.addEventListener('click', e => {
     else if (a === 'stp') { ed.mv = +b < ed.k ? 'bk' : 'fw'; ed.pk = ed.k; ed.k = +b; sheet(); }
     else if (a === 'nxt') { ed.mv = 'fw'; ed.pk = ed.k; ed.k++; sheet(); }
     else if (a === 'tg') tg(b, c);
-    else if (a === 'done') { const o = ed; shut(); const n = { id: o.id, s: o.s, r: o.r, x: o.x || [], b: o.b, nt: o.nt, t: o.t }; if (o.ei !== undefined) setLine(o.ei, n); else { addLine(n); if (window.hfMenuOffer) hfMenuOffer(n); } }
+    else if (a === 'done') { const o = ed; shut(); const n = { id: o.id, s: o.s, r: o.r, x: o.x || [], b: o.b, nt: o.nt, t: o.t }; if (o.ei !== undefined) setLine(o.ei, n); else { if (window.hfMoDone) hfMoDone(o); addLine(n); if (window.hfMenuOffer) hfMenuOffer(n); } }
     else if (a === 'mode') { mode = b; draw(); }
     else if (a === 'pay') { pay = b; draw(); }
     else if (a === 'wh') { when = b; draw(); }
