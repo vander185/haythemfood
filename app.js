@@ -98,7 +98,7 @@ const DEFAULT_CFG = {
   closedText: '🔴 Actuellement fermé',
   tel: '+32493393983',
   maps: 'https://maps.google.com/?q=25A+Chaussee+d+Anvers+1000+Bruxelles',
-  review: '',
+  review: 'https://search.google.com/local/writereview?placeid=ChIJ9VtNqZzDw0cR3xVjoXyanQw&source=g.page.m._&laa=merchant-review-solicitation',
   footer: '25A Chaussée d’Anvers, 1000 Bruxelles · Cuisine halal · Faite minute',
   galTitle: '✨ Nos incontournables',
   accNote: 'Accompagnement : salade composée, frites, sauces',
@@ -113,7 +113,7 @@ const DEFAULT_CFG = {
   banSec: 5,
   ksound: 'carillon',
   krep: 2,
-  cruNo: 'Olives, Poivrons',
+  cruNo: 'Olives',
   supCat: 'Suppléments',
   supNo: '',
   supTitle: 'Un supplément ?',
@@ -174,7 +174,7 @@ const DEFAULT_OPT = {
   'Kapsalon': 'srxb', 'Menus': 'srxb', 'Bicky': 'srxb', 'Assiettes': 'sxb',
   'Grillades': 'sxb', 'Salades': 'srxb', 'Frites & plus': 'sxb'
 };
-const DEFAULT_CRU = ['Salade', 'Tomates', 'Oignons', 'Concombre', 'Maïs', 'Carottes', 'Chou blanc', 'Olives', 'Poivrons'];
+const DEFAULT_CRU = ['Salade', 'Tomates', 'Oignons', 'Concombre', 'Maïs', 'Carottes', 'Chou blanc', 'Olives'];
 const DEFAULT_DRK = ['Coca-Cola', 'Coca-Cola Zéro', 'Fanta', 'Fanta Citron', 'Sprite', 'Schweppes Lemon', 'Schweppes Agrumes', 'Ice Tea', 'Orangina', 'Eau'];
 const DEFAULT_PAYS = [
   { on: true, e: '💶', n: 'Espèces' },
@@ -199,7 +199,7 @@ const vParse = t => String(t).split(';').map(x => {
   return m ? { n: m[1].trim(), p: +m[2] } : { n: x.trim(), p: '' };
 }).filter(v => v.n);
 
-const getCRU = () => (CF.cru && CF.cru.length) ? CF.cru : DEFAULT_CRU;
+const getCRU = () => ((CF.cru && CF.cru.length) ? CF.cru : DEFAULT_CRU).filter(v => norm(v) !== norm('Poivrons'));
 /* « Toutes les crudités » : tout sauf celles listées dans cruNo */
 const cruNo = () => String(getCfg('cruNo')).split(',').map(x => norm(x.trim())).filter(Boolean);
 const cruAll = () => getCRU().filter(v => !cruNo().includes(norm(v)));
