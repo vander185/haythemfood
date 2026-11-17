@@ -760,3 +760,5 @@ body:has(.ov.on) .nav{-webkit-backdrop-filter:none!important;backdrop-filter:non
 #shk .chips .chip.dn::before{content:"✓";display:inline-block;margin-inline-end:5px;font-weight:800;color:#3ccf7d}
 #shk .chips .chip.dn.jd::before{animation:ckPop .5s cubic-bezier(.2,.9,.3,1.4) .1s both}
 @media(prefers-reduced-motion:reduce){.spb i,.stepw.mv-fw,.stepw.mv-bk,.stepw>h4,.stepw>h4::after,#shk .chips .chip{animation:none!important;filter:none!important}}
+#kopn{display:flex;align-items:center;gap:8px;flex-wrap:wrap}#kopn .seg{margin:0;min-width:300px}#kopn .seg button{padding:8px 10px;font-size:14px}
+#kopn .kos{padding:6px 12px;border-radius:999px;font-weight:800;font-size:14px;background:#e5484d;color:#fff}#kopn .kos.on{background:#1f9d55}

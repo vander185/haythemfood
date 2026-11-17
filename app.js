@@ -1405,8 +1405,46 @@ window.molTest = async () => {
     toast(j.error === 'nokey' ? '⚠ Service en ligne, mais la clé Mollie n’est pas encore mise dans Supabase' : j.code === 401 ? '⚠ Clé Mollie refusée : vérifiez-la dans Supabase' : '✅ Connexion Mollie OK');
   } catch (e) { toast('⚠ Service de paiement injoignable'); }
 };
+/* ---- Ouvert / Fermé en un geste ----
+   Boutons sur l'écran cuisine (protégé par le code PIN) et dans les réglages.
+   Les clients n'y ont pas accès ; leur page se met à jour toute seule. */
+const opnCur = () => { const m = getCfg('openStatus'); return m === 'auto' || m === 'closed' ? m : 'open'; };
+const opnSeg = () => `<div class="seg opq" style="grid-template-columns:1fr 1fr 1fr">${[['auto', '🕒 Auto'], ['open', '🟢 Ouvert'], ['closed', '🔴 Fermé']].map(([v, t]) => `<button type="button" class="${opnCur() === v ? 'on' : ''}" onclick="setOpen('${v}')">${t}</button>`).join('')}</div>`;
+function opnDraw() {
+  const bar = document.querySelector('#kt .kbar');
+  if (bar) {
+    let k = $('#kopn');
+    if (!k) { k = document.createElement('div'); k.id = 'kopn'; bar.insertBefore(k, bar.querySelector('h2').nextSibling); }
+    const o = openNow();
+    k.innerHTML = `<span class="kos ${o.open ? 'on' : ''}">${o.open ? '🟢 Site ouvert' : '🔴 Site fermé'}</span>${opnSeg()}`;
+  }
+  const a = $('#adm-opn');
+  if (a) a.innerHTML = opnSeg();
+}
+window.setOpen = v => {
+  setCfg('openStatus', v);
+  Store.saveConfig(CF);
+  applySiteSettings();
+  if ($('#dr') && $('#dr').classList.contains('on')) draw();
+  opnDraw();
+  toast(v === 'closed' ? '🔴 Site fermé : commandes bloquées' : v === 'open' ? '🟢 Site ouvert' : '🕒 Automatique selon les horaires');
+};
+/* Côté client : l'état est relu chaque minute (et l'horaire « Auto » recalculé) */
+async function opnTick() {
+  if (document.hidden) return;
+  const before = openNow().open, DB = getDB();
+  if (DB) try {
+    const r = await fetch(DB + '/site_config/cfg/openStatus.json', { cache: 'no-store' });
+    if (r.ok) { const v = await r.json(); if (typeof v === 'string' && v !== getCfg('openStatus')) { CF.cfg = CF.cfg || {}; CF.cfg.openStatus = v; st('hfc', CF); } }
+  } catch (e) {}
+  if (document.body.classList.contains('k')) { opnDraw(); return; }
+  if (openNow().open !== before) { applySiteSettings(); if ($('#dr').classList.contains('on')) draw(); }
+}
+setInterval(opnTick, 60000);
+addEventListener('visibilitychange', () => { if (!document.hidden) opnTick(); });
 async function send() {
   if (!L.length || send.b) return;
+  if (!PAID && !openNow().open) { toast('🔴 ' + T('Nous sommes fermés')); draw(); return; }
   send.b = 1;
   const paid = !!PAID;
   /* La fenêtre WhatsApp est ouverte tout de suite, pendant que le clic du client
@@ -1881,12 +1919,8 @@ window.showAdmTab = (tab, btn) => {
 
       <h4>🟢 Ouverture & Horaires</h4>
       <label>État du restaurant</label>
-      <div class="seg" style="grid-template-columns:1fr 1fr 1fr">
-        <button type="button" class="${sm === 'auto' ? 'on' : ''}" onclick="setCfg('openStatus','auto');showAdmTab('gen')">🕒 Auto (horaires)</button>
-        <button type="button" class="${sm !== 'auto' && sm !== 'closed' ? 'on' : ''}" onclick="setCfg('openStatus','open');showAdmTab('gen')">🟢 Ouvert</button>
-        <button type="button" class="${sm === 'closed' ? 'on' : ''}" onclick="setCfg('openStatus','closed');showAdmTab('gen')">🔴 Fermé</button>
-      </div>
-      <p class="nt">« Auto » affiche Ouvert / Fermé selon les horaires ci-dessous. Seul « Fermé » bloque les commandes.</p>
+      <div id="adm-opn">${opnSeg()}</div>
+      <p class="nt">Enregistré tout de suite, sur tous les téléphones des clients en moins d'une minute. « Auto » suit les horaires ci-dessous ; « Ouvert » / « Fermé » forcent l'état (fermé = commandes bloquées). Aussi disponible sur l'écran cuisine.</p>
       <div class="hrs">${DAYS.map((d, i) => `<span>${d}</span><input id="c_h${i}" value="${esc(hs[i] || '')}" placeholder="Fermé (ex. 11:30-22:30)" style="margin:0">`).join('')}</div>
       <label>Texte affiché quand Ouvert</label>
       <input id="c_openText" value="${esc(getCfg('openText'))}">
@@ -2560,7 +2594,7 @@ async function route() {
   document.body.classList.toggle('f', f);
   FV = f;
   $('#kt').style.display = k ? 'flex' : 'none';
-  if (k) { first = true; seen = new Set(); kload(); }
+  if (k) { first = true; seen = new Set(); kload(); opnDraw(); }
   if (f) { fprev = null; fload(); try { navigator.wakeLock && navigator.wakeLock.request('screen'); } catch (e) {} }
 }
 addEventListener('hashchange', route);
