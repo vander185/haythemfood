@@ -125,7 +125,7 @@ const DEFAULT_CFG = {
   algNote: 'Allergènes : demandez-nous, nous vous renseignons plat par plat.',
   algChecked: '0',
   algCross: 'Préparé dans une cuisine où sont manipulés gluten, œufs, lait, sésame, poisson et fruits à coque : une trace est toujours possible.',
-  bce: '',
+  bce: 'BE 1030.348.450',
   mail: '',
   mTypeCat: 'Menus',
   mTypes: 'Dürüm, Sandwich',
@@ -822,7 +822,7 @@ function applySiteSettings() {
     /* Mentions légales et allergènes, en bas de page */
     let fl = ft.querySelector('.fml');
     if (!fl) { fl = document.createElement('span'); fl.className = 'fml'; ft.appendChild(fl); }
-    const ml = [getCfg('bce') && 'N° d’entreprise ' + getCfg('bce'), getCfg('tel'), getCfg('mail')].filter(Boolean).join(' · ');
+    const ml = [getCfg('bce') && 'TVA ' + getCfg('bce'), getCfg('tel'), getCfg('mail')].filter(Boolean).join(' · ');
     fl.innerHTML = [ml ? esc(ml) : '', algLine() ? esc(T(algLine())) : ''].filter(Boolean).map(x => '<span>' + x + '</span>').join('');
   }
 }
