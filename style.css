@@ -729,3 +729,11 @@ body:has(.ov.on) *:not(.ov):not(.ov *),body:has(.ov.on) *:not(.ov):not(.ov *)::b
 .ov .tk{contain:none!important;will-change:auto}
 .ov.on .tk{transform:none!important}
 .ov *{animation-iteration-count:1!important}
+
+/* ===== Anti-clignotement v3 : quand une fenêtre (Composer, panier…) est ouverte, la page derrière est
+   entièrement cachée. Elle contenait ~280 cadres décoratifs + un flou que le téléphone devait garder
+   en mémoire, ce qui faisait disparaître des morceaux de la fenêtre. ===== */
+body:has(.ov.on) #cl,body:has(.ov.on) #fx,body:has(.ov.on) #bar,body:has(.ov.on) #totop,body:has(.ov.on) #kt{visibility:hidden!important}
+body:has(.ov.on)::before,body:has(.ov.on)::after{display:none!important}
+body:has(.ov.on) .nav{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+.ov.on{background:#040914!important}
