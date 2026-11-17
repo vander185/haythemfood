@@ -3,7 +3,7 @@
 // Photos et icônes : cache d'abord (chargement instantané).
 // Firebase et les autres sites ne passent jamais par le cache.
 const V = 'hf-v3', PH = 'hf-photos-v1';
-const CORE = ['./', 'index.html', 'app.js', 'style.css', 'fx.js', 'photos-borne.js', 'manifest.webmanifest'];
+const CORE = ['./', 'index.html', 'app.js', 'style.css', 'fx.js', 'plus.js', 'photos-borne.js', 'manifest.webmanifest'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(V).then(c => c.addAll(CORE)).catch(() => {}));

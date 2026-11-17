@@ -1343,7 +1343,7 @@ async function send() {
   const wa = 'https://wa.me/' + getCfg('WA') + '?text=' + encodeURIComponent(txt);
   try { if (w && !w.closed) w.location.href = wa; else window.open(wa, '_blank'); } catch (e) {}
   let k = '';
-  try { k = (await Store.push(o)) || ''; } catch (e) { const p = st('hfp') || []; p.push(o); st('hfp', p); toast('Réseau faible : nouvel essai automatique'); }
+  try { k = (await Store.push(o)) || ''; if (window.hfPopBump) hfPopBump(o.l); } catch (e) { const p = st('hfp') || []; p.push(o); st('hfp', p); toast('Réseau faible : nouvel essai automatique'); }
   if (lon) st('hfloy', c);
   st('hflast', L.map(l => ({ ...l })));
   st('hfo', { k, no: o.no, t: o.t, st: 0, loy: !lon ? '' : gift || '🎁 ' + T('Carte de fidélité') + ' : ' + c + '/' + N + ' · ' + getCfg('loyGift') });
@@ -1447,7 +1447,7 @@ document.addEventListener('click', e => {
     else if (a === 'stp') { ed.mv = +b < ed.k ? 'bk' : 'fw'; ed.pk = ed.k; ed.k = +b; sheet(); }
     else if (a === 'nxt') { ed.mv = 'fw'; ed.pk = ed.k; ed.k++; sheet(); }
     else if (a === 'tg') tg(b, c);
-    else if (a === 'done') { const o = ed; shut(); const n = { id: o.id, s: o.s, r: o.r, x: o.x || [], b: o.b, nt: o.nt, t: o.t }; if (o.ei !== undefined) setLine(o.ei, n); else addLine(n); }
+    else if (a === 'done') { const o = ed; shut(); const n = { id: o.id, s: o.s, r: o.r, x: o.x || [], b: o.b, nt: o.nt, t: o.t }; if (o.ei !== undefined) setLine(o.ei, n); else { addLine(n); if (window.hfMenuOffer) hfMenuOffer(n); } }
     else if (a === 'mode') { mode = b; draw(); }
     else if (a === 'pay') { pay = b; draw(); }
     else if (a === 'wh') { when = b; draw(); }
