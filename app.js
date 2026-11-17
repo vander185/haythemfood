@@ -1081,7 +1081,8 @@ function sheet() {
     : g === 'x' ? T(getCfg('supTitle')) : g === 'r' ? T('Choisissez vos crudités') : T('Choisissez vos sauces');
   const sup = supTot(ed.x);
   $('#shk').innerHTML = `<div class="th"><h3>${esc(full(x))}</h3><button class="chip" data-x="shut">✕</button></div>
- <div class="chips" style="margin:12px 0 0">${ks.map((s, j) => `<button class="chip ${j === k ? 'on' : ''}" data-x="stp|${j}">${N[s]}</button>`).join('')}</div>
+ <div class="chips" style="margin:12px 0 0">${ks.map((s, j) => `<button class="chip ${j === k ? 'on' + (ed.mv ? ' mv' : '') : j < k ? 'dn' + (ed.mv && j === ed.pk ? ' jd' : '') : ''}" data-x="stp|${j}">${N[s]}</button>`).join('')}</div>
+ ${ks.length > 1 ? (() => { const p = Math.round((k + 1) / ks.length * 100), p0 = window._lpE === ed && window._lp != null ? window._lp : 0; window._lpE = ed; window._lp = p; return `<div class="spb" style="--p0:${p0}%;--p:${p}%"><i></i></div>`; })() : ''}
  <div class="stepw${ed.mv ? ' mv-' + ed.mv : ''}"><h4>${ttl}</h4>${g === 'x' ? `<p class="nt" style="margin:-4px 0 8px">${esc(T('En option, payant. Touchez pour ajouter ou retirer.'))}${sup ? ' · <b>+' + eur(sup) + '</b>' : ''}</p>` : ''}${g === 's' ? `<p class="nt" style="margin:-4px 0 8px">${esc(T('Le goût est indiqué sous chaque sauce.'))} 🌶️ ${esc(T('peu'))} · 🌶️🌶️ ${esc(T('relevé'))} · 🌶️🌶️🌶️ ${esc(T('très piquant'))}</p>` : ''}
  <div class="opts og${g === 'x' ? ' ox' : ''}">${list.map(v => `<button class="${isOn(v) ? 'on' : ''}${v === 'Non merci' ? ' nox' : ''}" data-x="tg|${g}|${esc(v)}">${oi(g, v)}<span>${esc(T(v))}${px(v)}</span></button>`).join('')}</div></div>
  ${last ? `<textarea rows="2" placeholder="${T('Remarque (ex. sans oignons)')}" oninput="ed.nt=this.value">${esc(ed.nt || '')}</textarea>` : ''}<button class="btn" style="width:100%" data-x="${last ? 'done' : 'nxt'}">${last ? (ed.ei !== undefined ? T('Enregistrer') : T('Ajouter')) + ' · ' + eur(unit(ed)) : T('Suivant')}</button>`;
@@ -1113,7 +1114,7 @@ function tg(g, v) {
       if (g === 'x') ed.x = []; else ed.b = '';
       ed.no[g] = true;
       const x = I[ed.id], n = [...'trsxb'].filter(k => opt(x).includes(k) && (k !== 'x' || getSUP().length)).length;
-      if (ed.k < n - 1) { ed.mv = 'fw'; ed.k++; }
+      if (ed.k < n - 1) { ed.mv = 'fw'; ed.pk = ed.k; ed.k++; }
       sheet();
       return;
     }
@@ -1443,8 +1444,8 @@ document.addEventListener('click', e => {
     else if (a === 'dec') { const i = L.findLastIndex(l => l.id === b); if (i > -1) { L[i].q--; if (!L[i].q) L.splice(i, 1); } upd(); }
     else if (a === 'open') { ed = { id: b, s: [], r: [], x: [], b: '', nt: '', k: 0, t: opt(I[b]).includes('t') ? mTypes()[0] : '' }; sheet(); }
     else if (a === 'shut') shut();
-    else if (a === 'stp') { ed.mv = +b < ed.k ? 'bk' : 'fw'; ed.k = +b; sheet(); }
-    else if (a === 'nxt') { ed.mv = 'fw'; ed.k++; sheet(); }
+    else if (a === 'stp') { ed.mv = +b < ed.k ? 'bk' : 'fw'; ed.pk = ed.k; ed.k = +b; sheet(); }
+    else if (a === 'nxt') { ed.mv = 'fw'; ed.pk = ed.k; ed.k++; sheet(); }
     else if (a === 'tg') tg(b, c);
     else if (a === 'done') { const o = ed; shut(); const n = { id: o.id, s: o.s, r: o.r, x: o.x || [], b: o.b, nt: o.nt, t: o.t }; if (o.ei !== undefined) setLine(o.ei, n); else addLine(n); }
     else if (a === 'mode') { mode = b; draw(); }

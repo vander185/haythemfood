@@ -737,3 +737,26 @@ body:has(.ov.on) #cl,body:has(.ov.on) #fx,body:has(.ov.on) #bar,body:has(.ov.on)
 body:has(.ov.on)::before,body:has(.ov.on)::after{display:none!important}
 body:has(.ov.on) .nav{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 .ov.on{background:#040914!important}
+
+/* ===== Transitions entre étapes (Garniture, Sauces, Suppléments, Boisson…) ===== */
+.spb{position:relative;height:6px;margin:10px 4px 2px;border-radius:9px;background:#d4af3726;overflow:hidden}
+.spb i{position:absolute;inset:0 auto 0 0;width:var(--p);border-radius:9px;background:linear-gradient(90deg,#b8860b,#f3cf63 55%,#fff3c4 75%,#d4af37);background-size:200% 100%;box-shadow:0 0 10px #f3cf6399;animation:spbG .55s cubic-bezier(.2,.9,.3,1) both,spbS 2.4s linear .55s infinite}
+[dir=rtl] .spb i{inset:0 0 0 auto}
+@keyframes spbG{from{width:var(--p0)}to{width:var(--p)}}
+@keyframes spbS{to{background-position:-200% 0}}
+@keyframes stIn{0%{opacity:0;transform:translateX(var(--sx,60px)) scale(.97);filter:blur(4px)}60%{filter:blur(0)}100%{opacity:1;transform:none;filter:none}}
+@keyframes ttIn{from{opacity:0;transform:translateY(-10px);letter-spacing:.06em}to{opacity:1;transform:none}}
+@keyframes ulIn{0%{transform:scaleX(0);opacity:1}55%{transform:scaleX(1);opacity:1}100%{transform:scaleX(1);opacity:0}}
+@keyframes tlIn{0%{opacity:0;transform:translateY(18px) scale(.86) rotate(-1.5deg)}65%{opacity:1;transform:translateY(-3px) scale(1.03)}100%{opacity:1;transform:none}}
+@keyframes ckPop{0%{transform:scale(.2) rotate(-90deg)}60%{transform:scale(1.35) rotate(8deg)}100%{transform:none}}
+@keyframes chRing{0%{box-shadow:0 0 0 0 #f3cf63aa}100%{box-shadow:0 0 0 12px #f3cf6300}}
+
+.stepw.mv-fw,.stepw.mv-bk{animation:stIn .45s cubic-bezier(.2,.9,.3,1) both!important}
+.stepw.mv-fw{--sx:60px}.stepw.mv-bk{--sx:-60px}
+.stepw.mv-fw>h4,.stepw.mv-bk>h4{position:relative;width:fit-content;animation:ttIn .45s cubic-bezier(.2,.9,.3,1) .05s both}
+.stepw.mv-fw>h4::after,.stepw.mv-bk>h4::after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:3px;border-radius:3px;background:linear-gradient(90deg,#d4af37,#f3cf63,#d4af3700);transform-origin:0 50%;animation:ulIn 1.3s cubic-bezier(.2,.9,.3,1) .15s both}
+.stepw.mv-fw .og button,.stepw.mv-bk .og button{animation-name:tlIn!important;animation-duration:.5s!important}
+#shk .chips .chip.on.mv{animation:chRing 1s ease-out .25s}
+#shk .chips .chip.dn::before{content:"✓";display:inline-block;margin-inline-end:5px;font-weight:800;color:#3ccf7d}
+#shk .chips .chip.dn.jd::before{animation:ckPop .5s cubic-bezier(.2,.9,.3,1.4) .1s both}
+@media(prefers-reduced-motion:reduce){.spb i,.stepw.mv-fw,.stepw.mv-bk,.stepw>h4,.stepw>h4::after,#shk .chips .chip{animation:none!important;filter:none!important}}
