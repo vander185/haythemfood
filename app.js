@@ -147,7 +147,11 @@ const DEFAULT_CFG = {
   bankIban: '',
   bankBic: '',
   bankName: '',
-  bankNote: 'Communication : votre prénom + le numéro de commande'
+  bankNote: 'Communication : votre prénom + le numéro de commande',
+  molOn: '0',
+  molName: 'Payer en ligne',
+  molInfo: 'Bancontact, Payconiq, carte bancaire, Apple Pay ou Google Pay. Paiement 100 % sécurisé : votre commande part en cuisine dès que le paiement est accepté.',
+  molFn: 'https://nfdcrufjjqltibqvyprz.supabase.co/functions/v1/mollie'
 };
 
 const getCfg = k => (CF.cfg && CF.cfg[k] !== undefined && CF.cfg[k] !== '') ? CF.cfg[k] : DEFAULT_CFG[k];
@@ -206,10 +210,13 @@ const cruAll = () => getCRU().filter(v => !cruNo().includes(norm(v)));
 const isAllCru = r => r.length === cruAll().length && cruAll().every(v => r.includes(v));
 const getDRK = () => (CF.drk && CF.drk.length) ? CF.drk : DEFAULT_DRK;
 const getDP = () => +(getCfg('dp') || 1.5);
+const molOn = () => String(getCfg('molOn')) === '1' && /^https:\/\//.test(getCfg('molFn'));
 const PAYS = () => {
   const ps = CF.pays || DEFAULT_PAYS;
-  return ps.filter(p => p.on !== false).map(p => [p.e || '💳', p.n]);
+  const r = ps.filter(p => p.on !== false && p.n !== getCfg('molName')).map(p => [p.e || '💳', p.n]);
+  return molOn() ? [['⚡', getCfg('molName')], ...r] : r;
 };
+const isMol = () => molOn() && payOf() === getCfg('molName');
 
 /* ---- QR code (ISO/IEC 18004, mode octet, correction M, versions 1 à 10) ---- */
 var QR = (function () {
@@ -1136,7 +1143,7 @@ function tg(g, v) {
 
 /* ---- Panier + WhatsApp ---- */
 function orderText(no) {
-  return `🧾 *Commande ${getCfg('title')}* n°${no}\n${mode}${nom ? ' · ' + nom : ''}\n💳 ${payOf()}\n🕒 ${whenL()}\n\n${L.map(l => `${l.q}× ${lineN(l)} · ${eur(unit(l) * l.q)}` + dsc(l).map(d => '\n   ' + d).join('')).join('\n')}${gnote ? '\n\n📝 ' + gnote : ''}\n\n*Total : ${eur(tot())}*`;
+  return `🧾 *Commande ${getCfg('title')}* n°${no}\n${mode}${nom ? ' · ' + nom : ''}\n💳 ${payOf()}${PAID ? ` ✅ PAYÉ EN LIGNE ${eur(PAID.a)} (${PAID.id})` : ''}\n🕒 ${whenL()}\n\n${L.map(l => `${l.q}× ${lineN(l)} · ${eur(unit(l) * l.q)}` + dsc(l).map(d => '\n   ' + d).join('')).join('\n')}${gnote ? '\n\n📝 ' + gnote : ''}\n\n*Total : ${eur(tot())}*`;
 }
 const WL = () => {
   const a = [T('Dès que possible')];
@@ -1205,7 +1212,7 @@ async function noClean() {
   } catch (e) {}
 }
 function toOrder(n, off) {
-  return { no: noFmt(n), nn: n, off: off ? 1 : 0, mode, pay: payOf(), w: whenL(), g: gnote, nom, t: Date.now(), st: 0, l: L.map(l => ({ q: l.q, n: lineN(l), d: dsc(l), p: unit(l) * l.q })) };
+  return { no: noFmt(n), nn: n, off: off ? 1 : 0, mode, pay: payOf(), w: whenL(), g: gnote, nom, t: Date.now(), st: 0, ...(PAID ? { pd: { id: PAID.id, a: PAID.a } } : {}), l: L.map(l => ({ q: l.q, n: lineN(l), d: dsc(l), p: unit(l) * l.q })) };
 }
 function draw() {
   $('#tk').innerHTML = `<div class="th"><h3>${T('Ma commande')}</h3><div style="display:flex;gap:8px">${L.length ? `<button class="chip clr" data-x="clr">🗑 ${esc(T('Vider'))}</button>` : ''}<button class="chip" data-x="cld">✕</button></div></div>
@@ -1214,11 +1221,12 @@ function draw() {
 ${L.length ? L.map((l, i) => `<div class="ln"><span>${esc(lineN(l))}<em>${esc(dsc(l).join(' · '))}</em><b>${eur(unit(l) * l.q)}</b></span><div class="ctl">${(opt(I[l.id]) || vrs(I[l.id]).length) ? `<button class="lnx" data-x="ced|${i}" title="${esc(T('Modifier'))}" aria-label="${esc(T('Modifier'))}">✏️</button>` : ''}<button class="lnx" data-x="crm|${i}" title="${esc(T('Retirer'))}" aria-label="${esc(T('Retirer'))}">🗑</button><button data-x="ln|${i}|-1">−</button><b>${l.q}</b><button data-x="ln|${i}|1">+</button></div></div>`).join('') : `<p class="nt">${T('Votre panier est vide.')}</p>${(st('hflast') || []).some(l => I[l.id] && !I[l.id].out) ? `<button class="btn g" style="width:100%;margin-bottom:10px" data-x="re">🔁 ${esc(T('Recommander ma dernière commande'))}</button>` : ''}`}
 ${upsell()}${loyLine()}<textarea id="gn" rows="2" placeholder="${T('Remarque pour la commande')}" oninput="gnote=this.value">${esc(gnote)}</textarea><div class="tot"><span>${T('Total')}</span><span>${eur(tot())}</span></div>
 ${(() => { const o = openNow(); return o.open ? '' : `<p class="shutn">🔴 <b>${esc(T('Nous sommes fermés'))}</b> · ${esc(o.next ? T('Ouvre') + ' ' + (o.when ? o.when + ' ' : '') + T('à') + ' ' + o.next : T('Réouverture bientôt'))}<em>${esc(T('Votre panier est gardé : revenez à l’ouverture pour l’envoyer.'))}</em></p>`; })()}
-<button class="btn" style="width:100%" data-x="send" ${L.length && openNow().open ? '' : 'disabled'}>${openNow().open ? T('Valider ma commande') : T('Fermé · commande impossible')}</button>
+<button class="btn" style="width:100%" data-x="send" ${L.length && openNow().open ? '' : 'disabled'}>${openNow().open ? (isMol() && L.length ? '⚡ ' + T('Payer') + ' ' + eur(tot()) + ' ' + T('et commander') : T('Valider ma commande')) : T('Fermé · commande impossible')}</button>
 <h4>${esc(T(getCfg('payTitle')))}</h4><div class="opts">${PAYS().map(p => `<button class="${payOf() === p[1] ? 'on' : ''}" data-x="pay|${esc(p[1])}">${esc(p[0])} ${esc(p[1])}</button>`).join('')}</div>${payBox()}`;
 }
 /* Détails du mode de paiement choisi (message, lien, compte bancaire) */
 function payBox() {
+  if (isMol()) return `<div class="pb"><p>🔒 ${esc(T(getCfg('molInfo')))}</p></div>`;
   const p = (CF.pays || DEFAULT_PAYS).filter(Boolean).find(x => x.on !== false && x.n === payOf());
   if (!p) return '';
   const r = [];
@@ -1323,13 +1331,88 @@ function loyLine() {
   const c = (+st('hfloy') || 0) + 1, N = loyN();
   return `<p class="loy">${c >= N ? '🎉 ' + esc(T('Cette commande complète votre carte :')) + ' <b>' + esc(getCfg('loyGift')) + '</b>' : '🎁 ' + esc(T('Carte de fidélité')) + ' : <b>' + c + '/' + N + '</b> · ' + esc(getCfg('loyGift'))}</p>`;
 }
+/* ---- Paiement en ligne (Mollie) ----
+   1) le panier est gardé sur le téléphone, le client part sur la page sécurisée Mollie ;
+   2) au retour, le site demande à Mollie si c'est payé ;
+   3) payé → la commande part en cuisine avec « ✅ Payé en ligne » ; annulé → le panier revient. */
+let PAID = null;
+const orderGo = () => isMol() ? payGo() : send();
+async function payGo() {
+  if (!L.length || payGo.b) return;
+  payGo.b = 1;
+  const bt = $('#tk [data-x="send"]');
+  if (bt) { bt.disabled = true; bt.textContent = T('Ouverture du paiement…'); }
+  const keep = { L: L.map(l => ({ ...l })), mode, nom, pay, when, gnote, a: +tot().toFixed(2), t: Date.now() };
+  try {
+    const ret = location.origin + location.pathname + '?pay=1';
+    const r = await fetch(getCfg('molFn'), { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: keep.a, desc: getCfg('title') + (nom ? ' · ' + nom : ''), ret }) });
+    const j = await r.json();
+    if (!r.ok || !j.url) throw j.error || 1;
+    keep.id = j.id;
+    st('hfpay', keep);
+    location.href = j.url;
+  } catch (e) {
+    payGo.b = 0;
+    toast('⚠ ' + T('Paiement en ligne indisponible : choisissez un autre mode de paiement'));
+    draw();
+  }
+}
+async function payBack(n) {
+  const k = st('hfpay');
+  if (!k || !k.id) return;
+  if (Date.now() - k.t > 36e5) { st('hfpay', null); return; }
+  if (/[?&]pay=1/.test(location.search)) try { history.replaceState(null, '', location.pathname + location.hash); } catch (e) {}
+  let r = null;
+  try { r = await (await fetch(getCfg('molFn') + '?id=' + encodeURIComponent(k.id))).json(); } catch (e) {}
+  if (st('hfpay')?.id !== k.id) return;
+  const back = () => { L = k.L; mode = k.mode; nom = k.nom; pay = k.pay; when = k.when; gnote = k.gnote; };
+  if (r && r.paid) {
+    st('hfpay', null);
+    back();
+    PAID = { id: k.id, a: r.amount };
+    upd();
+    toast('✅ ' + T('Paiement accepté') + ' · ' + eur(r.amount));
+    send();
+  } else if (r && ['open', 'pending', 'authorized'].includes(r.status) || !r) {
+    if ((n || 0) < 40) { if ((n || 0) === 0) toast('⏳ ' + T('Vérification du paiement…')); setTimeout(() => payBack((n || 0) + 1), 4000); }
+  } else {
+    st('hfpay', null);
+    back();
+    upd();
+    toast('❌ ' + T('Paiement non abouti : votre panier est gardé'));
+    openD();
+  }
+}
+setTimeout(payBack, 600);
+/* Cuisine : chaque paiement en ligne est revérifié auprès de Mollie (montant compris) */
+const KPAY = {};
+function kPaid(o) {
+  const id = o.pd.id, v = KPAY[id];
+  if (v === undefined) {
+    KPAY[id] = null;
+    fetch(getCfg('molFn') + '?id=' + encodeURIComponent(id)).then(r => r.json()).then(j => { KPAY[id] = j; kdraw(); }).catch(() => { delete KPAY[id]; });
+  }
+  const ok = v && v.paid && Math.abs(v.amount - o.l.reduce((s, l) => s + (+l.p || 0), 0)) < 0.02;
+  const bad = v && (!v.paid || !ok);
+  return `<span class="km" style="background:${bad ? '#e5484d' : ok ? '#1f9d55' : '#555'}">${bad ? '⚠ ' + esc('PAIEMENT NON CONFIRMÉ') : ok ? '✅ Payé en ligne ' + esc(eur(v.amount)) + (v.test ? ' (test)' : '') : '⏳ Vérif. paiement'}</span>`;
+}
+window.molTest = async () => {
+  const u = ($('#c_molFn') && $('#c_molFn').value.trim()) || getCfg('molFn');
+  try {
+    const r = await fetch(u + '?id=tr_test0000');
+    const j = await r.json();
+    toast(j.error === 'nokey' ? '⚠ Service en ligne, mais la clé Mollie n’est pas encore mise dans Supabase' : j.code === 401 ? '⚠ Clé Mollie refusée : vérifiez-la dans Supabase' : '✅ Connexion Mollie OK');
+  } catch (e) { toast('⚠ Service de paiement injoignable'); }
+};
 async function send() {
   if (!L.length || send.b) return;
   send.b = 1;
+  const paid = !!PAID;
   /* La fenêtre WhatsApp est ouverte tout de suite, pendant que le clic du client
      est encore « frais » : sinon le navigateur la bloquerait après l'attente réseau. */
   let w = null;
-  try { w = window.open('', '_blank'); if (w) w.document.write('<title>' + esc(getCfg('title')) + '</title><body style="margin:0;display:grid;place-items:center;height:100vh;background:#040914;color:#f9e29c;font:600 17px system-ui">' + esc(T('Préparation de votre commande…')) + '</body>'); } catch (e) {}
+  if (!paid) try { w = window.open('', '_blank'); if (w) w.document.write('<title>' + esc(getCfg('title')) + '</title><body style="margin:0;display:grid;place-items:center;height:100vh;background:#040914;color:#f9e29c;font:600 17px system-ui">' + esc(T('Préparation de votre commande…')) + '</body>'); } catch (e) {}
   const bt = $('#tk [data-x="send"]');
   if (bt) { bt.disabled = true; bt.textContent = T('Envoi…'); }
   let n = await takeNo(), off = 0;
@@ -1341,12 +1424,16 @@ async function send() {
   if (gift) o.g = (o.g ? o.g + ' · ' : '') + gift;
   const txt = orderText(o.no) + (gift ? '\n\n' + gift : '');
   const wa = 'https://wa.me/' + getCfg('WA') + '?text=' + encodeURIComponent(txt);
-  try { if (w && !w.closed) w.location.href = wa; else window.open(wa, '_blank'); } catch (e) {}
+  if (!paid) try { if (w && !w.closed) w.location.href = wa; else window.open(wa, '_blank'); } catch (e) {}
   let k = '';
   try { k = (await Store.push(o)) || ''; if (window.hfPopBump) hfPopBump(o.l); } catch (e) { const p = st('hfp') || []; p.push(o); st('hfp', p); toast('Réseau faible : nouvel essai automatique'); }
+  /* après un paiement en ligne, le navigateur bloque l'ouverture automatique de WhatsApp :
+     la commande est déjà en cuisine, un bouton WhatsApp est proposé dans la confirmation */
+  if (paid) { try { if (!window.open(wa, '_blank')) throw 0; } catch (e) {} }
+  PAID = null;
   if (lon) st('hfloy', c);
   st('hflast', L.map(l => ({ ...l })));
-  st('hfo', { k, no: o.no, t: o.t, st: 0, loy: !lon ? '' : gift || '🎁 ' + T('Carte de fidélité') + ' : ' + c + '/' + N + ' · ' + getCfg('loyGift') });
+  st('hfo', { k, no: o.no, t: o.t, st: 0, ...(paid ? { wa, pd: o.pd } : {}), loy: !lon ? '' : gift || '🎁 ' + T('Carte de fidélité') + ' : ' + c + '/' + N + ' · ' + getCfg('loyGift') });
   L = []; when = ''; gnote = ''; upd(); closeD(); applySiteSettings(); ocDraw();
   send.b = 0;
 }
@@ -1379,7 +1466,8 @@ function ocDraw() {
 <small>✔ ${esc(T('Commande envoyée'))}</small><p class="ocl">${esc(T('Votre numéro de commande'))}</p><div class="ocn${s >= 2 ? ' rdy' : ''}">${o.no}</div>
 ${o.k ? `<div class="ocs">${STL().map((t, i) => `<span class="${i <= s ? 'on' : ''}">${['📨', '👨‍🍳', '✅'][i]} ${esc(t)}</span>`).join('')}</div>` : ''}
 <p>${esc(s === 3 ? T('Bon appétit !') : s === 2 ? T('Votre commande est prête !') : T('Présentez ce numéro au comptoir.'))}</p>
-${o.loy ? `<p class="loy">${esc(o.loy)}</p>` : ''}
+${o.pd ? `<p class="loy">✅ ${esc(T('Payé en ligne'))} · <b>${eur(o.pd.a)}</b></p>` : ''}${o.loy ? `<p class="loy">${esc(o.loy)}</p>` : ''}
+${o.wa && s < 2 ? `<a class="btn g" style="width:100%;margin-bottom:8px" href="${esc(o.wa)}" target="_blank" rel="noopener">📲 ${esc(T('Envoyer aussi sur WhatsApp'))}</a>` : ''}
 ${s >= 2 && /^https?:\/\//i.test(rv) ? `<a class="btn g" style="width:100%;margin-bottom:8px" href="${esc(rv)}" target="_blank" rel="noopener">⭐ ${esc(T('Donner un avis'))}</a>` : ''}
 <button class="btn" style="width:100%" data-x="occ">OK</button></div>`;
   requestAnimationFrame(() => el.classList.add('on'));
@@ -1453,8 +1541,8 @@ document.addEventListener('click', e => {
     else if (a === 'wh') { when = b; draw(); }
     else if (a === 'ln') { L[+b].q += +c; if (L[+b].q < 1) L.splice(+b, 1); upd(); }
     else if (a === 'cld') closeD();
-    else if (a === 'send') { if (upNeed()) { upAsk = 1; upSheet(); } else send(); }
-    else if (a === 'upgo') { shut(); send(); }
+    else if (a === 'send') { if (upNeed()) { upAsk = 1; upSheet(); } else orderGo(); }
+    else if (a === 'upgo') { shut(); orderGo(); }
     else if (a === 'upa') { upBmp = b + '|' + (c || ''); addLine({ id: b, s: [], r: [], b: '', ...(c ? { v: c } : {}) }); upBmp = ''; }
     else if (a === 'upd') { const i = L.findLastIndex(l => l.id === b && (l.v || '') === (c || '')); if (i > -1) { L[i].q--; if (!L[i].q) L.splice(i, 1); } upd(); }
     return;
@@ -1622,7 +1710,7 @@ function kdraw() {
     $('#n' + s).textContent = a.length;
     $('#k' + s).innerHTML = a.length ? a.map(o => {
       const m = mins(o), cl = ['', 'prep', 'rdy'][s];
-      return `<div class="kd ${cl} ${s < 2 && m >= 20 ? 'late' : s < 2 && m >= 10 ? 'warn' : ''}"><div class="kh"><span class="kn">${esc(String(o.no))}</span>${o.off ? `<span class="km" style="background:#e5484d" title="Numéro donné hors ligne : à vérifier">📵 ${esc('hors ligne')}</span>` : ''}<span class="km ${o.mode === 'À emporter' ? 'em' : ''}">${esc(o.mode)}</span>${o.pay ? `<span class="km" style="background:#1f9d55">💳 ${esc(o.pay)}</span>` : ''}${o.w ? `<span class="km" style="background:#7a4fd0">🕒 ${esc(o.w)}</span>` : ''}<time>${m} min</time></div>${o.nom ? `<div style="color:var(--mu)">${esc(o.nom)}</div>` : ''}${(o.l || []).map(l => `<div class="kli"><b>${l.q}×</b><div>${esc(l.n)}${l.d && l.d.length ? `<em>${esc(l.d.join(' · '))}</em>` : ''}</div></div>`).join('')}${o.g ? `<div class="kli"><b>📝</b><div>${esc(o.g)}</div></div>` : ''}<div class="ka"><button class="btn" onclick="mv('${o.k}',${s + 1})">${['Lancer ▶', 'Prête ✔', 'Servie'][s]}</button></div></div>`;
+      return `<div class="kd ${cl} ${s < 2 && m >= 20 ? 'late' : s < 2 && m >= 10 ? 'warn' : ''}"><div class="kh"><span class="kn">${esc(String(o.no))}</span>${o.off ? `<span class="km" style="background:#e5484d" title="Numéro donné hors ligne : à vérifier">📵 ${esc('hors ligne')}</span>` : ''}<span class="km ${o.mode === 'À emporter' ? 'em' : ''}">${esc(o.mode)}</span>${o.pd ? kPaid(o) : o.pay ? `<span class="km" style="background:#1f9d55">💳 ${esc(o.pay)}</span>` : ''}${o.w ? `<span class="km" style="background:#7a4fd0">🕒 ${esc(o.w)}</span>` : ''}<time>${m} min</time></div>${o.nom ? `<div style="color:var(--mu)">${esc(o.nom)}</div>` : ''}${(o.l || []).map(l => `<div class="kli"><b>${l.q}×</b><div>${esc(l.n)}${l.d && l.d.length ? `<em>${esc(l.d.join(' · '))}</em>` : ''}</div></div>`).join('')}${o.g ? `<div class="kli"><b>📝</b><div>${esc(o.g)}</div></div>` : ''}<div class="ka"><button class="btn" onclick="mv('${o.k}',${s + 1})">${['Lancer ▶', 'Prête ✔', 'Servie'][s]}</button></div></div>`;
     }).join('') : '<div class="emp">Aucune commande</div>';
   });
   $('#kclk').textContent = new Date().toLocaleTimeString('fr-BE', { hour: '2-digit', minute: '2-digit' });
@@ -1996,6 +2084,20 @@ window.showAdmTab = (tab, btn) => {
       `).join('')}
       <button class="btn g" style="width:100%" onclick="CF.pays.push({on:true,e:'💳',n:'',info:'',link:'',bank:false,qr:false});showAdmTab('opt')">➕ Ajouter un mode de paiement</button>
 
+      <h4>⚡ Paiement en ligne (Mollie : Bancontact, Payconiq, cartes, Apple Pay, Google Pay)</h4>
+      <div class="seg">
+        <button type="button" class="${String(getCfg('molOn')) === '1' ? 'on' : ''}" onclick="setCfg('molOn','1');showAdmTab('opt')">✅ Activé</button>
+        <button type="button" class="${String(getCfg('molOn')) !== '1' ? 'on' : ''}" onclick="setCfg('molOn','0');showAdmTab('opt')">🚫 Désactivé</button>
+      </div>
+      <p class="nt">Le client paie avant l'envoi ; la commande arrive en cuisine seulement si le paiement est accepté, avec la mention « ✅ Payé en ligne » vérifiée auprès de Mollie. L'argent est versé par Mollie sur le compte bancaire enregistré chez Mollie. N'activez qu'après avoir mis votre clé Mollie dans Supabase (voir README).</p>
+      <label>Nom affiché au client</label>
+      <input id="c_molName" value="${esc(getCfg('molName'))}">
+      <label>Explication affichée au client</label>
+      <input id="c_molInfo" value="${esc(getCfg('molInfo'))}">
+      <label>Adresse du service de paiement (ne pas changer)</label>
+      <input id="c_molFn" value="${esc(getCfg('molFn'))}" autocomplete="off">
+      <button type="button" class="btn g" style="width:100%;margin-top:8px" onclick="molTest()">🔎 Tester la connexion Mollie</button>
+
       <h4>🏦 Compte bancaire (affiché pour les modes cochés ci-dessus)</h4>
       <label>Titulaire du compte</label>
       <input id="c_bankHolder" value="${esc(getCfg('bankHolder'))}" placeholder="Ex : Haythem Food SRL">
@@ -2356,7 +2458,7 @@ window.saveDesignCfg = () => {
 
 window.saveOptCfg = () => {
   CF.cfg = CF.cfg || {};
-  ['payTitle', 'bankHolder', 'bankIban', 'bankBic', 'bankName', 'bankNote', 'accNote', 'upTitle', 'upCats', 'loyGift', 'mTypeCat', 'mTypes', 'mTypeNo', 'cruNo', 'supCat', 'supNo', 'supTitle', 'noPre', 'algNote', 'algCross', 'bce', 'mail'].forEach(k => {
+  ['payTitle', 'molName', 'molInfo', 'molFn', 'bankHolder', 'bankIban', 'bankBic', 'bankName', 'bankNote', 'accNote', 'upTitle', 'upCats', 'loyGift', 'mTypeCat', 'mTypes', 'mTypeNo', 'cruNo', 'supCat', 'supNo', 'supTitle', 'noPre', 'algNote', 'algCross', 'bce', 'mail'].forEach(k => {
     const el = $('#c_' + k);
     if (el) CF.cfg[k] = el.value.trim();
   });
