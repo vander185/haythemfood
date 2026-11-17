@@ -1694,6 +1694,9 @@ function askPin(title) {
     el.addEventListener('click', e => { if (e.target === el) done(false); });
     el.querySelector('#pin_c').addEventListener('click', () => done(false));
     el.addEventListener('keydown', e => { if (e.key === 'Escape') done(false); });
+    inp.addEventListener('input', () => {
+      if (Date.now() >= +(st('hfpl') || 0) && checkPin(inp.value)) { st('hfpf', 0); done(true); }
+    });
     box.addEventListener('submit', e => {
       e.preventDefault();
       const lock = +(st('hfpl') || 0);
