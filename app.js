@@ -2584,11 +2584,14 @@ window.resetCfg = () => {
 };
 
 /* ---- Navigation ---- */
+/* L'écran cuisine et l'écran d'attente ont leur propre adresse : /cuisine/ et /file/.
+   Le site des clients ne les affiche plus ; les anciens liens #cuisine / #file y renvoient. */
+const SCR = window.HF_SCREEN || '';
 async function route() {
-  const k = location.hash === '#cuisine', f = location.hash === '#file';
+  if (!SCR && (location.hash === '#cuisine' || location.hash === '#file')) { location.replace('/' + location.hash.slice(1) + '/'); return; }
+  const k = SCR === 'cuisine', f = SCR === 'file';
   if (k && !kok) {
-    if (await askPin('Code cuisine')) kok = true; else { if (location.hash === '#cuisine') location.hash = ''; return; }
-    if (location.hash !== '#cuisine') return;
+    while (!kok) { if (await askPin('Code cuisine')) kok = true; }
   }
   document.body.classList.toggle('k', k);
   document.body.classList.toggle('f', f);
@@ -2616,7 +2619,7 @@ try { new BroadcastChannel('hf').onmessage = () => { if (kok) kload(); if (FV) f
 addEventListener('storage', e => { if (e.key === 'hfq') { if (kok) kload(); if (FV) fload(); } });
 setInterval(() => { if (document.body.classList.contains('k')) kload(); if (FV) fload(); }, 2500);
 
-function go(h) { $('#adm').classList.remove('on'); location.hash = h; route(); }
+function go(h) { $('#adm').classList.remove('on'); if (h === SCR) return; location.href = '/' + (h ? h + '/' : ''); }
 
 let lt = 0, lc = 0;
 $('.logo').addEventListener('click', () => {

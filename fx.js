@@ -4,7 +4,7 @@
   var $=function(s,r){return (r||document).querySelector(s)};
   var LOGO=window.HF_LOGO||'logo.webp';
   var RM=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var special=function(){return location.hash==='#cuisine'||location.hash==='#file'};
+  var special=function(){return !!window.HF_SCREEN||location.hash==='#cuisine'||location.hash==='#file'};
   var TX={
     nores:{fr:'Aucun plat trouvé. Essayez un autre mot.',en:'No dish found. Try another word.',nl:'Geen gerecht gevonden. Probeer een ander woord.'},
     top:{fr:'Remonter',en:'Back to top',nl:'Naar boven'}

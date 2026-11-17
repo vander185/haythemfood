@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<base href="/">
+<script>window.HF_SCREEN="file"</script>
+<meta name="robots" content="noindex,nofollow">
+<style>#cl,#bar,#cbar,#splash,#trk{display:none!important}</style>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Écran d'attente · Haythem Food</title>
+<meta name="description" content="Haythem Food, snack halal à Bruxelles : dürüms, tacos, kapsalon, grillades et tajines. Commandez en ligne.">
+<meta name="theme-color" content="#040914">
+<link rel="icon" href="icons/favicon.png"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><link rel="manifest" href="/file/manifest.webmanifest">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="canonical" href="https://haythemfood.com/"><meta property="og:type" content="restaurant"><meta property="og:title" content="Haythem Food · Snack halal à Bruxelles"><meta property="og:description" content="Dürüms, tacos, kapsalon, grillades et tajines. Cuisine halal, faite minute. Commandez en ligne."><meta property="og:image" content="https://haythemfood.com/og-image.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="Haythem Food, snack halal à Bruxelles"><meta property="og:locale" content="fr_BE"><meta property="og:site_name" content="Haythem Food"><meta property="og:url" content="https://haythemfood.com/"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://haythemfood.com/og-image.jpg">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Restaurant","name":"Haythem Food","url":"https://haythemfood.com/","image":"https://haythemfood.com/logo.webp","servesCuisine":["Halal","Kebab","Tacos","Grillades"],"telephone":"+32493393983","address":{"@type":"PostalAddress","streetAddress":"25A Chaussée d'Anvers","postalCode":"1000","addressLocality":"Bruxelles","addressCountry":"BE"}}</script>
+<script>window.HF_LOGO="photos/logo-072fa99b.webp";</script><link rel="icon" href="icons/favicon.png?v=2">
+<link rel="stylesheet" href="style.css"></head><body>
+<div id="cl">
+<header class="hero"><img class="logo" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="Haythem Food"><span class="fl" style="left:6%;top:12%">🌯</span><span class="fl" style="right:8%;top:18%;animation-delay:-3s">🍟</span><span class="fl" style="left:10%;bottom:14%;animation-delay:-5s">🍗</span><span class="fl" style="right:9%;bottom:18%;animation-delay:-2s">🥙</span>
+<h1>Haythem Food</h1><p>Dürüms, tacos, grillades et tajines. Composez votre commande, envoyez-la par WhatsApp.</p><div class="pr"><span>Cuisine halal</span><span>Faite minute</span><span>Sur place ou à emporter</span></div>
+<p style="margin-top:12px"><button class="btn g" onclick="openD()">Voir mon panier</button></p></header>
+<section class="gal"><h2>✨ Nos incontournables</h2><div class="gs"><div class="gc" role="link" tabindex="0" data-go="c0" data-bg="photos/gal1-d30dcc0e.webp"><b>Dürüms</b><small>Voir la carte →</small></div><div class="gc" role="link" tabindex="0" data-go="c8" data-bg="photos/gal2-1d92910e.webp"><b>Grillades</b><small>Voir la carte →</small></div><div class="gc" role="link" tabindex="0" data-go="c3" data-bg="photos/gal3-795de5ae.webp"><b>Tacos</b><small>Voir la carte →</small></div><div class="gc" role="link" tabindex="0" data-go="c6" data-bg="photos/gal4-ecbb573a.webp"><b>Burgers</b><small>Voir la carte →</small></div><div class="gc" role="link" tabindex="0" data-go="c10" data-bg="photos/gal5-088da941.webp"><b>Spécialités</b><small>Voir la carte →</small></div><div class="gc" role="link" tabindex="0" data-go="c9" data-bg="photos/gal6-d1a6cf5d.webp"><b>Bowls & Salades</b><small>Voir la carte →</small></div></div></section>
+<div class="nav"><input class="sr" id="q" type="search" placeholder="Rechercher un plat…"><div class="chips" id="chips"></div></div>
+<main id="carte"></main>
+<div class="ft">25A Chaussée d’Anvers, 1000 Bruxelles · Cuisine halal · Faite minute</div>
+</div>
+<button id="bar" onclick="openD()"><span id="bc"></span><span id="bt"></span></button>
+<div class="ov" id="dr" onclick="if(event.target===this)closeD()"><div class="tk" id="tk"></div></div>
+<div class="ov" id="sh" onclick="if(event.target===this)shut()"><div class="tk" id="shk"></div></div>
+<div class="ov" id="adm" onclick="if(event.target===this)this.classList.remove('on')"><div class="tk"><div class="th"><h3>Accès privé</h3><button class="chip" onclick="$('#adm').classList.remove('on')">✕</button></div>
+<div style="display:grid;gap:10px;margin-top:16px"><button class="btn" onclick="go('cuisine')">👨‍🍳 Écran cuisine</button><button class="btn g" onclick="go('')">🛍️ Écran client</button></div></div></div>
+<div id="kt">
+ <div class="kbar"><h2>👨‍🍳 Cuisine · Haythem Food</h2><button class="btn g" onclick="go('file')">📺 Écran d'attente</button><span id="kclk"></span><button class="btn g" onclick="beep()">🔔 Tester le son</button></div>
+ <div class="kg"><div class="kc"><h3>Nouvelles <b id="n0">0</b></h3><div class="kls" id="k0"></div></div><div class="kc"><h3>En préparation <b id="n1">0</b></h3><div class="kls" id="k1"></div></div><div class="kc"><h3>Prêtes <b id="n2">0</b></h3><div class="kls" id="k2"></div></div></div>
+</div>
+<div id="ts"></div>
+<script>try{var g=document.querySelector('.gc'),u=g&&g.style.backgroundImage;if(u)document.querySelector('.hero').style.setProperty('--herop',u)}catch(e){}</script><script src="photos-borne.js"></script>
+<script src="app.js"></script>
+<script src="plus.js"></script>
+<script src="fx.js"></script>
+<script>(function(){var L=window.HF_LOGO;if(!L)return;var H=document.querySelector('.hero .logo');if(H)H.src=L;function f(i){if(i.dataset.fb)return;i.dataset.fb=1;i.src=L}function c(){document.querySelectorAll('.hero .logo,.mini,.flogo,#splash img').forEach(function(i){i.addEventListener('error',function(){f(i)});if(i.complete&&i.naturalWidth===0)f(i)})}c();addEventListener('load',function(){setTimeout(c,300)})})();</script>
+<script>if('serviceWorker'in navigator&&location.protocol==='https:')addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))</script>
+</body></html>

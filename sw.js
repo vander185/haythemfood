@@ -2,8 +2,8 @@
 // Pages, scripts et styles : réseau d'abord (les mises à jour arrivent tout de suite).
 // Photos et icônes : cache d'abord (chargement instantané).
 // Firebase et les autres sites ne passent jamais par le cache.
-const V = 'hf-v3', PH = 'hf-photos-v1';
-const CORE = ['./', 'index.html', 'app.js', 'style.css', 'fx.js', 'plus.js', 'photos-borne.js', 'manifest.webmanifest'];
+const V = 'hf-v4', PH = 'hf-photos-v1';
+const CORE = ['./', 'index.html', 'app.js', 'style.css', 'fx.js', 'plus.js', 'photos-borne.js', 'manifest.webmanifest', 'cuisine/', 'file/'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(V).then(c => c.addAll(CORE)).catch(() => {}));
@@ -28,5 +28,5 @@ self.addEventListener('fetch', e => {
   e.respondWith(fetch(r, { cache: 'no-cache' }).then(res => {
     if (res.ok) { const cp = res.clone(); caches.open(V).then(c => c.put(r, cp)); }
     return res;
-  }).catch(() => caches.match(r).then(hit => hit || caches.match('index.html'))));
+  }).catch(() => caches.match(r).then(hit => hit || caches.match(/^\/(cuisine|file)\//.test(u.pathname) ? u.pathname.split('/')[1] + '/' : 'index.html'))));
 });

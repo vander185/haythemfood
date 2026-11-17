@@ -18,3 +18,13 @@ déjà déployée sur le projet Supabase « Haythemfood.com »).
 
 La commande n'arrive en cuisine que si Mollie confirme le paiement ; l'écran cuisine
 revérifie chaque paiement auprès de Mollie (« ✅ Payé en ligne » ou « ⚠ PAIEMENT NON CONFIRMÉ »).
+
+## Écrans séparés
+
+- Site clients : https://haythemfood.com/
+- Écran cuisine (code PIN) : https://haythemfood.com/cuisine/
+- Écran d'attente clients (TV) : https://haythemfood.com/file/
+
+Chaque écran est une appli à part (installable sur l'écran d'accueil / la TV).
+`cuisine/index.html` et `file/index.html` sont des copies d'`index.html` avec
+`window.HF_SCREEN` : si `index.html` change, refaire ces deux copies.
