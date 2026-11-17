@@ -28,7 +28,7 @@ const TR = {
     'Choisir': 'Kiezen', 'Votre choix': 'Uw keuze', 'Fanta Citron': 'Fanta Citroen',
     'Garniture': 'Garnituur', 'Sauces': 'Sauzen', 'Boisson': 'Drank', 'Ajouter une boisson': 'Voeg een drankje toe',
     'Choisissez vos crudités': 'Kies uw groenten', 'Choisissez vos sauces': 'Kies uw sauzen',
-    'Sans sauce': 'Zonder saus', 'Sans crudités': 'Zonder groenten', 'Toutes les crudités': 'Alle groenten',
+    'Sans sauce': 'Zonder saus', 'Non merci': 'Nee, bedankt', 'Sans crudités': 'Zonder groenten', 'Toutes les crudités': 'Alle groenten',
     'Salade': 'Sla', 'Tomates': 'Tomaten', 'Oignons': 'Uien', 'Concombre': 'Komkommer', 'Carottes': 'Wortelen',
     'Chou blanc': 'Witte kool', 'Olives': 'Olijven', 'Poivrons': 'Paprika', 'Eau': 'Water',
     'Sandwichs': 'Broodjes', 'Menus': 'Menu’s', 'Assiettes': 'Schotels', 'Grillades': 'Grillgerechten',
@@ -67,7 +67,7 @@ const TR = {
     'Choisir': 'Choose', 'Votre choix': 'Your choice', 'Fanta Citron': 'Fanta Lemon',
     'Garniture': 'Toppings', 'Boisson': 'Drink', 'Ajouter une boisson': 'Add a drink',
     'Choisissez vos crudités': 'Choose your toppings', 'Choisissez vos sauces': 'Choose your sauces',
-    'Sans sauce': 'No sauce', 'Sans crudités': 'No salad', 'Toutes les crudités': 'All toppings',
+    'Sans sauce': 'No sauce', 'Non merci': 'No thanks', 'Sans crudités': 'No salad', 'Toutes les crudités': 'All toppings',
     'Salade': 'Lettuce', 'Tomates': 'Tomatoes', 'Oignons': 'Onions', 'Concombre': 'Cucumber', 'Maïs': 'Sweetcorn', 'Carottes': 'Carrots',
     'Chou blanc': 'White cabbage', 'Poivrons': 'Peppers', 'Eau': 'Water',
     'Sandwichs': 'Sandwiches', 'Assiettes': 'Platters', 'Grillades': 'Grills', 'Salades': 'Salads',
@@ -1060,7 +1060,7 @@ const oUrl = (g, v) => {
 };
 const oi = (g, v) => {
   const u = oUrl(g, v);
-  return u ? `<i class="pi" style="background-image:url('${cssu(u)}')"></i>` : `<i class="pi">${v.startsWith('Sans') ? '🚫' : g === 's' ? '🥫' : g === 'r' ? '🥗' : g === 'x' ? '➕' : '🥤'}</i>`;
+  return u ? `<i class="pi" style="background-image:url('${cssu(u)}')"></i>` : `<i class="pi">${v.startsWith('Sans') || v === 'Non merci' ? '🚫' : g === 's' ? '🥫' : g === 'r' ? '🥗' : g === 'x' ? '➕' : '🥤'}</i>`;
 };
 
 function sheet() {
@@ -1068,9 +1068,11 @@ function sheet() {
   const ks = [...'trsxb'].filter(k => opt(x).includes(k) && (k !== 'x' || SUP.length)), k = Math.min(ed.k, ks.length - 1), g = ks[k], last = k === ks.length - 1;
   const CRU = getCRU(), SAU = getSAU(), DRK = getDRK();
   const N = { t: T('Dürüm ou Sandwich'), r: T('Garniture'), s: T('Sauces'), x: T('Suppléments'), b: T('Boisson') };
-  const list = g === 't' ? mTypes() : g === 's' ? ['Sans sauce', ...SAU] : g === 'x' ? SUP.map(z => z.n) : g === 'r' ? ['Sans crudités', 'Toutes les crudités', ...CRU] : DRK;
+  const list = g === 't' ? mTypes() : g === 's' ? ['Sans sauce', ...SAU] : g === 'x' ? ['Non merci', ...SUP.map(z => z.n)] : g === 'r' ? ['Sans crudités', 'Toutes les crudités', ...CRU] : ['Non merci', ...DRK];
+  const isOn = v => v === 'Non merci' ? !!(ed.no && ed.no[g]) : sel.includes(v);
   const sel = g === 't' ? [ed.t] : g === 'b' ? [ed.b] : g === 'x' ? (ed.x || []) : g === 'r' ? [...ed.r, ...(isAllCru(ed.r) ? ['Toutes les crudités'] : [])] : ed.s;
   const px = v => {
+    if (v === 'Non merci') return '';
     if (g === 'x') return `<em>+${eur(supP(v))}</em>`;
     if (g === 's') { const z = goutN(v); return z ? `<em class="h${z[0]}">${esc(hot(z[0]))}${esc(T(z[1]))}</em>` : ''; }
     return '';
@@ -1081,7 +1083,7 @@ function sheet() {
   $('#shk').innerHTML = `<div class="th"><h3>${esc(full(x))}</h3><button class="chip" data-x="shut">✕</button></div>
  <div class="chips" style="margin:12px 0 0">${ks.map((s, j) => `<button class="chip ${j === k ? 'on' : ''}" data-x="stp|${j}">${N[s]}</button>`).join('')}</div>
  <div class="stepw${ed.mv ? ' mv-' + ed.mv : ''}"><h4>${ttl}</h4>${g === 'x' ? `<p class="nt" style="margin:-4px 0 8px">${esc(T('En option, payant. Touchez pour ajouter ou retirer.'))}${sup ? ' · <b>+' + eur(sup) + '</b>' : ''}</p>` : ''}${g === 's' ? `<p class="nt" style="margin:-4px 0 8px">${esc(T('Le goût est indiqué sous chaque sauce.'))} 🌶️ ${esc(T('peu'))} · 🌶️🌶️ ${esc(T('relevé'))} · 🌶️🌶️🌶️ ${esc(T('très piquant'))}</p>` : ''}
- <div class="opts og${g === 'x' ? ' ox' : ''}">${list.map(v => `<button class="${sel.includes(v) ? 'on' : ''}" data-x="tg|${g}|${esc(v)}">${oi(g, v)}<span>${esc(T(v))}${px(v)}</span></button>`).join('')}</div></div>
+ <div class="opts og${g === 'x' ? ' ox' : ''}">${list.map(v => `<button class="${isOn(v) ? 'on' : ''}${v === 'Non merci' ? ' nox' : ''}" data-x="tg|${g}|${esc(v)}">${oi(g, v)}<span>${esc(T(v))}${px(v)}</span></button>`).join('')}</div></div>
  ${last ? `<textarea rows="2" placeholder="${T('Remarque (ex. sans oignons)')}" oninput="ed.nt=this.value">${esc(ed.nt || '')}</textarea>` : ''}<button class="btn" style="width:100%" data-x="${last ? 'done' : 'nxt'}">${last ? (ed.ei !== undefined ? T('Enregistrer') : T('Ajouter')) + ' · ' + eur(unit(ed)) : T('Suivant')}</button>`;
   $('#sh').classList.add('on');
   if (ed.mv) { ed.mv = ''; $('#shk').scrollTop = 0; }
@@ -1105,6 +1107,18 @@ function vsheet() {
 const shut = () => { $('#sh').classList.remove('on'); ed = null; };
 function tg(g, v) {
   const CRU = getCRU();
+  if (g === 'x' || g === 'b') {
+    ed.no = ed.no || {};
+    if (v === 'Non merci') {
+      if (g === 'x') ed.x = []; else ed.b = '';
+      ed.no[g] = true;
+      const x = I[ed.id], n = [...'trsxb'].filter(k => opt(x).includes(k) && (k !== 'x' || getSUP().length)).length;
+      if (ed.k < n - 1) { ed.mv = 'fw'; ed.k++; }
+      sheet();
+      return;
+    }
+    ed.no[g] = false;
+  }
   if (g === 't') ed.t = v;
   else if (g === 'x') { ed.x = ed.x || []; ed.x = ed.x.includes(v) ? ed.x.filter(a => a !== v) : [...ed.x, v]; }
   else if (g === 'b') ed.b = ed.b === v ? '' : v;
