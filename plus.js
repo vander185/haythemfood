@@ -66,7 +66,8 @@
 #hfst .hs-b div i{width:100%;border-radius:6px 6px 0 0;background:linear-gradient(180deg,#f9e29c,#c59b27);min-height:2px}
 #hfst .hs-b div.pk i{background:linear-gradient(180deg,#ffb36b,#e5484d)}
 #hfst .hs-e{opacity:.65;margin:6px 0}
-#hfst .hs-n{opacity:.6;font-size:13px;margin-top:18px;line-height:1.4}
+#hfst .hs-n{opacity:.75;font-size:13px;margin-top:18px;line-height:1.4}
+#hfst .hs-pw{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}#hfst .hs-pw input{flex:1 1 200px;padding:11px 12px;border-radius:12px;border:1px solid #d4af3799;background:#040914;color:#fff;font-size:16px}#hfst .hs-pw button{padding:11px 16px;border-radius:12px;border:0;background:linear-gradient(135deg,#c59b27,#f9e29c,#aa771c);color:#040914;font-weight:800;font-size:15px;cursor:pointer}
 @media(max-width:900px){#hfst .hs-g{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:620px){#hfst{padding-left:12px;padding-right:12px}#hfst .hs-g{grid-template-columns:1fr 1fr;gap:8px}#hfst .hs-c{padding:10px 8px}#hfst .hs-c:first-child{grid-column:1/-1}
 #hfst .hs-2{grid-template-columns:1fr;gap:0}#hfst .hs-r{grid-template-columns:minmax(0,1fr) 70px 54px;font-size:14px}#hfst .hs-b{height:130px;gap:2px}#hfst .hs-b div{font-size:9px}
@@ -360,7 +361,7 @@
   }
   function sshow(per, nopull) {
     if (per) SP = PER[per] ? per : 'd';
-    if (!nopull) cpull().then(cpush).then(() => { if ($('#hfst.on')) sshow(null, 1); });
+    if (!nopull) cpull().then(cpush).then(() => { if ($('#hfst.on') && !(document.activeElement && document.activeElement.id === 'hs_pw')) sshow(null, 1); });
     let o = $('#hfst'); if (!o) { o = document.createElement('div'); o.id = 'hfst'; document.body.appendChild(o); }
     const [from, to, pf, pt] = PER[SP][1]();
     const all = Object.values(sget()).filter(Array.isArray);
@@ -384,10 +385,21 @@
 <h3>🏆 Plats les plus vendus</h3><div class="hs-l">${n ? bars(top) : '<p class="hs-e">Pas encore de commande sur cette période.</p>'}</div>
 <div class="hs-2"><div><h3>🍽️ Sur place / À emporter</h3><div class="hs-l">${bars(md)}</div></div><div><h3>💳 Paiements</h3><div class="hs-l">${bars(py, eurS)}</div></div></div>
 <h3>🕐 Commandes par heure</h3><div class="hs-b">${H.map(i => `<div class="${n && i === peak ? 'pk' : ''}"><span>${hr[i] || ''}</span><i style="height:${Math.round(hr[i] / hm * 100)}%"></i>${i}h</div>`).join('')}</div>
-<p class="hs-n">${({ ok: '☁️ Synchronisé en ligne : les mêmes chiffres sur tous les appareils autorisés, même après un vidage du cache.', rule: '⚠ Firebase refuse les statistiques en ligne : la règle « hs » n’est pas encore ajoutée dans Firebase (Realtime Database → Règles). Chiffres gardés sur cet appareil.', nopw: '📱 Chiffres gardés sur cet appareil seulement. Pour les garder en ligne : Réglages → Sécurité → « Autoriser cet appareil avec un mot de passe existant ».', net: '⚠ Pas de connexion : chiffres sur cet appareil, envoyés dès le retour d’internet.' })[CST] || 'Synchronisation…'}<br>${all.length} commande${all.length > 1 ? 's' : ''} en mémoire, reçues du site et de la borne. Gardez un écran cuisine ouvert pendant le service.</p></div>`;
+<p class="hs-n">${({ ok: '☁️ Synchronisé en ligne : les mêmes chiffres sur tous les appareils autorisés, même après un vidage du cache.', rule: '⚠ Firebase refuse : mot de passe Firebase incorrect sur cet écran, ou règle « hs » absente. Chiffres gardés sur cet appareil. Retapez le mot de passe :', nopw: '📱 Chiffres gardés sur cet appareil seulement. Pour les garder en ligne, tapez une fois le mot de passe Firebase :', net: '⚠ Pas de connexion : chiffres sur cet appareil, envoyés dès le retour d’internet.' })[CST] || 'Synchronisation…'}${CST === 'nopw' || CST === 'rule' ? `<span class="hs-pw"><input id="hs_pw" type="password" autocomplete="current-password" placeholder="Mot de passe Firebase"><button type="button" data-sp="pw">🔓 Autoriser cet écran</button></span>` : ''}<br>${all.length} commande${all.length > 1 ? 's' : ''} en mémoire, reçues du site et de la borne. Gardez un écran cuisine ouvert pendant le service.</p></div>`;
     o.classList.add('on');
-    o.onclick = e => { const b = e.target.closest('[data-sp]'); if (!b) return; if (b.dataset.sp === '0') shide(); else sshow(b.dataset.sp); };
-    clearInterval(STI); STI = setInterval(() => { if (o.classList.contains('on')) sshow(); else clearInterval(STI); }, 30000);
+    o.onclick = e => { const b = e.target.closest('[data-sp]'); if (!b) return; if (b.dataset.sp === '0') shide(); else if (b.dataset.sp === 'pw') spw(); else sshow(b.dataset.sp); };
+    clearInterval(STI); STI = setInterval(() => { if (!o.classList.contains('on')) clearInterval(STI); else if (!(document.activeElement && document.activeElement.id === 'hs_pw')) sshow(); }, 30000);
+  }
+  /* autoriser cet écran directement depuis les statistiques (même chose que Réglages → Sécurité) */
+  async function spw() {
+    const p = (($('#hs_pw') || {}).value || '').trim();
+    if (p.length < 8) { toast('Mot de passe Firebase : 8 caractères minimum'); return; }
+    st('hfwk', wkHash(p)); localStorage.removeItem('hfstup');
+    await cpush(); await cpull();
+    if (CST === 'ok') toast('✅ Écran autorisé : statistiques en ligne');
+    else if (CST === 'rule') { st('hfwk', ''); toast('⚠ Mot de passe refusé par Firebase'); }
+    else toast('⚠ Pas de connexion internet');
+    sshow(null, 1);
   }
   function shide() { const o = $('#hfst'); if (o) o.classList.remove('on'); clearInterval(STI); }
   addEventListener('keydown', e => { if (e.key === 'Escape' && $('#hfst.on')) shide(); });
