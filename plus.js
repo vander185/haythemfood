@@ -225,55 +225,139 @@
     };
   }
 
-  /* ---------- 4b. Écran d'attente vide : diaporama des plats ---------- */
+  /* ---------- 4b. Écran d'attente vide : publicité animée (photos HD + affiches) ----------
+     Quand il n'y a aucune commande, la télé devient un panneau publicitaire :
+     photos des plats avec accroche, prix en macaron, enseigne lumineuse, bandeau défilant,
+     et une affiche toutes les 3 photos (commande en ligne, menus, grillades, livraison, avis). */
   const fidCss = document.createElement('style');
-  fidCss.textContent = `#fidle{position:fixed;inset:0;z-index:80;display:none;background:#040914;overflow:hidden}
+  fidCss.textContent = `#fidle{position:fixed;inset:0;z-index:80;display:none;background:#040914;overflow:hidden;color:#fff;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
 #fidle.on{display:block}
-#fidle .fs{position:absolute;inset:0;opacity:0;transition:opacity 1.4s ease}
+#fidle .fs{position:absolute;inset:0;opacity:0;transition:opacity 1.3s ease;pointer-events:none}
 #fidle .fs.on{opacity:1}
-#fidle .fbk{position:absolute;inset:-6%;background:center/cover no-repeat;filter:blur(38px) saturate(1.35) brightness(.55);transform:scale(1.1)}
-#fidle .fph{position:absolute;left:50%;top:44%;width:min(86vw,calc(68vh * var(--ar,1.33)));aspect-ratio:var(--ar,1.33);transform:translate(-50%,-50%) scale(.97);border-radius:clamp(14px,2vw,30px);background:center/cover no-repeat;box-shadow:0 30px 80px #000c,0 0 0 2px #d4af37aa,0 0 60px #d4af3733;transition:transform 8s ease-out}
+#fidle .fbk{position:absolute;inset:-6%;background:center/cover no-repeat;filter:blur(38px) saturate(1.35) brightness(.5);transform:scale(1.1)}
+#fidle .fvig{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 42%,transparent 40%,#040914cc 100%)}
+#fidle .fph{position:absolute;left:50%;top:45%;width:min(78vw,calc(62vh * var(--ar,1.33)));aspect-ratio:var(--ar,1.33);transform:translate(-50%,-50%) scale(.96);border-radius:clamp(14px,2vw,30px);background:center/cover no-repeat;box-shadow:0 30px 80px #000c,0 0 0 2px #d4af37bb,0 0 70px #d4af3740;overflow:hidden;transition:transform 9s ease-out}
 #fidle .fs.on .fph{transform:translate(-50%,-50%) scale(1.02)}
-#fidle .fcap{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;gap:clamp(12px,2vw,28px);padding:0 4vw 4.5vh;text-align:left}
-#fidle .fcap img{height:clamp(56px,9vh,120px);filter:drop-shadow(0 4px 12px #000)}
-#fidle .fcap b{display:block;font:800 clamp(28px,4.4vw,70px)/1.05 Cinzel,Georgia,serif;color:#f9e29c;text-shadow:0 3px 16px #000}
-#fidle .fcap span{display:inline-block;margin-top:8px;padding:4px 18px;border-radius:999px;background:linear-gradient(135deg,#c59b27,#f9e29c,#aa771c);color:#040914;font:800 clamp(20px,2.6vw,40px) 'Plus Jakarta Sans',system-ui,sans-serif}
-@media(max-aspect-ratio:1/1){#fidle .fph{top:40%;width:92vw}#fidle .fcap{flex-direction:column;text-align:center}}`;
+#fidle .fph::after{content:"";position:absolute;top:0;bottom:0;width:35%;left:-60%;background:linear-gradient(105deg,transparent,#fff5 45%,#fff9 50%,#fff5 55%,transparent);transform:skewX(-12deg)}
+#fidle .fs.on .fph::after{animation:fShine 2.2s ease-in-out 1.2s}
+@keyframes fShine{to{left:130%}}
+#fidle .frib{position:absolute;top:clamp(14px,2.4vh,30px);left:clamp(-8px,-.4vw,-4px);padding:.45em 1.2em .45em 1em;font:800 clamp(14px,1.6vw,26px)/1 'Plus Jakarta Sans',system-ui,sans-serif;color:#040914;background:linear-gradient(135deg,#c59b27,#f9e29c 50%,#aa771c);border-radius:0 999px 999px 0;box-shadow:0 6px 18px #0009;letter-spacing:.02em}
+#fidle .fstar{position:absolute;right:calc(50% - min(39vw,calc(31vh * var(--ar,1.33))) - clamp(30px,4vw,70px));top:calc(45% - min(39vw,calc(31vh * var(--ar,1.33))) / var(--ar,1.33) - clamp(20px,3vh,40px));width:clamp(120px,13vw,230px);aspect-ratio:1;display:grid;place-items:center;text-align:center;color:#3a0b0b;transform:rotate(12deg) scale(0);transition:transform .7s cubic-bezier(.2,1.6,.4,1) .9s;filter:drop-shadow(0 10px 20px #000b)}
+#fidle .fs.on .fstar{transform:rotate(12deg) scale(1)}
+#fidle .fstar::before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,#ffe9a8,#e0b23c 45%,#b07a14);clip-path:polygon(50% 0,59% 10%,71% 4%,75% 17%,89% 15%,87% 29%,99% 35%,92% 47%,100% 59%,88% 65%,90% 79%,76% 79%,71% 93%,59% 87%,50% 100%,41% 87%,29% 93%,24% 79%,10% 79%,12% 65%,0 59%,8% 47%,1% 35%,13% 29%,11% 15%,25% 17%,29% 4%,41% 10%);animation:fSpin 24s linear infinite}
+@keyframes fSpin{to{transform:rotate(360deg)}}
+#fidle .fstar span{position:relative;font:800 clamp(11px,1.1vw,19px)/1.1 'Plus Jakarta Sans',system-ui,sans-serif;text-transform:uppercase}
+#fidle .fstar b{position:relative;display:block;font:900 clamp(26px,3vw,54px)/1 Cinzel,Georgia,serif}
+#fidle .fcap{position:absolute;left:0;right:0;bottom:clamp(54px,8vh,96px);text-align:center;padding:0 4vw}
+#fidle .fcap i{display:block;font:italic 600 clamp(16px,1.9vw,32px)/1.2 Georgia,serif;color:#f3e3b5;letter-spacing:.04em;opacity:0;transform:translateY(14px);transition:all .8s ease .5s}
+#fidle .fcap b{display:block;margin-top:.15em;font:800 clamp(30px,4.6vw,76px)/1.05 Cinzel,Georgia,serif;background:linear-gradient(180deg,#fff6d5,#f3cf63 45%,#b8862b);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 3px 10px #000);opacity:0;transform:translateY(20px);transition:all .9s cubic-bezier(.2,.9,.3,1) .7s}
+#fidle .fs.on .fcap i,#fidle .fs.on .fcap b{opacity:1;transform:none}
+#fidle .fsign{position:absolute;top:clamp(12px,2.2vh,28px);left:0;right:0;z-index:3;display:flex;align-items:center;justify-content:center;gap:14px;pointer-events:none}
+#fidle .fsign img{height:clamp(44px,7vh,90px);filter:drop-shadow(0 0 14px #f3cf6388)}
+#fidle .fsign b{font:800 clamp(24px,3.2vw,52px)/1 Cinzel,Georgia,serif;color:#fff4cf;letter-spacing:.08em;text-shadow:0 0 6px #fff,0 0 16px #f3cf63,0 0 34px #e0a52a,0 0 60px #d4af37;animation:fNeon 7s infinite}
+@keyframes fNeon{0%,18%,22%,62%,64%,100%{opacity:1}20%,63%{opacity:.55}}
+#fidle .ftk{position:absolute;left:0;right:0;bottom:0;z-index:3;height:clamp(40px,6vh,64px);display:flex;align-items:center;overflow:hidden;background:linear-gradient(90deg,#7a0f16,#a3161f 50%,#7a0f16);border-top:2px solid #d4af37;box-shadow:0 -8px 24px #0009}
+#fidle .ftk div{display:flex;white-space:nowrap;animation:fTk 40s linear infinite;font:800 clamp(16px,2vw,30px)/1 'Plus Jakarta Sans',system-ui,sans-serif;color:#fff3cf;letter-spacing:.03em}
+#fidle .ftk span{padding-right:2.5em}
+@keyframes fTk{to{transform:translateX(-50%)}}
+#fidle .fsp{position:absolute;inset:0;z-index:2;pointer-events:none}
+#fidle .fsp i{position:absolute;bottom:-10px;width:5px;height:5px;border-radius:50%;background:#f9e29c;box-shadow:0 0 10px 2px #f3cf63aa;animation:fUp linear infinite;opacity:0}
+@keyframes fUp{10%{opacity:.9}100%{transform:translateY(-105vh) translateX(var(--dx));opacity:0}}
+/* affiches */
+#fidle .fpo{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:4vw;padding:15vh 6vw 13vh;background:radial-gradient(circle at 30% 20%,#1b3a7a,#0c1b3e 45%,#040914 90%)}
+#fidle .fpo::before{content:"";position:absolute;inset:12vh 2vw 9vh;border:2px solid #d4af3799;border-radius:24px;box-shadow:inset 0 0 0 8px #040914,inset 0 0 0 9px #d4af3755}
+#fidle .fpo .ftx{position:relative;max-width:46vw;text-align:left}
+#fidle .fpo h2{margin:0;font:900 clamp(34px,5.4vw,96px)/1 Cinzel,Georgia,serif;background:linear-gradient(180deg,#fff6d5,#f3cf63 45%,#b8862b);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 10px #000)}
+#fidle .fpo p{margin:.6em 0 0;font:600 clamp(18px,2.2vw,38px)/1.3 'Plus Jakarta Sans',system-ui,sans-serif;color:#e8edf8}
+#fidle .fpo .fk{display:inline-block;margin-top:.8em;padding:.35em 1em;border-radius:999px;background:linear-gradient(135deg,#c59b27,#f9e29c,#aa771c);color:#040914;font:800 clamp(18px,2.4vw,40px)/1.1 'Plus Jakarta Sans',system-ui,sans-serif}
+#fidle .fpo .fqr{position:relative;width:clamp(170px,22vw,380px);padding:14px;border-radius:22px;background:#f9e29c;box-shadow:0 20px 60px #000c,0 0 0 3px #d4af37;transform:rotate(-3deg)}
+#fidle .fpo .fqr img{display:block;width:100%;border-radius:10px}
+#fidle .fpo .fqr small{display:block;text-align:center;margin-top:8px;font:800 clamp(13px,1.3vw,22px) 'Plus Jakarta Sans',system-ui,sans-serif;color:#040914}
+#fidle .fpo .fcol{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:14px;width:min(44vw,70vh)}
+#fidle .fpo .fcol div{aspect-ratio:4/3;border-radius:18px;background:center/cover no-repeat;box-shadow:0 14px 40px #000c,0 0 0 2px #d4af3799}
+#fidle .fpo .fcol div:first-child{grid-column:1/-1;aspect-ratio:16/8}
+#fidle .fpo .fapps{display:flex;flex-wrap:wrap;gap:12px;margin-top:.8em}
+#fidle .fpo .fapps span{padding:.4em 1em;border-radius:14px;background:#ffffff14;border:1px solid #d4af3788;font:800 clamp(16px,2vw,34px)/1 'Plus Jakarta Sans',system-ui,sans-serif;color:#fff}
+#fidle .fpo .fst{font-size:clamp(40px,6vw,110px);letter-spacing:.06em;color:#f3cf63;text-shadow:0 0 30px #e0a52a}
+#fidle .fs.on .fpo .ftx>*{animation:fIn .9s cubic-bezier(.2,.9,.3,1) both}#fidle .fs.on .fpo .ftx>*:nth-child(2){animation-delay:.2s}#fidle .fs.on .fpo .ftx>*:nth-child(3){animation-delay:.4s}#fidle .fs.on .fpo .ftx>*:nth-child(4){animation-delay:.6s}
+@keyframes fIn{from{opacity:0;transform:translateY(24px)}}
+@media(max-aspect-ratio:1/1){#fidle .fph{top:40%;width:92vw}#fidle .fcap{bottom:22vh}#fidle .fcap i{font-size:4.2vw}#fidle .fcap b{font-size:8.5vw}#fidle .frib{font-size:3.4vw}#fidle .fstar{width:24vw}#fidle .fstar b{font-size:6vw}#fidle .fstar span{font-size:2.4vw}#fidle .fpo h2{font-size:10vw}#fidle .fpo p{font-size:4.4vw}#fidle .fpo .fk{font-size:5vw}#fidle .fpo .fqr{width:52vw}#fidle .fpo .fapps span{font-size:4.6vw}#fidle .fsign b{font-size:7vw}#fidle .ftk div{font-size:3.6vw}#fidle .fstar{right:2vw;top:calc(42% - 45vw / var(--ar,1.33) - 6vh)}
+#fidle .fpo{flex-direction:column;text-align:center;gap:4vh}#fidle .fpo .ftx{max-width:none;text-align:center}#fidle .fpo .fcol{width:86vw}#fidle .fpo .fapps{justify-content:center}}
+@media(prefers-reduced-motion:reduce){#fidle *{animation:none!important;transition:none!important}}`;
   document.head.appendChild(fidCss);
-  let FID = null, fidI = 0, fidT = null;
+  const TAG = {
+    durums: ['Roulé minute, grillé à la flamme', '🔥 Le préféré'], sandwichs: ['Pain croustillant, garni généreusement', '🥖 Fait minute'],
+    panini: ['Doré et fondant, pressé à la commande', '🧀 Bien fondant'], tacos: ['Fromage fondu, frites et viande à volonté', '🌮 XXL'],
+    kapsalon: ['Frites, viande, fromage gratiné : le vrai kapsalon', '👑 Spécialité'], menus: ['Plat + frites + boisson', '💰 Bon plan'],
+    bicky: ['Le classique belge, version maison', '🇧🇪 Classique'], assiettes: ['Assiette généreuse, salade et frites', '🍽️ Généreux'],
+    grillades: ['Grillé au charbon, servi minute', '🔥 Grill'], salades: ['Fraîche, croquante, faite à la commande', '🥗 Frais'],
+    specialites: ['Recette maison mijotée avec amour', '⭐ Fait maison'], frites: ['Croustillantes dehors, fondantes dedans', '🍟 Maison'],
+    desserts: ['La douceur pour finir en beauté', '🍰 Douceur']
+  };
+  const tagOf = cat => { const k = nk(cat); const f = Object.keys(TAG).find(x => k.startsWith(x)); return TAG[f] || ['Cuisine halal, faite minute', '⭐⭐⭐⭐⭐']; };
+  let FID = null, fidI = 0, fidT = null, fidP = 0;
   function fidList() {
     const out = [];
-    try { (cats || []).filter(c => !/sauce|suppl|boisson|olive|crudit/i.test(nk(c.n) + ' ' + nk(c.l))).forEach(c => c.items.forEach(it => { if (it.out) return; const u = IMG(it); if (u && !/^data:/.test(u)) out.push([u, full(it), it.p]); })); } catch (e) {}
-    const seen = new Set(); return out.filter(x => !seen.has(x[0]) && seen.add(x[0])).sort(() => Math.random() - .5).slice(0, 30);
+    try { (cats || []).filter(c => !/sauce|suppl|boisson|olive|crudit/i.test(nk(c.n) + ' ' + nk(c.l))).forEach(c => c.items.forEach(it => { if (it.out) return; const u = IMG(it); if (u && !/^data:/.test(u)) out.push([u, full(it), it.p, c.n]); })); } catch (e) {}
+    const seen = new Set(); fidList.all = out.filter(x => !seen.has(x[0]) && seen.add(x[0])).sort(() => Math.random() - .5); return fidList.all.slice(0, 40);
   }
-  /* version HD (agrandie et affinée) pour la télé, sinon la photo normale */
   const hd = u => /^photos\/[^/]+\.webp$/.test(u) ? 'photos/hd/' + u.slice(7) : u;
   function fidLoad(u) {
     return new Promise(res => { const h = hd(u), i = new Image(); i.onload = () => res([h, i.naturalWidth / i.naturalHeight]); i.onerror = () => { if (h === u) return res(null); const j = new Image(); j.onload = () => res([u, j.naturalWidth / j.naturalHeight]); j.onerror = () => res(null); j.src = u; }; i.src = h; });
   }
+  const qu = u => `url('${String(u).replace(/'/g, "\\'")}')`;
+  const catPics = re => (FID.all || FID.l).filter(x => re.test(nk(x[3]))).slice(0, 3).map(x => hd(x[0]));
+  const minP = re => { try { const c = cats.find(c => re.test(nk(c.n))); const v = c && c.items.filter(i => !i.out && +i.p).map(i => +i.p); return v && v.length ? Math.min(...v) : 0; } catch (e) { return 0; } };
+  function posters() {
+    const P = [];
+    P.push(`<div class="fpo"><div class="ftx"><h2>Commandez en ligne</h2><p>Scannez, composez, payez : votre commande part directement en cuisine.</p><span class="fk">haythemfood.com</span></div><div class="fqr"><img src="icons/qr-site.png" alt=""><small>📱 Scannez-moi</small></div></div>`);
+    const mp = minP(/^menus?$/), mc = catPics(/^menus?$/);
+    if (mc.length >= 3) P.push(`<div class="fpo"><div class="ftx"><h2>Nos menus</h2><p>Votre plat, des frites dorées et une boisson fraîche.</p>${mp ? `<span class="fk">dès ${esc(eur(mp))}</span>` : ''}</div><div class="fcol">${mc.map(u => `<div style="background-image:${qu(u)}"></div>`).join('')}</div></div>`);
+    const gc = catPics(/^(grillades|assiettes)/);
+    if (gc.length >= 3) P.push(`<div class="fpo"><div class="ftx"><h2>Les grillades du chef</h2><p>Kefta, brochettes, poulet mariné : grillés minute, servis généreusement.</p>${minP(/^grillades/) ? `<span class="fk">dès ${esc(eur(minP(/^grillades/)))}</span>` : ''}</div><div class="fcol">${gc.map(u => `<div style="background-image:${qu(u)}"></div>`).join('')}</div></div>`);
+    const apps = String(getCfg('delvApps') || '').split(',').map(x => x.trim()).filter(Boolean);
+    if (getCfg('delvOn') !== '0' && apps.length) P.push(`<div class="fpo"><div class="ftx"><h2>Bientôt chez vous</h2><p>La livraison à domicile arrive très prochainement sur :</p><div class="fapps">${apps.map(a => `<span>🛵 ${esc(a)}</span>`).join('')}</div></div></div>`);
+    P.push(`<div class="fpo"><div class="ftx"><div class="fst">★★★★★</div><h2>Vous avez aimé ?</h2><p>Votre avis Google nous aide énormément. Merci !</p></div><div class="fqr"><img src="icons/qr-avis.png" alt=""><small>⭐ Laissez un avis</small></div></div>`);
+    return P;
+  }
+  function fidChrome(el) {
+    const T = esc(getCfg('title'));
+    const tk = ['★ Cuisine 100 % halal', '★ Faite minute', '★ Sur place ou à emporter', '★ Commandez sur haythemfood.com', '★ ' + esc(String(getCfg('footer') || '').split('·')[0].trim())];
+    const tx = tk.map(t => `<span>${t}</span>`).join('');
+    let sp = ''; for (let i = 0; i < 22; i++) sp += `<i style="left:${Math.random() * 100}%;--dx:${Math.round(Math.random() * 120 - 60)}px;animation-duration:${8 + Math.random() * 10}s;animation-delay:${-Math.random() * 18}s;transform:scale(${.5 + Math.random()})"></i>`;
+    el.insertAdjacentHTML('beforeend', `<div class="fsp">${sp}</div><div class="fsign">${window.HF_LOGO ? `<img src="${esc(window.HF_LOGO)}" alt="">` : ''}<b>${T}</b></div><div class="ftk"><div>${tx}${tx}</div></div>`);
+  }
   async function fidStep() {
     if (!FID || !FID.l.length || fidStep.b) return;
     fidStep.b = 1;
-    let r = null, it = null;
-    for (let n = 0; n < 4 && !r; n++) { it = FID.l[fidI++ % FID.l.length]; r = await fidLoad(it[0]); }
+    let html = '';
+    fidP++;
+    if (fidP % 4 === 0) {                       /* une affiche toutes les 3 photos */
+      const P = posters(); html = P[(fidP / 4 - 1) % P.length];
+    } else {
+      let r = null, it = null;
+      for (let n = 0; n < 4 && !r; n++) { it = FID.l[fidI++ % FID.l.length]; r = await fidLoad(it[0]); }
+      if (r) {
+        const [u, ar] = r, g = tagOf(it[3]), q = qu(u), a = Math.min(1.9, Math.max(.8, ar || 1.33)).toFixed(3);
+        html = `<div class="fbk" style="background-image:${q}"></div><div class="fvig"></div><div class="fph" style="background-image:${q};--ar:${a}"><span class="frib">${esc(g[1])}</span></div>${it[2] ? `<div class="fstar" style="--ar:${a}"><div><span>seulement</span><b>${esc(eur(+it[2]))}</b></div></div>` : ''}<div class="fcap"><i>${esc(g[0])}</i><b>${esc(it[1])}</b></div>`;
+      }
+    }
     fidStep.b = 0;
-    if (!r || !FID.el.classList.contains('on')) return;
-    const [u, ar] = r, q = `url('${String(u).replace(/'/g, "\\'")}')`, sl = FID.el.querySelectorAll('.fs'), cur = sl[fidI % 2], old = sl[(fidI + 1) % 2];
-    cur.querySelector('.fbk').style.backgroundImage = q;
-    const ph = cur.querySelector('.fph'); ph.style.backgroundImage = q; ph.style.setProperty('--ar', Math.min(1.9, Math.max(.8, ar || 1.33)).toFixed(3));
-    old.classList.remove('on'); void cur.offsetWidth; cur.classList.add('on');
-    FID.el.querySelector('.fcap').innerHTML = `${window.HF_LOGO ? `<img src="${esc(window.HF_LOGO)}" alt="">` : ''}<div><b>${esc(it[1])}</b>${it[2] ? `<span>${eur(+it[2])}</span>` : ''}</div>`;
+    if (!html || !FID.el.classList.contains('on')) return;
+    const sl = FID.el.querySelectorAll('.fs'), cur = sl[fidP % 2], old = sl[(fidP + 1) % 2];
+    cur.innerHTML = html; old.classList.remove('on'); void cur.offsetWidth; cur.classList.add('on');
   }
   function fidle(on) {
     if (on && !FID) {
-      const el = document.createElement('div'); el.id = 'fidle'; el.innerHTML = '<div class="fs"><div class="fbk"></div><div class="fph"></div></div><div class="fs"><div class="fbk"></div><div class="fph"></div></div><div class="fcap"></div>';
-      document.body.appendChild(el); FID = { el, l: fidList() };
+      const el = document.createElement('div'); el.id = 'fidle'; el.innerHTML = '<div class="fs"></div><div class="fs"></div>';
+      document.body.appendChild(el); fidChrome(el); FID = { el, l: fidList() };
     }
     if (!FID) return;
-    if (on && !FID.el.classList.contains('on')) { FID.l = fidList(); if (!FID.l.length) return; FID.el.classList.add('on'); fidStep(); clearInterval(fidT); fidT = setInterval(fidStep, 7000); }
+    if (on && !FID.el.classList.contains('on')) { FID.l = fidList(); FID.all = fidList.all; if (!FID.l.length) return; FID.el.classList.add('on'); fidStep(); clearInterval(fidT); fidT = setInterval(fidStep, 7500); }
     if (!on && FID.el.classList.contains('on')) { FID.el.classList.remove('on'); clearInterval(fidT); }
   }
   window.hfIdle = fidle;
+  window.hfIdleNext = fidStep;
   if (typeof fdraw === 'function') {
     const _fd2 = fdraw;
     fdraw = function () {
