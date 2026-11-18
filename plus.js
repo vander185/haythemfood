@@ -228,10 +228,17 @@
   /* ---------- 4b. Écran d'attente vide : diaporama des plats ---------- */
   const fidCss = document.createElement('style');
   fidCss.textContent = `#fidle{position:fixed;inset:0;z-index:80;display:none;background:#040914;overflow:hidden}
-#fidle.on{display:block}#fidle .fi{position:absolute;inset:0;background:center/cover no-repeat;opacity:0;transform:scale(1.08);transition:opacity 1.6s ease,transform 9s linear}
-#fidle .fi.on{opacity:1;transform:scale(1)}#fidle .ft{position:absolute;left:0;right:0;bottom:0;padding:40px 5vw 5vh;background:linear-gradient(transparent,#040914ee 60%);text-align:center}
-#fidle .ft img{height:clamp(60px,10vw,130px);filter:drop-shadow(0 4px 12px #000)}#fidle .ft b{display:block;font:800 clamp(30px,5vw,72px)/1.1 Cinzel,Georgia,serif;color:#f9e29c;text-shadow:0 3px 14px #000}
-#fidle .ft span{display:block;margin-top:6px;font:700 clamp(22px,3vw,44px) 'Plus Jakarta Sans',system-ui,sans-serif;color:#fff}`;
+#fidle.on{display:block}
+#fidle .fs{position:absolute;inset:0;opacity:0;transition:opacity 1.4s ease}
+#fidle .fs.on{opacity:1}
+#fidle .fbk{position:absolute;inset:-6%;background:center/cover no-repeat;filter:blur(38px) saturate(1.35) brightness(.55);transform:scale(1.1)}
+#fidle .fph{position:absolute;left:50%;top:44%;width:min(86vw,calc(68vh * var(--ar,1.33)));aspect-ratio:var(--ar,1.33);transform:translate(-50%,-50%) scale(.97);border-radius:clamp(14px,2vw,30px);background:center/cover no-repeat;box-shadow:0 30px 80px #000c,0 0 0 2px #d4af37aa,0 0 60px #d4af3733;transition:transform 8s ease-out}
+#fidle .fs.on .fph{transform:translate(-50%,-50%) scale(1.02)}
+#fidle .fcap{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;gap:clamp(12px,2vw,28px);padding:0 4vw 4.5vh;text-align:left}
+#fidle .fcap img{height:clamp(56px,9vh,120px);filter:drop-shadow(0 4px 12px #000)}
+#fidle .fcap b{display:block;font:800 clamp(28px,4.4vw,70px)/1.05 Cinzel,Georgia,serif;color:#f9e29c;text-shadow:0 3px 16px #000}
+#fidle .fcap span{display:inline-block;margin-top:8px;padding:4px 18px;border-radius:999px;background:linear-gradient(135deg,#c59b27,#f9e29c,#aa771c);color:#040914;font:800 clamp(20px,2.6vw,40px) 'Plus Jakarta Sans',system-ui,sans-serif}
+@media(max-aspect-ratio:1/1){#fidle .fph{top:40%;width:92vw}#fidle .fcap{flex-direction:column;text-align:center}}`;
   document.head.appendChild(fidCss);
   let FID = null, fidI = 0, fidT = null;
   function fidList() {
@@ -239,16 +246,27 @@
     try { (cats || []).filter(c => !/sauce|suppl|boisson|olive|crudit/i.test(nk(c.n) + ' ' + nk(c.l))).forEach(c => c.items.forEach(it => { if (it.out) return; const u = IMG(it); if (u && !/^data:/.test(u)) out.push([u, full(it), it.p]); })); } catch (e) {}
     const seen = new Set(); return out.filter(x => !seen.has(x[0]) && seen.add(x[0])).sort(() => Math.random() - .5).slice(0, 30);
   }
-  function fidStep() {
-    if (!FID || !FID.l.length) return;
-    const [u, n, p] = FID.l[fidI++ % FID.l.length], b = FID.el.querySelectorAll('.fi'), cur = b[fidI % 2], old = b[(fidI + 1) % 2];
-    cur.style.backgroundImage = `url('${String(u).replace(/'/g, "\\'")}')`;
+  /* version HD (agrandie et affinée) pour la télé, sinon la photo normale */
+  const hd = u => /^photos\/[^/]+\.webp$/.test(u) ? 'photos/hd/' + u.slice(7) : u;
+  function fidLoad(u) {
+    return new Promise(res => { const h = hd(u), i = new Image(); i.onload = () => res([h, i.naturalWidth / i.naturalHeight]); i.onerror = () => { if (h === u) return res(null); const j = new Image(); j.onload = () => res([u, j.naturalWidth / j.naturalHeight]); j.onerror = () => res(null); j.src = u; }; i.src = h; });
+  }
+  async function fidStep() {
+    if (!FID || !FID.l.length || fidStep.b) return;
+    fidStep.b = 1;
+    let r = null, it = null;
+    for (let n = 0; n < 4 && !r; n++) { it = FID.l[fidI++ % FID.l.length]; r = await fidLoad(it[0]); }
+    fidStep.b = 0;
+    if (!r || !FID.el.classList.contains('on')) return;
+    const [u, ar] = r, q = `url('${String(u).replace(/'/g, "\\'")}')`, sl = FID.el.querySelectorAll('.fs'), cur = sl[fidI % 2], old = sl[(fidI + 1) % 2];
+    cur.querySelector('.fbk').style.backgroundImage = q;
+    const ph = cur.querySelector('.fph'); ph.style.backgroundImage = q; ph.style.setProperty('--ar', Math.min(1.9, Math.max(.8, ar || 1.33)).toFixed(3));
     old.classList.remove('on'); void cur.offsetWidth; cur.classList.add('on');
-    FID.el.querySelector('.ft').innerHTML = `${window.HF_LOGO ? `<img src="${esc(window.HF_LOGO)}" alt="">` : ''}<b>${esc(n)}</b>${p ? `<span>${eur(+p)}</span>` : ''}`;
+    FID.el.querySelector('.fcap').innerHTML = `${window.HF_LOGO ? `<img src="${esc(window.HF_LOGO)}" alt="">` : ''}<div><b>${esc(it[1])}</b>${it[2] ? `<span>${eur(+it[2])}</span>` : ''}</div>`;
   }
   function fidle(on) {
     if (on && !FID) {
-      const el = document.createElement('div'); el.id = 'fidle'; el.innerHTML = '<div class="fi"></div><div class="fi"></div><div class="ft"></div>';
+      const el = document.createElement('div'); el.id = 'fidle'; el.innerHTML = '<div class="fs"><div class="fbk"></div><div class="fph"></div></div><div class="fs"><div class="fbk"></div><div class="fph"></div></div><div class="fcap"></div>';
       document.body.appendChild(el); FID = { el, l: fidList() };
     }
     if (!FID) return;
