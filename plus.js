@@ -264,7 +264,7 @@
 #fidle .fsp i{position:absolute;bottom:-10px;width:5px;height:5px;border-radius:50%;background:#f9e29c;box-shadow:0 0 10px 2px #f3cf63aa;animation:fUp linear infinite;opacity:0}
 @keyframes fUp{10%{opacity:.9}100%{transform:translateY(-105vh) translateX(var(--dx));opacity:0}}
 /* affiches */
-#fidle .fpo{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:4vw;padding:15vh 6vw 13vh;background:radial-gradient(circle at 30% 20%,#1b3a7a,#0c1b3e 45%,#040914 90%)}
+#fidle .fpo{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:4vw;padding:15vh 6vw 13vh;background:transparent}
 #fidle .fpo::before{content:"";position:absolute;inset:12vh 2vw 9vh;border:2px solid #d4af3799;border-radius:24px;box-shadow:inset 0 0 0 8px #040914,inset 0 0 0 9px #d4af3755}
 #fidle .fpo .ftx{position:relative;max-width:46vw;text-align:left}
 #fidle .fpo h2{margin:0;font:900 clamp(34px,5.4vw,96px)/1 Cinzel,Georgia,serif;background:linear-gradient(180deg,#fff6d5,#f3cf63 45%,#b8862b);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 10px #000)}
@@ -333,7 +333,11 @@
     let html = '';
     fidP++;
     if (fidP % 4 === 0) {                       /* une affiche toutes les 3 photos */
-      const P = posters(); html = P[(fidP / 4 - 1) % P.length];
+      const P = posters(), po = P[(fidP / 4 - 1) % P.length];
+      /* même arrière-plan que les photos : photo du plat floutée + vignette */
+      const m = po.match(/background-image:url\('([^']+)'\)/), pick = FID.l[Math.floor(Math.random() * FID.l.length)];
+      const bg = m ? m[1] : (pick ? hd(pick[0]) : '');
+      html = (bg ? `<div class="fbk" style="background-image:${qu(bg)}"></div><div class="fvig"></div>` : '') + po;
     } else {
       let r = null, it = null;
       for (let n = 0; n < 4 && !r; n++) { it = FID.l[fidI++ % FID.l.length]; r = await fidLoad(it[0]); }
