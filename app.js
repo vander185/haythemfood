@@ -139,7 +139,7 @@ const DEFAULT_CFG = {
   upTitle: 'Une boisson ou un dessert ?',
   upCats: 'Boissons, Desserts',
   upAsk: '1',
-  loyOn: '1',
+  loyOn: '0',
   loyN: 10,
   loyGift: 'Un dürüm offert',
   payTitle: 'Paiement au comptoir',
@@ -1330,7 +1330,7 @@ function upDraw() {
 /* Carte de fidélité (comptée sur le téléphone du client) */
 const loyN = () => Math.max(2, Math.round(+getCfg('loyN')) || 10);
 function loyLine() {
-  if (!L.length || String(getCfg('loyOn')) === '0') return '';
+  if (!L.length || String(getCfg('loyOn')) !== '1') return '';
   const c = (+st('hfloy') || 0) + 1, N = loyN();
   return `<p class="loy">${c >= N ? '🎉 ' + esc(T('Cette commande complète votre carte :')) + ' <b>' + esc(getCfg('loyGift')) + '</b>' : '🎁 ' + esc(T('Carte de fidélité')) + ' : <b>' + c + '/' + N + '</b> · ' + esc(getCfg('loyGift'))}</p>`;
 }
@@ -1459,7 +1459,7 @@ async function send() {
   let n = await takeNo(), off = 0;
   if (n == null) { n = localNo(); off = 1; }
   const o = toOrder(n, off);
-  const lon = String(getCfg('loyOn')) !== '0', N = loyN();
+  const lon = String(getCfg('loyOn')) === '1', N = loyN();
   let c = (+st('hfloy') || 0) + 1, gift = '';
   if (lon && c >= N) { gift = '🎁 Carte de fidélité complète : ' + getCfg('loyGift'); c = 0; }
   if (gift) o.g = (o.g ? o.g + ' · ' : '') + gift;
@@ -2217,8 +2217,8 @@ window.showAdmTab = (tab, btn) => {
 
       <h4>🎁 Carte de fidélité</h4>
       <div class="seg">
-        <button type="button" class="${String(getCfg('loyOn')) !== '0' ? 'on' : ''}" onclick="setCfg('loyOn','1');showAdmTab('opt')">✅ Activée</button>
-        <button type="button" class="${String(getCfg('loyOn')) === '0' ? 'on' : ''}" onclick="setCfg('loyOn','0');showAdmTab('opt')">🚫 Désactivée</button>
+        <button type="button" class="${String(getCfg('loyOn')) === '1' ? 'on' : ''}" onclick="setCfg('loyOn','1');showAdmTab('opt')">✅ Activée</button>
+        <button type="button" class="${String(getCfg('loyOn')) !== '1' ? 'on' : ''}" onclick="setCfg('loyOn','0');showAdmTab('opt')">🚫 Désactivée</button>
       </div>
       <label>Nombre de commandes pour obtenir le cadeau</label>
       <input id="c_loyN" type="number" min="2" max="50" value="${esc(getCfg('loyN'))}">
