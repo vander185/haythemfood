@@ -2,7 +2,7 @@
 // Pages, scripts et styles : réseau d'abord (les mises à jour arrivent tout de suite).
 // Photos et icônes : cache d'abord (chargement instantané).
 // Firebase et les autres sites ne passent jamais par le cache.
-const V = 'hf-v4', PH = 'hf-photos-v1';
+const V = 'hf-v5', PH = 'hf-photos-v1';
 const CORE = ['./', 'index.html', 'app.js', 'style.css', 'fx.js', 'plus.js', 'photos-borne.js', 'manifest.webmanifest', 'cuisine/', 'file/'];
 
 self.addEventListener('install', e => {

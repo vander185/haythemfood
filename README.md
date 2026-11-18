@@ -28,3 +28,7 @@ revérifie chaque paiement auprès de Mollie (« ✅ Payé en ligne » ou « ⚠
 Chaque écran est une appli à part (installable sur l'écran d'accueil / la TV).
 `cuisine/index.html` et `file/index.html` sont des copies d'`index.html` avec
 `window.HF_SCREEN` : si `index.html` change, refaire ces deux copies.
+
+Icônes des applis : `icons/cuisine-*.png` (écran cuisine, fond bordeaux, toque) et
+`icons/file-*.png` (écran d'attente, fond vert, écran TV) ; reliées dans
+`cuisine/` et `file/` (manifest + index.html).
