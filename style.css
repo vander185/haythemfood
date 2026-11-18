@@ -789,3 +789,6 @@ body.kpr #kprint{display:block!important;width:72mm;margin:0;color:#000;font:13p
 #kprint .no{font:800 40px Arial,sans-serif;text-align:center;margin:6px 0}#kprint hr{border:0;border-top:1px dashed #000;margin:6px 0}
 #kprint .l{display:grid;grid-template-columns:28px 1fr auto;gap:4px;margin:3px 0}#kprint small{display:block;font-size:11px}#kprint i{font-style:normal}
 @page{margin:4mm}}
+/* Fenêtre « Composer » : le bouton Ajouter / Suivant reste toujours visible en bas */
+#shk .shf{position:sticky;bottom:-28px;z-index:5;margin:10px -18px -28px;padding:12px 18px calc(16px + env(safe-area-inset-bottom,0px));background:linear-gradient(180deg,#04091400,#040914 26%);}
+#shk .shf .btn{box-shadow:0 -6px 22px #000a,0 8px 22px #d4af3740}

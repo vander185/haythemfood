@@ -1095,7 +1095,7 @@ function sheet() {
  ${ks.length > 1 ? (() => { const p = Math.round((k + 1) / ks.length * 100), p0 = window._lpE === ed && window._lp != null ? window._lp : 0; window._lpE = ed; window._lp = p; return `<div class="spb" style="--p0:${p0}%;--p:${p}%"><i></i></div>`; })() : ''}
  <div class="stepw${ed.mv ? ' mv-' + ed.mv : ''}"><h4>${ttl}</h4>${g === 'x' ? `<p class="nt" style="margin:-4px 0 8px">${esc(T('En option, payant. Touchez pour ajouter ou retirer.'))}${sup ? ' · <b>+' + eur(sup) + '</b>' : ''}</p>` : ''}${g === 's' ? `<p class="nt" style="margin:-4px 0 8px">${esc(T('Le goût est indiqué sous chaque sauce.'))} 🌶️ ${esc(T('peu'))} · 🌶️🌶️ ${esc(T('relevé'))} · 🌶️🌶️🌶️ ${esc(T('très piquant'))}</p>` : ''}
  <div class="opts og${g === 'x' ? ' ox' : ''}">${list.map(v => `<button class="${isOn(v) ? 'on' : ''}${v === 'Non merci' ? ' nox' : ''}" data-x="tg|${g}|${esc(v)}">${oi(g, v)}<span>${esc(T(v))}${px(v)}</span></button>`).join('')}</div></div>
- ${last ? `<textarea rows="2" placeholder="${T('Remarque (ex. sans oignons)')}" oninput="ed.nt=this.value">${esc(ed.nt || '')}</textarea>` : ''}<button class="btn" style="width:100%" data-x="${last ? 'done' : 'nxt'}">${last ? (ed.ei !== undefined ? T('Enregistrer') : T('Ajouter')) + ' · ' + eur(unit(ed)) : T('Suivant')}</button>`;
+ ${last ? `<textarea rows="2" placeholder="${T('Remarque (ex. sans oignons)')}" oninput="ed.nt=this.value">${esc(ed.nt || '')}</textarea>` : ''}<div class="shf"><button class="btn" style="width:100%" data-x="${last ? 'done' : 'nxt'}">${last ? (ed.ei !== undefined ? T('Enregistrer') : T('Ajouter')) + ' · ' + eur(unit(ed)) : T('Suivant')}</button></div>`;
   $('#sh').classList.add('on');
   if (ed.mv) { ed.mv = ''; $('#shk').scrollTop = 0; }
 }
