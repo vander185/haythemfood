@@ -286,11 +286,11 @@
 @media(prefers-reduced-motion:reduce){#fidle *{animation:none!important;transition:none!important}}`;
   document.head.appendChild(fidCss);
   const TAG = {
-    durums: ['Roulé minute, grillé à la flamme', '🔥 Le préféré'], sandwichs: ['Pain croustillant, garni généreusement', '🥖 Fait minute'],
+    durums: ['Roulé minute, généreusement garni', '🔥 Le préféré'], sandwichs: ['Pain croustillant, garni généreusement', '🥖 Fait minute'],
     panini: ['Doré et fondant, pressé à la commande', '🧀 Bien fondant'], tacos: ['Fromage fondu, frites et viande à volonté', '🌮 XXL'],
     kapsalon: ['Frites, viande, fromage gratiné : le vrai kapsalon', '👑 Spécialité'], menus: ['Plat + frites + boisson', '💰 Bon plan'],
     bicky: ['Le classique belge, version maison', '🇧🇪 Classique'], assiettes: ['Assiette généreuse, salade et frites', '🍽️ Généreux'],
-    grillades: ['Grillé au charbon, servi minute', '🔥 Grill'], salades: ['Fraîche, croquante, faite à la commande', '🥗 Frais'],
+    grillades: ['Grillé minute, servi bien chaud', '🔥 Grill'], salades: ['Fraîche, croquante, faite à la commande', '🥗 Frais'],
     specialites: ['Recette maison mijotée avec amour', '⭐ Fait maison'], frites: ['Croustillantes dehors, fondantes dedans', '🍟 Maison'],
     desserts: ['La douceur pour finir en beauté', '🍰 Douceur']
   };
