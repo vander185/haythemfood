@@ -1637,6 +1637,11 @@ const Store = {
     if (DB) await fetch(DB + '/orders/' + o.k + '.json', { method: 'PATCH', body: JSON.stringify(p) });
     else { const q = st('hfq') || []; q.forEach(x => { if (same(x, o)) Object.assign(x, p); }); st('hfq', q); }
   },
+  async restore(o) {
+    const DB = getDB(), { k, ...v } = o;
+    if (DB) { const r = await fetch(DB + '/orders/' + k + '.json', { method: 'PUT', body: JSON.stringify(v) }); if (!r.ok) throw 1; }
+    else { const q = st('hfq') || []; if (!q.some(x => same(x, o))) q.push(v); st('hfq', q); }
+  },
   async del(o) {
     const DB = getDB();
     if (DB) await fetch(DB + '/orders/' + o.k + '.json', { method: 'DELETE' });
@@ -1723,7 +1728,7 @@ const beep = () => {
   } catch (e) {}
 };
 document.addEventListener('click', audio);
-const mins = o => Math.floor((Date.now() - o.t) / 60000);
+const mins = o => Math.max(0, Math.floor((Date.now() - o.t) / 60000));
 function kstat(ok) {
   let b = document.getElementById('kst');
   if (!b) {
@@ -1741,22 +1746,45 @@ async function kload() {
   if (!first && fr.some(o => !o.st)) beep(); first = false; kdraw();
   if (!noClean.done) { noClean.done = 1; noClean(); }
 }
-function kdraw() {
+let KSIG = '';
+function kdraw(force) {
   const q = KO.filter(o => o.t > Date.now() - 864e5).sort((a, b) => a.t - b.t);
+  /* on ne redessine que si une commande a changé (ou chaque minute pour les chronos) :
+     sinon un bouton touché pendant le rafraîchissement (toutes les 2,5 s) pouvait être perdu */
+  const sig = Math.floor(Date.now() / 60000) + '|' + q.map(o => o.k + ':' + (o.st || 0) + ':' + (o.pd ? JSON.stringify(KPAY[o.pd.id] || 0) : '')).join(',');
+  if (!force && sig === KSIG && $('#k0').childElementCount) return;
+  KSIG = sig;
   [0, 1, 2].forEach(s => {
     const a = q.filter(o => (o.st || 0) === s);
     $('#n' + s).textContent = a.length;
     $('#k' + s).innerHTML = a.length ? a.map(o => {
       const m = mins(o), cl = ['', 'prep', 'rdy'][s];
-      return `<div class="kd ${cl} ${s < 2 && m >= 20 ? 'late' : s < 2 && m >= 10 ? 'warn' : ''}"><div class="kh"><span class="kn">${esc(String(o.no))}</span>${o.off ? `<span class="km" style="background:#e5484d" title="Numéro donné hors ligne : à vérifier">📵 ${esc('hors ligne')}</span>` : ''}<span class="km ${o.mode === 'À emporter' ? 'em' : ''}">${esc(o.mode)}</span>${o.pd ? kPaid(o) : o.pay ? `<span class="km" style="background:#1f9d55">💳 ${esc(o.pay)}</span>` : ''}${o.w ? `<span class="km" style="background:#7a4fd0">🕒 ${esc(o.w)}</span>` : ''}<time>${m} min</time></div>${o.nom ? `<div style="color:var(--mu)">${esc(o.nom)}</div>` : ''}${(o.l || []).map(l => `<div class="kli"><b>${l.q}×</b><div>${esc(l.n)}${l.d && l.d.length ? `<em>${esc(l.d.join(' · '))}</em>` : ''}</div></div>`).join('')}${o.g ? `<div class="kli"><b>📝</b><div>${esc(o.g)}</div></div>` : ''}<div class="ka"><button class="btn" onclick="mv('${o.k}',${s + 1})">${['Lancer ▶', 'Prête ✔', 'Servie'][s]}</button></div></div>`;
+      return `<div class="kd ${cl} ${s < 2 && m >= 20 ? 'late' : s < 2 && m >= 10 ? 'warn' : ''}"><div class="kh"><span class="kn">${esc(String(o.no))}</span>${o.src === 'borne' ? '<span class="km" style="background:#0e7490">🖥️ Borne</span>' : ''}${o.off ? `<span class="km" style="background:#e5484d" title="Numéro donné hors ligne : à vérifier">📵 ${esc('hors ligne')}</span>` : ''}<span class="km ${o.mode === 'À emporter' ? 'em' : ''}">${esc(o.mode || 'Sur place')}</span>${o.pd ? kPaid(o) : o.pay ? `<span class="km" style="background:#1f9d55">💳 ${esc(o.pay)}</span>` : ''}${o.w ? `<span class="km" style="background:#7a4fd0">🕒 ${esc(o.w)}</span>` : ''}<time>${m} min</time></div>${o.nom ? `<div style="color:var(--mu)">${esc(o.nom)}</div>` : ''}${(o.l || []).map(l => `<div class="kli"><b>${esc(String(l.q))}×</b><div>${esc(l.n)}${l.d && l.d.length ? `<em>${esc(l.d.join(' · '))}</em>` : ''}</div></div>`).join('')}${o.g ? `<div class="kli"><b>📝</b><div>${esc(o.g)}</div></div>` : ''}<div class="ka">${s ? `<button class="btn g kbk" title="Revenir à l’étape précédente" aria-label="Revenir à l’étape précédente" onclick="mv('${o.k}',${s - 1},this)">↩</button>` : ''}<button class="btn" onclick="mv('${o.k}',${s + 1},this)">${['Lancer ▶', 'Prête ✔', 'Servie'][s]}</button></div></div>`;
     }).join('') : '<div class="emp">Aucune commande</div>';
   });
   $('#kclk').textContent = new Date().toLocaleTimeString('fr-BE', { hour: '2-digit', minute: '2-digit' });
 }
-async function mv(k, s) {
-  const o = KO.find(x => x.k === k); if (!o) return;
-  try { if (s > 2) { await Store.del(o); KO = KO.filter(x => x.k !== k); } else { await Store.set(o, { st: s }); o.st = s; } } catch (e) { toast('Erreur réseau'); }
-  kdraw();
+let KUNDO = null;
+function kundo(o) {
+  let u = $('#kun');
+  if (!u) { u = document.createElement('div'); u.id = 'kun'; document.body.appendChild(u); }
+  KUNDO = o;
+  u.innerHTML = `<span>Commande ${esc(String(o.no))} servie</span><button type="button" class="btn g" onclick="kundoGo()">↩ Annuler</button>`;
+  u.classList.add('on'); clearTimeout(kundo.t); kundo.t = setTimeout(() => { u.classList.remove('on'); KUNDO = null; }, 8000);
+}
+async function kundoGo() {
+  const o = KUNDO; KUNDO = null; const u = $('#kun'); if (u) u.classList.remove('on');
+  if (!o) return;
+  try { await Store.restore(o); if (!KO.some(x => x.k === o.k)) KO.push(o); seen.add(o.k); kdraw(1); toast('Commande ' + o.no + ' remise en « Prêtes »'); } catch (e) { toast('Erreur réseau'); }
+}
+async function mv(k, s, btn) {
+  const o = KO.find(x => x.k === k); if (!o || mv.b) return;
+  mv.b = 1; if (btn) btn.disabled = true;
+  try {
+    if (s > 2) { await Store.del(o); KO = KO.filter(x => x.k !== k); kundo(o); }
+    else { await Store.set(o, { st: s }); o.st = s; }
+  } catch (e) { toast('Erreur réseau'); }
+  mv.b = 0; kdraw(1);
 }
 
 /* ---- Écran d'attente clients (#file) ---- */
@@ -1770,7 +1798,8 @@ body.f #fs{display:flex}body.f{overflow:hidden}body.f #bar{display:none}
 #fs .fc{display:flex;flex-direction:column;min-height:0;background:linear-gradient(160deg,#0c1b3e,#040914);border-radius:22px;padding:16px;border:2px solid #d4af3766}
 #fs .fc.r{background:#0c3b2a;border-color:#3ecf6e}
 #fs .fc h3{margin:0 0 12px;font-size:clamp(20px,3.2vw,36px)}
-#fs .fl{flex:1;overflow:hidden;display:flex;flex-wrap:wrap;align-content:flex-start;gap:12px}
+#fs .fl{flex:1;overflow:hidden;display:flex;flex-wrap:wrap;align-content:flex-start;gap:12px;padding:8px}
+#fs #fv.off{animation:fvP 1.6s ease-in-out infinite;border-color:#f9e29c}@keyframes fvP{50%{box-shadow:0 0 0 6px #f9e29c55}}
 #fs .fn{min-width:2.2em;text-align:center;padding:6px 18px;border-radius:18px;background:#132a5e;border:1px solid #d4af3766;font:700 clamp(36px,7vw,84px)/1.1 Cinzel,Georgia,serif;color:#f9e29c}
 #fs .fn small{display:block;font:600 clamp(12px,1.6vw,20px) system-ui;opacity:.85}
 #fs .fc.r .fn{background:#1f9d55;color:#fff;animation:fpop 1s ease-in-out infinite}
@@ -1779,17 +1808,17 @@ body.f #fs{display:flex}body.f{overflow:hidden}body.f #bar{display:none}
 @media(max-width:700px){#fs .fg{grid-template-columns:1fr}}`;
   document.head.appendChild(s);
   const d = document.createElement('div'); d.id = 'fs';
-  d.innerHTML = `<div class="fh"><h2>🍽️ ${esc(getCfg('title'))} · Vos commandes</h2><span id="fclk" style="font:700 clamp(22px,3vw,36px) Georgia,serif"></span><button class="btn g" id="fv" onclick="fvoice()">🔊 Activer la voix</button>${window.HF_SCREEN === 'file' ? '' : `<button class="btn g" onclick="go('')">⬅ Retour</button>`}</div><div class="fg"><div class="fc"><h3>⏳ En préparation</h3><div class="fl" id="fp"></div></div><div class="fc r"><h3>✅ Prêtes · venez les récupérer</h3><div class="fl" id="fr"></div></div></div>`;
+  d.innerHTML = `<div class="fh"><h2>🍽️ ${esc(getCfg('title'))} · Vos commandes</h2><span id="fclk" style="font:700 clamp(22px,3vw,36px) Georgia,serif"></span><button class="btn g off" id="fv" onclick="fvoice()">🔊 Activer la voix</button>${window.HF_SCREEN === 'file' ? '' : `<button class="btn g" onclick="go('')">⬅ Retour</button>`}</div><div class="fg"><div class="fc"><h3>⏳ En préparation</h3><div class="fl" id="fp"></div></div><div class="fc r"><h3>✅ Prêtes · venez les récupérer</h3><div class="fl" id="fr"></div></div></div>`;
   document.body.appendChild(d);
 })();
 
 function say(t) { try { const u = new SpeechSynthesisUtterance(t); u.lang = 'fr-FR'; u.rate = .9; const v = (speechSynthesis.getVoices() || []).find(v => /^fr/i.test(v.lang)); if (v) u.voice = v; speechSynthesis.speak(u); } catch (e) {} }
-function fvoice() { FA = true; audio(); $('#fv').textContent = '🔊 Voix activée'; say('La voix est activée.'); }
+function fvoice() { FA = true; audio(); $('#fv').textContent = '🔊 Voix activée'; $('#fv').classList.remove('off'); say('La voix est activée.'); }
 function pump() { const o = aq.shift(); if (!o) { pump.b = 0; return; } pump.b = 1; beep(); setTimeout(() => { const t = 'Commande numéro ' + (o.nn != null ? o.nn : o.no) + (o.nom ? ', ' + o.nom : '') + ', votre commande est prête.'; say(t); say(t); }, 700); setTimeout(pump, 7000); }
 function announce(o) { if (!FA) return; aq.push(o); if (!pump.b) pump(); }
 function fdraw() {
   const q = KO.filter(o => o.t > Date.now() - 72e5).sort((a, b) => a.t - b.t);
-  const box = a => a.length ? a.map(o => `<div class="fn">${o.no}${o.nom ? `<small>${esc(o.nom)}</small>` : ''}</div>`).join('') : '<div style="opacity:.5;font-size:28px">—</div>';
+  const box = a => a.length ? a.map(o => `<div class="fn">${esc(String(o.no))}${o.nom ? `<small>${esc(o.nom)}</small>` : ''}</div>`).join('') : '<div style="opacity:.5;font-size:28px">—</div>';
   $('#fp').innerHTML = box(q.filter(o => (o.st || 0) < 2)); $('#fr').innerHTML = box(q.filter(o => (o.st || 0) === 2));
   $('#fclk').textContent = new Date().toLocaleTimeString('fr-BE', { hour: '2-digit', minute: '2-digit' });
 }
@@ -2599,9 +2628,14 @@ async function route() {
   FV = f;
   $('#kt').style.display = k ? 'flex' : 'none';
   if (k) { first = true; seen = new Set(); kload(); opnDraw(); }
-  if (f) { fprev = null; fload(); try { navigator.wakeLock && navigator.wakeLock.request('screen'); } catch (e) {} }
+  if (k || f) scrWake();
+  if (f) { fprev = null; fload(); }
 }
 addEventListener('hashchange', route);
+/* écran toujours allumé (cuisine et écran d'attente), repris quand l'écran revient */
+let SWL = null;
+async function scrWake() { try { if (navigator.wakeLock && (!SWL || SWL.released)) SWL = await navigator.wakeLock.request('screen'); } catch (e) {} }
+document.addEventListener('visibilitychange', () => { if (!document.hidden && (document.body.classList.contains('k') || FV)) { SWL = null; scrWake(); } });
 
 const initDBEvents = () => {
   const DB = getDB();

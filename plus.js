@@ -38,25 +38,39 @@
 #fcall span{font:700 clamp(26px,4vw,52px) Inter,system-ui,sans-serif;color:#f9e29c}
 @keyframes fcIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
 #kstb{margin-left:auto}
-#kso{position:fixed;inset:0;z-index:95;display:none;overflow:auto;background:#040914f2;color:#f8fafc;padding:20px}
-#kso.on{display:block}
-#kso .kw{max-width:980px;margin:0 auto}
-#kso .kh{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
-#kso .kh h2{margin:0;flex:1;color:#f9e29c}
-#kso .kg{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:16px}
-#kso .kc{background:#0c1b3e;border:1px solid #d4af3755;border-radius:16px;padding:14px}
-#kso .kc small{display:block;color:#aebbd4;font-size:13px}
-#kso .kc b{font-size:30px;color:#f9e29c}
-#kso .kl{display:grid;gap:6px}
-#kso .kr{display:grid;grid-template-columns:minmax(120px,1fr) 3fr 52px;gap:10px;align-items:center;font-size:15px}
-#kso .kr i{display:block;height:14px;border-radius:7px;background:linear-gradient(90deg,#c59b27,#f9e29c)}
-#kso .kr em{font-style:normal;text-align:right;font-weight:800;color:#f9e29c}
-#kso .ksb{display:flex;align-items:flex-end;gap:4px;height:150px;padding-top:8px}
-#kso .ksb div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;height:100%;font-size:11px;color:#aebbd4}
-#kso .ksb div i{width:100%;border-radius:6px 6px 0 0;background:linear-gradient(180deg,#f9e29c,#c59b27);min-height:2px}
-#kso h3{color:#f9e29c;margin:18px 0 8px}
-#kso .seg{display:flex;gap:6px}
-#kso .seg button.on{background:linear-gradient(135deg,#c59b27,#f9e29c,#aa771c);color:#040914}
+#hfst{position:fixed;inset:0;z-index:96;display:none;overflow:auto;-webkit-overflow-scrolling:touch;background:radial-gradient(circle at 20% 0,#132a5e,#0c1b3e 45%,#040914 85%);color:#f8fafc;padding:calc(env(safe-area-inset-top,0px) + 16px) 16px 80px;font-family:'Plus Jakarta Sans',Inter,system-ui,sans-serif}
+#hfst.on{display:block;animation:hsIn .25s ease-out}
+@keyframes hsIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+#hfst .hs-w{max-width:1040px;margin:0 auto}
+#hfst .hs-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+#hfst .hs-h h2{margin:0;flex:1 1 260px;color:#f9e29c;font:800 clamp(20px,3vw,28px)/1.2 Cinzel,Georgia,serif}
+#hfst .hs-seg{display:flex;gap:6px;flex-wrap:wrap}
+#hfst .hs-seg button,#hfst .hs-x{padding:9px 14px;border-radius:12px;border:1px solid #d4af3766;background:#0c1b3ecc;color:#f9e29c;font-family:inherit;font-weight:700;font-size:14px;line-height:1;cursor:pointer;white-space:nowrap}
+#hfst .hs-seg button.on{background:linear-gradient(135deg,#c59b27,#f9e29c,#aa771c);color:#040914;border-color:transparent}
+#hfst .hs-x{background:#e5484d;border-color:#e5484d;color:#fff}
+#hfst .hs-g{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:8px}
+#hfst .hs-c{background:linear-gradient(160deg,#132a5e,#0c1b3e);border:1px solid #d4af3755;border-radius:16px;padding:14px;text-align:center;min-width:0}
+#hfst .hs-c small{display:block;color:#aebbd4;font-size:13px;margin-bottom:4px}
+#hfst .hs-c b{display:block;font-weight:800;font-size:clamp(24px,2.8vw,34px);line-height:1.15;color:#f9e29c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#hfst .hs-c em{display:block;font-style:normal;font-size:12px;margin-top:4px;color:#aebbd4}
+#hfst .hs-c em.up{color:#5be39a}#hfst .hs-c em.dn{color:#ff8a8d}
+#hfst h3{color:#f9e29c;margin:20px 0 10px;font:700 18px/1.2 Cinzel,Georgia,serif;text-align:left}
+#hfst .hs-l{display:grid;gap:7px}
+#hfst .hs-r{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,2fr) 64px;gap:10px;align-items:center;font-size:15px;text-align:left}
+#hfst .hs-r span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#hfst .hs-r i{display:block;height:14px;border-radius:7px;background:linear-gradient(90deg,#c59b27,#f9e29c);min-width:4px}
+#hfst .hs-r em{font-style:normal;text-align:right;font-weight:800;color:#f9e29c;white-space:nowrap}
+#hfst .hs-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+#hfst .hs-b{display:flex;align-items:flex-end;gap:4px;height:160px;padding-top:8px}
+#hfst .hs-b div{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;height:100%;font-size:11px;color:#aebbd4}
+#hfst .hs-b div i{width:100%;border-radius:6px 6px 0 0;background:linear-gradient(180deg,#f9e29c,#c59b27);min-height:2px}
+#hfst .hs-b div.pk i{background:linear-gradient(180deg,#ffb36b,#e5484d)}
+#hfst .hs-e{opacity:.65;margin:6px 0}
+#hfst .hs-n{opacity:.6;font-size:13px;margin-top:18px;line-height:1.4}
+@media(max-width:900px){#hfst .hs-g{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:620px){#hfst{padding-left:12px;padding-right:12px}#hfst .hs-g{grid-template-columns:1fr 1fr;gap:8px}#hfst .hs-c{padding:10px 8px}#hfst .hs-c:first-child{grid-column:1/-1}
+#hfst .hs-2{grid-template-columns:1fr;gap:0}#hfst .hs-r{grid-template-columns:minmax(0,1fr) 70px 54px;font-size:14px}#hfst .hs-b{height:130px;gap:2px}#hfst .hs-b div{font-size:9px}
+#hfst .hs-seg{width:100%}#hfst .hs-seg button{flex:1;padding:9px 6px}}
 `;
   document.head.appendChild(css);
 
@@ -197,7 +211,7 @@
       const r = _fd.apply(this, arguments);
       try {
         const h = $('#fs .fh');
-        if (h && !h.querySelector('.flogo2') && window.HF_LOGO) h.insertAdjacentHTML('afterbegin', `<img class="flogo2" src="${esc(window.HF_LOGO)}" alt="">`);
+        if (h && !h.querySelector('.flogo2') && window.HF_LOGO) { h.insertAdjacentHTML('afterbegin', `<img class="flogo2" src="${esc(window.HF_LOGO)}" alt="">`); const t = h.querySelector('h2'); if (t) t.textContent = t.textContent.replace(/^🍽️\s*/, ''); }
         const q = KO.filter(o => o.t > Date.now() - 72e5).sort((a, b) => a.t - b.t).filter(o => (o.st || 0) === 2);
         const now = Date.now(), fresh = [];
         q.forEach(o => { if (!readyAt[o.k]) { readyAt[o.k] = fdraw.init ? now : now - 6e4; if (fdraw.init) fresh.push(o); } });
@@ -210,16 +224,27 @@
     };
   }
 
-  /* ---------- 5. Statistiques (écran cuisine) ---------- */
+  /* ---------- 5. Statistiques (écran cuisine) ----------
+     Enregistrées sur l'appareil de la cuisine (localStorage « hfstat »), à partir de
+     chaque commande reçue (site et borne). Ligne : [heure, total, [[plat, qté]], borne?, mode, paiement]
+     Fenêtre : #hfst (ne pas réutiliser #kso, réservé au mode kiosque). */
   const SK = 'hfstat';
   const sget = () => { try { return JSON.parse(localStorage.getItem(SK)) || {}; } catch (e) { return {}; } };
+  const lineTot = o => (o.l || []).reduce((a, l) => a + (Number.isFinite(+l.p) ? +l.p : 0), 0);
   function srec(list) {
-    const s = sget(); let ch = 0;
-    list.forEach(o => { if (o && o.k && !s[o.k] && o.l) { s[o.k] = [o.t, o.l.reduce((a, l) => a + (+l.p || 0), 0), o.l.map(l => [l.n, +l.q || 1]), o.src === 'borne' ? 1 : 0]; ch = 1; } });
+    const s = sget(); let ch = 0; const now = Date.now();
+    list.forEach(o => {
+      if (!o || !o.k || s[o.k] || !Array.isArray(o.l) || !o.l.length) return;
+      /* heure du téléphone du client parfois fausse : jamais dans le futur */
+      const t = +o.t && +o.t < now + 3e5 ? +o.t : now;
+      s[o.k] = [t, Math.round(lineTot(o) * 100) / 100, o.l.map(l => [String(l.n || '?'), Math.max(1, +l.q || 1)]), o.src === 'borne' ? 1 : 0, o.mode || '', o.pd ? 'En ligne' : (o.pay || '')];
+      ch = 1;
+    });
     if (!ch) return;
-    const lim = Date.now() - 95 * 864e5; Object.keys(s).forEach(k => { if (s[k][0] < lim) delete s[k]; });
+    const lim = now - 400 * 864e5; Object.keys(s).forEach(k => { if (!Array.isArray(s[k]) || s[k][0] < lim) delete s[k]; });
     try { localStorage.setItem(SK, JSON.stringify(s)); } catch (e) {}
   }
+  window.hfStatRec = srec;
   if (typeof kload === 'function') {
     const _kl = kload;
     kload = async function () { const r = await _kl.apply(this, arguments); try { srec(KO); kbtn(); } catch (e) {} return r; };
@@ -227,33 +252,61 @@
   function kbtn() {
     const bar = $('.kbar'); if (!bar || $('#kstb')) return;
     bar.insertAdjacentHTML('beforeend', `<button class="btn g" id="kstb">📊 ${esc(tt('Statistiques'))}</button>`);
-    $('#kstb').onclick = () => sshow(1);
+    $('#kstb').onclick = () => sshow('d');
   }
-  const eurS = v => (Math.round(v * 100) / 100).toFixed(2).replace('.', ',') + ' €';
-  function sshow(days) {
-    let o = $('#kso'); if (!o) { o = document.createElement('div'); o.id = 'kso'; document.body.appendChild(o); }
-    const d0 = new Date(); d0.setHours(0, 0, 0, 0);
-    const from = days === 1 ? d0.getTime() : Date.now() - days * 864e5;
-    const rows = Object.values(sget()).filter(r => r[0] >= from);
-    const ca = rows.reduce((a, r) => a + r[1], 0), n = rows.length, kio = rows.filter(r => r[3]).length;
-    const cnt = {}; rows.forEach(r => r[2].forEach(([nm, q]) => cnt[nm] = (cnt[nm] || 0) + q));
-    const top = Object.entries(cnt).sort((a, b) => b[1] - a[1]).slice(0, 10), mx = top.length ? top[0][1] : 1;
+  if (window.HF_SCREEN === 'cuisine') { if (document.readyState === 'loading') addEventListener('DOMContentLoaded', kbtn); else kbtn(); }
+  const eurS = v => (Math.round(v * 100) / 100).toLocaleString('fr-BE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+  const day0 = (back) => { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - back); return d.getTime(); };
+  /* périodes alignées sur les jours (minuit) : [début, fin, période précédente] */
+  const PER = {
+    d: ["Aujourd'hui", () => [day0(0), Infinity, day0(1), day0(0)], 'hier'],
+    y: ['Hier', () => [day0(1), day0(0), day0(2), day0(1)], 'avant-hier'],
+    w: ['7 jours', () => [day0(6), Infinity, day0(13), day0(6)], '7 j. avant'],
+    m: ['30 jours', () => [day0(29), Infinity, day0(59), day0(29)], '30 j. avant']
+  };
+  let SP = 'd', STI = null;
+  function cmp(a, b) {
+    if (!b) return '';
+    const p = Math.round((a - b) / b * 100);
+    return `<em class="${p >= 0 ? 'up' : 'dn'}">${p >= 0 ? '▲' : '▼'} ${Math.abs(p)} % vs ${PER[SP][2]}</em>`;
+  }
+  function bars(obj, fmt) {
+    const e = Object.entries(obj).sort((a, b) => b[1] - a[1]); const mx = e.length ? e[0][1] : 1;
+    return e.length ? e.map(([k, v]) => `<div class="hs-r"><span title="${esc(k)}">${esc(k || '—')}</span><i style="width:${Math.max(3, Math.round(v / mx * 100))}%"></i><em>${fmt ? fmt(v) : v}</em></div>`).join('') : '<p class="hs-e">—</p>';
+  }
+  function sshow(per) {
+    if (per) SP = PER[per] ? per : 'd';
+    let o = $('#hfst'); if (!o) { o = document.createElement('div'); o.id = 'hfst'; document.body.appendChild(o); }
+    const [from, to, pf, pt] = PER[SP][1]();
+    const all = Object.values(sget()).filter(Array.isArray);
+    const rows = all.filter(r => r[0] >= from && r[0] < to), prev = all.filter(r => r[0] >= pf && r[0] < pt);
+    const sum = a => a.reduce((x, r) => x + (+r[1] || 0), 0);
+    const ca = sum(rows), n = rows.length, kio = rows.filter(r => r[3]).length, pca = sum(prev), pn = prev.length;
+    const cnt = {}; rows.forEach(r => (r[2] || []).forEach(([nm, q]) => cnt[nm] = (cnt[nm] || 0) + q));
+    const top = Object.fromEntries(Object.entries(cnt).sort((a, b) => b[1] - a[1]).slice(0, 10));
+    const md = {}, py = {};
+    rows.forEach(r => { const m = r[4] || 'Non précisé', p = r[5] || 'Non précisé'; md[m] = (md[m] || 0) + 1; py[p] = (py[p] || 0) + (+r[1] || 0); });
     const hr = Array(24).fill(0); rows.forEach(r => hr[new Date(r[0]).getHours()]++);
-    const H = hr.map((v, i) => [i, v]).filter(([i]) => i >= 10 || hr[i]), hm = Math.max(1, ...hr);
-    const peak = hr.indexOf(Math.max(...hr));
-    o.innerHTML = `<div class="kw"><div class="kh"><h2>📊 Statistiques · ${esc(getCfg('title'))}</h2>
-<div class="seg">${[[1, "Aujourd'hui"], [7, '7 jours'], [30, '30 jours']].map(([d, l]) => `<button class="btn g${d === days ? ' on' : ''}" data-sd="${d}">${l}</button>`).join('')}</div>
-<button class="btn g" data-sd="0">✕ Fermer</button></div>
-<div class="kg"><div class="kc"><small>Chiffre d'affaires</small><b>${eurS(ca)}</b></div><div class="kc"><small>Commandes</small><b>${n}</b></div>
-<div class="kc"><small>Panier moyen</small><b>${eurS(n ? ca / n : 0)}</b></div><div class="kc"><small>Borne · Site</small><b>${kio} · ${n - kio}</b></div>
-<div class="kc"><small>Heure de rush</small><b>${n ? peak + ' h' : '—'}</b></div></div>
-<h3>🏆 Plats les plus vendus</h3><div class="kl">${top.length ? top.map(([nm, q]) => `<div class="kr"><span>${esc(nm)}</span><i style="width:${Math.round(q / mx * 100)}%"></i><em>${q}</em></div>`).join('') : '<p style="opacity:.6">Pas encore de commande sur cette période.</p>'}</div>
-<h3>🕐 Commandes par heure</h3><div class="ksb">${H.map(([i, v]) => `<div><span>${v || ''}</span><i style="height:${Math.round(v / hm * 100)}%"></i>${i}h</div>`).join('')}</div>
-<p style="opacity:.6;font-size:13px;margin-top:16px">Les chiffres sont enregistrés sur cet écran cuisine, à partir de chaque commande reçue (site et borne). Gardez cet écran ouvert pendant le service.</p></div>`;
+    const used = hr.map((v, i) => v ? i : -1).filter(i => i > -1);
+    const h0 = Math.min(11, ...used), h1 = Math.max(22, ...used), hm = Math.max(1, ...hr), peak = hr.indexOf(Math.max(...hr));
+    const H = []; for (let i = h0; i <= h1; i++) H.push(i);
+    o.innerHTML = `<div class="hs-w"><div class="hs-h"><h2>📊 ${esc(tt('Statistiques'))} · ${esc(getCfg('title'))}</h2>
+<div class="hs-seg">${Object.entries(PER).map(([k, v]) => `<button type="button" class="${k === SP ? 'on' : ''}" data-sp="${k}">${v[0]}</button>`).join('')}</div>
+<button type="button" class="hs-x" data-sp="0">✕ Fermer</button></div>
+<div class="hs-g"><div class="hs-c"><small>Chiffre d'affaires</small><b>${eurS(ca)}</b>${cmp(ca, pca)}</div><div class="hs-c"><small>Commandes</small><b>${n}</b>${cmp(n, pn)}</div>
+<div class="hs-c"><small>Panier moyen</small><b>${eurS(n ? ca / n : 0)}</b></div><div class="hs-c"><small>Borne · Site</small><b>${kio} · ${n - kio}</b></div>
+<div class="hs-c"><small>Heure de rush</small><b>${n ? peak + ' h' : '—'}</b></div></div>
+<h3>🏆 Plats les plus vendus</h3><div class="hs-l">${n ? bars(top) : '<p class="hs-e">Pas encore de commande sur cette période.</p>'}</div>
+<div class="hs-2"><div><h3>🍽️ Sur place / À emporter</h3><div class="hs-l">${bars(md)}</div></div><div><h3>💳 Paiements</h3><div class="hs-l">${bars(py, eurS)}</div></div></div>
+<h3>🕐 Commandes par heure</h3><div class="hs-b">${H.map(i => `<div class="${n && i === peak ? 'pk' : ''}"><span>${hr[i] || ''}</span><i style="height:${Math.round(hr[i] / hm * 100)}%"></i>${i}h</div>`).join('')}</div>
+<p class="hs-n">Les chiffres sont enregistrés sur cet écran cuisine (${all.length} commande${all.length > 1 ? 's' : ''} en mémoire), à partir de chaque commande reçue du site et de la borne. Gardez cet écran ouvert pendant le service ; un autre appareil aura ses propres chiffres.</p></div>`;
     o.classList.add('on');
-    o.onclick = e => { const b = e.target.closest('[data-sd]'); if (!b) return; const d = +b.dataset.sd; if (!d) o.classList.remove('on'); else sshow(d); };
+    o.onclick = e => { const b = e.target.closest('[data-sp]'); if (!b) return; if (b.dataset.sp === '0') shide(); else sshow(b.dataset.sp); };
+    clearInterval(STI); STI = setInterval(() => { if (o.classList.contains('on')) sshow(); else clearInterval(STI); }, 30000);
   }
-  window.hfStats = sshow;
+  function shide() { const o = $('#hfst'); if (o) o.classList.remove('on'); clearInterval(STI); }
+  addEventListener('keydown', e => { if (e.key === 'Escape' && $('#hfst.on')) shide(); });
+  window.hfStats = p => sshow(({ 1: 'd', 7: 'w', 30: 'm' })[p] || p || 'd');
 
   try { deco(); } catch (e) {}
   loadPop(); setInterval(loadPop, 600000);

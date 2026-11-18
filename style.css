@@ -773,3 +773,9 @@ body:has(.ov.on) .nav{-webkit-backdrop-filter:none!important;backdrop-filter:non
 @media(max-width:360px){.th h3{font-size:19px;white-space:nowrap}}
 /* Grand écran : fenêtres (panier, composition) un peu plus larges */
 @media(min-width:1600px){.ov .tk:not(.big){max-width:640px}}
+/* Écran cuisine : bouton retour d'étape, barre « Annuler » après Servie, titre sur une ligne */
+.ka .btn.kbk{flex:0 0 56px;font-size:20px}
+#kun{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);transform:translate(-50%,140%);z-index:97;display:flex;align-items:center;gap:12px;padding:10px 12px 10px 18px;border-radius:999px;background:#0c1b3e;border:1px solid #d4af37;color:#f9e29c;font-weight:700;box-shadow:0 12px 30px #000c;transition:transform .3s cubic-bezier(.2,.9,.3,1);white-space:nowrap}
+#kun.on{transform:translate(-50%,0)}
+#kun .btn{padding:8px 14px;min-height:0}
+.kbar h2{white-space:nowrap;flex:1 1 auto;font-size:clamp(18px,2vw,26px)}
