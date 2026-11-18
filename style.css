@@ -779,3 +779,13 @@ body:has(.ov.on) .nav{-webkit-backdrop-filter:none!important;backdrop-filter:non
 #kun.on{transform:translate(-50%,0)}
 #kun .btn{padding:8px 14px;min-height:0}
 .kbar h2{white-space:nowrap;flex:1 1 auto;font-size:clamp(18px,2vw,26px)}
+
+.ka .btn.kbk{flex:0 0 48px;font-size:18px;padding:6px}.ka .btn.kx{color:#ff8a8d}
+.kd.late{animation:klt 1.4s ease-in-out infinite}@keyframes klt{50%{box-shadow:0 0 0 3px #e5484d,0 0 22px #e5484d88}}
+#kprint{display:none}
+@media print{body.kpr>*{display:none!important}body.kpr{background:#fff!important}body.kpr::before,body.kpr::after{display:none!important}
+body.kpr #kprint{display:block!important;width:72mm;margin:0;color:#000;font:13px/1.35 Arial,sans-serif}
+#kprint h1{font:700 18px Arial,sans-serif;text-align:center;margin:0 0 4px;color:#000}#kprint .c{text-align:center;margin:2px 0}
+#kprint .no{font:800 40px Arial,sans-serif;text-align:center;margin:6px 0}#kprint hr{border:0;border-top:1px dashed #000;margin:6px 0}
+#kprint .l{display:grid;grid-template-columns:28px 1fr auto;gap:4px;margin:3px 0}#kprint small{display:block;font-size:11px}#kprint i{font-style:normal}
+@page{margin:4mm}}

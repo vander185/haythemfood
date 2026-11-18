@@ -224,6 +224,46 @@
     };
   }
 
+  /* ---------- 4b. Écran d'attente vide : diaporama des plats ---------- */
+  const fidCss = document.createElement('style');
+  fidCss.textContent = `#fidle{position:fixed;inset:0;z-index:80;display:none;background:#040914;overflow:hidden}
+#fidle.on{display:block}#fidle .fi{position:absolute;inset:0;background:center/cover no-repeat;opacity:0;transform:scale(1.08);transition:opacity 1.6s ease,transform 9s linear}
+#fidle .fi.on{opacity:1;transform:scale(1)}#fidle .ft{position:absolute;left:0;right:0;bottom:0;padding:40px 5vw 5vh;background:linear-gradient(transparent,#040914ee 60%);text-align:center}
+#fidle .ft img{height:clamp(60px,10vw,130px);filter:drop-shadow(0 4px 12px #000)}#fidle .ft b{display:block;font:800 clamp(30px,5vw,72px)/1.1 Cinzel,Georgia,serif;color:#f9e29c;text-shadow:0 3px 14px #000}
+#fidle .ft span{display:block;margin-top:6px;font:700 clamp(22px,3vw,44px) 'Plus Jakarta Sans',system-ui,sans-serif;color:#fff}`;
+  document.head.appendChild(fidCss);
+  let FID = null, fidI = 0, fidT = null;
+  function fidList() {
+    const out = [];
+    try { (cats || []).filter(c => !/sauce|suppl|boisson|olive|crudit/i.test(nk(c.n) + ' ' + nk(c.l))).forEach(c => c.items.forEach(it => { if (it.out) return; const u = IMG(it); if (u && !/^data:/.test(u)) out.push([u, full(it), it.p]); })); } catch (e) {}
+    const seen = new Set(); return out.filter(x => !seen.has(x[0]) && seen.add(x[0])).sort(() => Math.random() - .5).slice(0, 30);
+  }
+  function fidStep() {
+    if (!FID || !FID.l.length) return;
+    const [u, n, p] = FID.l[fidI++ % FID.l.length], b = FID.el.querySelectorAll('.fi'), cur = b[fidI % 2], old = b[(fidI + 1) % 2];
+    cur.style.backgroundImage = `url('${String(u).replace(/'/g, "\\'")}')`;
+    old.classList.remove('on'); void cur.offsetWidth; cur.classList.add('on');
+    FID.el.querySelector('.ft').innerHTML = `${window.HF_LOGO ? `<img src="${esc(window.HF_LOGO)}" alt="">` : ''}<b>${esc(n)}</b>${p ? `<span>${eur(+p)}</span>` : ''}`;
+  }
+  function fidle(on) {
+    if (on && !FID) {
+      const el = document.createElement('div'); el.id = 'fidle'; el.innerHTML = '<div class="fi"></div><div class="fi"></div><div class="ft"></div>';
+      document.body.appendChild(el); FID = { el, l: fidList() };
+    }
+    if (!FID) return;
+    if (on && !FID.el.classList.contains('on')) { FID.l = fidList(); if (!FID.l.length) return; FID.el.classList.add('on'); fidStep(); clearInterval(fidT); fidT = setInterval(fidStep, 7000); }
+    if (!on && FID.el.classList.contains('on')) { FID.el.classList.remove('on'); clearInterval(fidT); }
+  }
+  window.hfIdle = fidle;
+  if (typeof fdraw === 'function') {
+    const _fd2 = fdraw;
+    fdraw = function () {
+      const r = _fd2.apply(this, arguments);
+      try { if (getCfg('fIdle') !== '0') fidle(!KO.some(o => o.t > Date.now() - 72e5)); } catch (e) {}
+      return r;
+    };
+  }
+
   /* ---------- 5. Statistiques (écran cuisine) ----------
      Enregistrées sur l'appareil de la cuisine (localStorage « hfstat »), à partir de
      chaque commande reçue (site et borne). Ligne : [heure, total, [[plat, qté]], borne?, mode, paiement]

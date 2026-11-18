@@ -1759,7 +1759,7 @@ function kdraw(force) {
     $('#n' + s).textContent = a.length;
     $('#k' + s).innerHTML = a.length ? a.map(o => {
       const m = mins(o), cl = ['', 'prep', 'rdy'][s];
-      return `<div class="kd ${cl} ${s < 2 && m >= 20 ? 'late' : s < 2 && m >= 10 ? 'warn' : ''}"><div class="kh"><span class="kn">${esc(String(o.no))}</span>${o.src === 'borne' ? '<span class="km" style="background:#0e7490">🖥️ Borne</span>' : ''}${o.off ? `<span class="km" style="background:#e5484d" title="Numéro donné hors ligne : à vérifier">📵 ${esc('hors ligne')}</span>` : ''}<span class="km ${o.mode === 'À emporter' ? 'em' : ''}">${esc(o.mode || 'Sur place')}</span>${o.pd ? kPaid(o) : o.pay ? `<span class="km" style="background:#1f9d55">💳 ${esc(o.pay)}</span>` : ''}${o.w ? `<span class="km" style="background:#7a4fd0">🕒 ${esc(o.w)}</span>` : ''}<time>${m} min</time></div>${o.nom ? `<div style="color:var(--mu)">${esc(o.nom)}</div>` : ''}${(o.l || []).map(l => `<div class="kli"><b>${esc(String(l.q))}×</b><div>${esc(l.n)}${l.d && l.d.length ? `<em>${esc(l.d.join(' · '))}</em>` : ''}</div></div>`).join('')}${o.g ? `<div class="kli"><b>📝</b><div>${esc(o.g)}</div></div>` : ''}<div class="ka">${s ? `<button class="btn g kbk" title="Revenir à l’étape précédente" aria-label="Revenir à l’étape précédente" onclick="mv('${o.k}',${s - 1},this)">↩</button>` : ''}<button class="btn" onclick="mv('${o.k}',${s + 1},this)">${['Lancer ▶', 'Prête ✔', 'Servie'][s]}</button></div></div>`;
+      return `<div class="kd ${cl} ${s < 2 && m >= 20 ? 'late' : s < 2 && m >= 10 ? 'warn' : ''}"><div class="kh"><span class="kn">${esc(String(o.no))}</span>${o.src === 'borne' ? '<span class="km" style="background:#0e7490">🖥️ Borne</span>' : ''}${o.off ? `<span class="km" style="background:#e5484d" title="Numéro donné hors ligne : à vérifier">📵 ${esc('hors ligne')}</span>` : ''}<span class="km ${o.mode === 'À emporter' ? 'em' : ''}">${esc(o.mode || 'Sur place')}</span>${o.pd ? kPaid(o) : o.pay ? `<span class="km" style="background:#1f9d55">💳 ${esc(o.pay)}</span>` : ''}${o.w ? `<span class="km" style="background:#7a4fd0">🕒 ${esc(o.w)}</span>` : ''}<time>${m} min</time></div>${o.nom ? `<div style="color:var(--mu)">${esc(o.nom)}</div>` : ''}${(o.l || []).map(l => `<div class="kli"><b>${esc(String(l.q))}×</b><div>${esc(l.n)}${l.d && l.d.length ? `<em>${esc(l.d.join(' · '))}</em>` : ''}</div></div>`).join('')}${o.g ? `<div class="kli"><b>📝</b><div>${esc(o.g)}</div></div>` : ''}<div class="ka"><button class="btn g kbk" title="Imprimer le ticket" aria-label="Imprimer le ticket" onclick="kprint('${o.k}')">🖨</button>${s < 2 ? `<button class="btn g kbk kx" title="Annuler la commande" aria-label="Annuler la commande" onclick="kcancel('${o.k}')">✕</button>` : ''}${s ? `<button class="btn g kbk" title="Revenir à l’étape précédente" aria-label="Revenir à l’étape précédente" onclick="mv('${o.k}',${s - 1},this)">↩</button>` : ''}<button class="btn" onclick="mv('${o.k}',${s + 1},this)">${['Lancer ▶', 'Prête ✔', 'Servie'][s]}</button></div></div>`;
     }).join('') : '<div class="emp">Aucune commande</div>';
   });
   $('#kclk').textContent = new Date().toLocaleTimeString('fr-BE', { hour: '2-digit', minute: '2-digit' });
@@ -1777,6 +1777,44 @@ async function kundoGo() {
   if (!o) return;
   try { await Store.restore(o); if (!KO.some(x => x.k === o.k)) KO.push(o); seen.add(o.k); kdraw(1); toast('Commande ' + o.no + ' remise en « Prêtes »'); } catch (e) { toast('Erreur réseau'); }
 }
+/* Annuler une commande (client parti, erreur…) : retirée de l'écran et des statistiques */
+async function kcancel(k) {
+  const o = KO.find(x => x.k === k); if (!o) return;
+  if (!confirm('Annuler la commande ' + o.no + ' ?\nElle sera retirée de l’écran et des statistiques.')) return;
+  try {
+    await Store.del(o); KO = KO.filter(x => x.k !== k);
+    try { const s = JSON.parse(localStorage.getItem('hfstat')) || {}; delete s[k]; localStorage.setItem('hfstat', JSON.stringify(s)); } catch (e) {}
+    try { const c = JSON.parse(localStorage.getItem('hfcanc')) || {}; c[k] = Date.now(); localStorage.setItem('hfcanc', JSON.stringify(c)); } catch (e) {}
+    toast('Commande ' + o.no + ' annulée');
+  } catch (e) { toast('Erreur réseau'); }
+  kdraw(1);
+}
+/* Imprimer le ticket (imprimante de cuisine 80 mm ou imprimante normale) */
+function kprint(k) {
+  const o = KO.find(x => x.k === k); if (!o) return;
+  let p = $('#kprint'); if (!p) { p = document.createElement('div'); p.id = 'kprint'; document.body.appendChild(p); }
+  const tot = (o.l || []).reduce((a, l) => a + (+l.p || 0), 0);
+  p.innerHTML = `<h1>${esc(getCfg('title'))}</h1><p class="c">${new Date(o.t).toLocaleString('fr-BE', { dateStyle: 'short', timeStyle: 'short' })}</p>
+<div class="no">N° ${esc(String(o.no))}</div><p class="c"><b>${esc(o.mode || 'Sur place')}</b>${o.w ? ' · ' + esc(o.w) : ''}${o.src === 'borne' ? ' · Borne' : ''}</p>${o.nom ? `<p class="c">${esc(o.nom)}</p>` : ''}
+<hr>${(o.l || []).map(l => `<div class="l"><b>${esc(String(l.q))}×</b><span>${esc(l.n)}${l.d && l.d.length ? `<small>${esc(l.d.join(' · '))}</small>` : ''}</span><i>${l.p ? eur(+l.p) : ''}</i></div>`).join('')}
+${o.g ? `<hr><p>📝 ${esc(o.g)}</p>` : ''}<hr><div class="l"><b></b><span><b>TOTAL</b></span><i><b>${eur(tot)}</b></i></div><p class="c">${o.pd ? 'Payé en ligne' : esc(o.pay || '')}</p>`;
+  document.body.classList.add('kpr');
+  const done = () => { document.body.classList.remove('kpr'); removeEventListener('afterprint', done); };
+  addEventListener('afterprint', done);
+  setTimeout(() => { window.print(); setTimeout(done, 1500); }, 50);
+}
+/* Alerte : commande en attente depuis trop longtemps (15 min par défaut, réglage kLate) */
+const KLATE = new Set();
+function klate() {
+  if (!document.body.classList.contains('k')) return;
+  const lim = Math.max(5, +getCfg('kLate') || 15);
+  const late = KO.filter(o => (o.st || 0) < 2 && mins(o) >= lim && o.t > Date.now() - 864e5 && !KLATE.has(o.k));
+  if (!late.length) return;
+  late.forEach(o => KLATE.add(o.k));
+  try { audio(); SOUNDS.alerte(0); SOUNDS.alerte(.7); } catch (e) {}
+  toast('⏰ En attente depuis plus de ' + lim + ' min : n° ' + late.map(o => o.no).join(', '));
+}
+setInterval(klate, 30000);
 async function mv(k, s, btn) {
   const o = KO.find(x => x.k === k); if (!o || mv.b) return;
   mv.b = 1; if (btn) btn.disabled = true;
