@@ -272,18 +272,62 @@
   const sget = () => { try { return JSON.parse(localStorage.getItem(SK)) || {}; } catch (e) { return {}; } };
   const lineTot = o => (o.l || []).reduce((a, l) => a + (Number.isFinite(+l.p) ? +l.p : 0), 0);
   function srec(list) {
-    const s = sget(); let ch = 0; const now = Date.now();
+    const s = sget(); let ch = 0; const now = Date.now(); const cq = {};
     list.forEach(o => {
       if (!o || !o.k || s[o.k] || !Array.isArray(o.l) || !o.l.length) return;
       /* heure du téléphone du client parfois fausse : jamais dans le futur */
       const t = +o.t && +o.t < now + 3e5 ? +o.t : now;
       s[o.k] = [t, Math.round(lineTot(o) * 100) / 100, o.l.map(l => [String(l.n || '?'), Math.max(1, +l.q || 1)]), o.src === 'borne' ? 1 : 0, o.mode || '', o.pd ? 'En ligne' : (o.pay || '')];
-      ch = 1;
+      cq[o.k] = s[o.k]; ch = 1;
     });
     if (!ch) return;
     const lim = now - 400 * 864e5; Object.keys(s).forEach(k => { if (!Array.isArray(s[k]) || s[k][0] < lim) delete s[k]; });
     try { localStorage.setItem(SK, JSON.stringify(s)); } catch (e) {}
+    cqAdd(cq); cpush();
   }
+  /* ---- Statistiques en ligne (Firebase, chemin hs/<mot de passe Firebase haché>) ----
+     Seuls les appareils autorisés avec le mot de passe Firebase connaissent ce chemin ;
+     la règle Firebase « hs » n'accepte que le bon mot de passe. Sinon : stats sur l'appareil. */
+  const CQ = 'hfstq';
+  let CST = '';                      /* '', 'ok', 'nopw', 'rule', 'net' */
+  const cbase = () => { const D = DBU(), w = (typeof WK === 'function' && WK()) || ''; return D && w ? D + '/hs/' + w : ''; };
+  const cqGet = () => { try { return JSON.parse(localStorage.getItem(CQ)) || {}; } catch (e) { return {}; } };
+  const cqSet = q => { try { localStorage.setItem(CQ, JSON.stringify(q)); } catch (e) {} };
+  function cqAdd(o) { if (!Object.keys(o).length) return; const q = cqGet(); Object.assign(q, o); cqSet(q); }
+  async function cpush() {
+    const B = cbase(); if (!B) { CST = 'nopw'; return; }
+    if (cpush.b) return; cpush.b = 1;
+    try {
+      if (!localStorage.getItem('hfstup')) { cqAdd(sget()); localStorage.setItem('hfstup', '1'); }   /* 1re fois : on envoie l'historique */
+      const q = cqGet(), ks = Object.keys(q);
+      for (let i = 0; i < ks.length; i += 200) {
+        const part = {}; ks.slice(i, i + 200).forEach(k => { part[k] = q[k]; });
+        const r = await fetch(B + '.json', { method: 'PATCH', body: JSON.stringify(part) });
+        if (r.status === 401 || r.status === 403) { CST = 'rule'; localStorage.removeItem('hfstup'); cpush.b = 0; return; }
+        if (!r.ok) throw 1;
+        const left = cqGet(); Object.keys(part).forEach(k => delete left[k]); cqSet(left);
+      }
+      CST = 'ok';
+    } catch (e) { CST = 'net'; }
+    cpush.b = 0;
+  }
+  async function cpull() {
+    const B = cbase(); if (!B) { CST = 'nopw'; return; }
+    try {
+      const r = await fetch(B + '.json', { cache: 'no-store' });
+      if (r.status === 401 || r.status === 403) { CST = 'rule'; return; }
+      if (!r.ok) throw 1;
+      const c = (await r.json()) || {}, s = sget(); let ch = 0;
+      Object.entries(c).forEach(([k, v]) => { if (Array.isArray(v) && !s[k]) { s[k] = v; ch = 1; } });
+      if (ch) try { localStorage.setItem(SK, JSON.stringify(s)); } catch (e) {}
+      CST = CST === 'rule' ? 'rule' : 'ok';
+    } catch (e) { CST = 'net'; }
+  }
+  window.hfStatDel = k => {
+    try { const s = sget(); delete s[k]; localStorage.setItem(SK, JSON.stringify(s)); const q = cqGet(); delete q[k]; cqSet(q); } catch (e) {}
+    const B = cbase(); if (B) fetch(B + '/' + encodeURIComponent(k) + '.json', { method: 'DELETE' }).catch(() => {});
+  };
+  setInterval(cpush, 60000);
   window.hfStatRec = srec;
   if (typeof kload === 'function') {
     const _kl = kload;
@@ -314,8 +358,9 @@
     const e = Object.entries(obj).sort((a, b) => b[1] - a[1]); const mx = e.length ? e[0][1] : 1;
     return e.length ? e.map(([k, v]) => `<div class="hs-r"><span title="${esc(k)}">${esc(k || '—')}</span><i style="width:${Math.max(3, Math.round(v / mx * 100))}%"></i><em>${fmt ? fmt(v) : v}</em></div>`).join('') : '<p class="hs-e">—</p>';
   }
-  function sshow(per) {
+  function sshow(per, nopull) {
     if (per) SP = PER[per] ? per : 'd';
+    if (!nopull) cpull().then(cpush).then(() => { if ($('#hfst.on')) sshow(null, 1); });
     let o = $('#hfst'); if (!o) { o = document.createElement('div'); o.id = 'hfst'; document.body.appendChild(o); }
     const [from, to, pf, pt] = PER[SP][1]();
     const all = Object.values(sget()).filter(Array.isArray);
@@ -339,7 +384,7 @@
 <h3>🏆 Plats les plus vendus</h3><div class="hs-l">${n ? bars(top) : '<p class="hs-e">Pas encore de commande sur cette période.</p>'}</div>
 <div class="hs-2"><div><h3>🍽️ Sur place / À emporter</h3><div class="hs-l">${bars(md)}</div></div><div><h3>💳 Paiements</h3><div class="hs-l">${bars(py, eurS)}</div></div></div>
 <h3>🕐 Commandes par heure</h3><div class="hs-b">${H.map(i => `<div class="${n && i === peak ? 'pk' : ''}"><span>${hr[i] || ''}</span><i style="height:${Math.round(hr[i] / hm * 100)}%"></i>${i}h</div>`).join('')}</div>
-<p class="hs-n">Les chiffres sont enregistrés sur cet écran cuisine (${all.length} commande${all.length > 1 ? 's' : ''} en mémoire), à partir de chaque commande reçue du site et de la borne. Gardez cet écran ouvert pendant le service ; un autre appareil aura ses propres chiffres.</p></div>`;
+<p class="hs-n">${({ ok: '☁️ Synchronisé en ligne : les mêmes chiffres sur tous les appareils autorisés, même après un vidage du cache.', rule: '⚠ Firebase refuse les statistiques en ligne : la règle « hs » n’est pas encore ajoutée dans Firebase (Realtime Database → Règles). Chiffres gardés sur cet appareil.', nopw: '📱 Chiffres gardés sur cet appareil seulement. Pour les garder en ligne : Réglages → Sécurité → « Autoriser cet appareil avec un mot de passe existant ».', net: '⚠ Pas de connexion : chiffres sur cet appareil, envoyés dès le retour d’internet.' })[CST] || 'Synchronisation…'}<br>${all.length} commande${all.length > 1 ? 's' : ''} en mémoire, reçues du site et de la borne. Gardez un écran cuisine ouvert pendant le service.</p></div>`;
     o.classList.add('on');
     o.onclick = e => { const b = e.target.closest('[data-sp]'); if (!b) return; if (b.dataset.sp === '0') shide(); else sshow(b.dataset.sp); };
     clearInterval(STI); STI = setInterval(() => { if (o.classList.contains('on')) sshow(); else clearInterval(STI); }, 30000);

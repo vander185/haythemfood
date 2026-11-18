@@ -1783,7 +1783,7 @@ async function kcancel(k) {
   if (!confirm('Annuler la commande ' + o.no + ' ?\nElle sera retirée de l’écran et des statistiques.')) return;
   try {
     await Store.del(o); KO = KO.filter(x => x.k !== k);
-    try { const s = JSON.parse(localStorage.getItem('hfstat')) || {}; delete s[k]; localStorage.setItem('hfstat', JSON.stringify(s)); } catch (e) {}
+    try { if (window.hfStatDel) hfStatDel(k); else { const s = JSON.parse(localStorage.getItem('hfstat')) || {}; delete s[k]; localStorage.setItem('hfstat', JSON.stringify(s)); } } catch (e) {}
     try { const c = JSON.parse(localStorage.getItem('hfcanc')) || {}; c[k] = Date.now(); localStorage.setItem('hfcanc', JSON.stringify(c)); } catch (e) {}
     toast('Commande ' + o.no + ' annulée');
   } catch (e) { toast('Erreur réseau'); }
