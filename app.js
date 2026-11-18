@@ -554,6 +554,9 @@ const LZ = (() => {
   return { scan: r => (r || document).querySelectorAll('[data-bg]').forEach(el => skip(el) || io.observe(el)) };
 })();
 /* fond de photo à poser plus tard ; eager=1 pour les photos tout de suite visibles */
+/* version HD d'une photo (agrandie ×4 par IA, jusqu'à 1920 px) pour les grandes vues */
+const HDU = u => /^photos\/[^/]+\.webp$/.test(u || '') ? 'photos/hd/' + u.slice(7) : u;
+const BIGSCR = () => (innerWidth * (devicePixelRatio || 1)) >= 1400;
 const bg = (u, eager) => u ? ((eager || LZOK.has(u)) ? ` style="background-image:url('${cssu(u)}')" class="lzon"` : ` data-bg="${esc(u)}"`) : '';
 /* les cadres lumineux ne tournent que pour les plats à l'écran (moins de travail pour le téléphone) */
 const VIS = 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(e => e.target.classList.toggle('vis', e.isIntersecting)), { rootMargin: '100px 0px' }) : null;
@@ -933,7 +936,7 @@ function renderBan() {
   const sec = Math.max(2, +getCfg('banSec') || 5);
   el.innerHTML = `<div class="bn" style="--bsec:${sec}s">${sl.map((s, i) => {
     const sub = banSub(s);
-    return `<div class="bs${i ? '' : ' on'}" role="link" tabindex="0" data-go="${esc(s.go || 'c0')}"><i class="bi"${bg(s.img, !i)}></i><div class="bx">${s.tag ? `<em>${esc(s.tag)}</em>` : ''}<b>${esc(s.title || '')}</b>${sub ? `<span>${esc(sub)}</span>` : ''}<u class="btn">${esc(T('Commander'))} →</u></div><i class="bp"></i></div>`;
+    return `<div class="bs${i ? '' : ' on'}" role="link" tabindex="0" data-go="${esc(s.go || 'c0')}"><i class="bi"${bg(BIGSCR() ? HDU(s.img) : s.img, !i)}></i><div class="bx">${s.tag ? `<em>${esc(s.tag)}</em>` : ''}<b>${esc(s.title || '')}</b>${sub ? `<span>${esc(sub)}</span>` : ''}<u class="btn">${esc(T('Commander'))} →</u></div><i class="bp"></i></div>`;
   }).join('')}${sl.length > 1 ? `<div class="bd">${sl.map((s, i) => `<button type="button" class="${i ? '' : 'on'}" data-bn="${i}" aria-label="${i + 1}"></button>`).join('')}</div>` : ''}</div>`;
   if (sl.length > 1) banStart();
 }
@@ -978,7 +981,7 @@ function openPV(id) {
   const feats = [gt && goutTxt(gt), o.includes('r') && T('Garniture au choix'), o.includes('s') && T('Sauces au choix'), o.includes('x') && getSUP().length && T('Suppléments au choix'), o.includes('b') && T('Boisson en option') + ' (+' + eur(getDP()) + ')'].filter(Boolean);
   const desc = descOf(it);
   el.innerHTML = `<div class="pvc"><button class="pvx" data-x="pvc" aria-label="${esc(T('Fermer'))}">✕</button>
-<div class="pvi">${u ? `<i${bg(u, 1)}></i>` : `<span>${it.e}</span>`}<small>${c.e || ''} ${esc(T(c.l || it.cat))}</small></div>
+<div class="pvi">${u ? `<i${bg(HDU(u), 1)}></i>` : `<span>${it.e}</span>`}<small>${c.e || ''} ${esc(T(c.l || it.cat))}</small></div>
 <div class="pvb"><h3>${esc(full(it))}</h3><div class="pvp">${eur(it.p)}</div>${desc ? `<p>${esc(desc)}</p>` : ''}
 ${feats.length ? `<div class="pvf">${feats.map(f => `<span>✦ ${esc(f)}</span>`).join('')}</div>` : ''}${o ? `<p class="nt">${esc(T(getCfg('accNote')))}</p>` : ''}
 ${(() => {
