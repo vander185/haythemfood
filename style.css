@@ -650,7 +650,8 @@ img,video,canvas{max-width:100%}
 
 /* ===== Scan d'affichage : corrections ===== */
 /* bouton « ↑ » : ne cache plus les boutons Composer/Ajouter (centré en bas, au-dessus du panier) */
-#totop{left:50%!important;right:auto!important;margin-left:-20px;width:40px!important;height:40px!important}
+#totop{left:10px!important;right:auto!important;margin-left:0;width:40px!important;height:40px!important}
+[dir=rtl] #totop{left:auto!important;right:10px!important}
 @media (max-width:820px){
  #totop.on{transform:none}
  body:has(#bar.on) #totop{bottom:calc(92px + env(safe-area-inset-bottom))!important}

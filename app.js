@@ -5,6 +5,57 @@ let lang = localStorage.getItem('hflang') || 'fr';
 
 const TR = {
   nl: {
+    "🟢 Ouvert · Commandez en ligne": "🟢 Open · Bestel online",
+    "🔴 Actuellement fermé": "🔴 Momenteel gesloten",
+    "✨ Nos incontournables": "✨ Onze toppers",
+    "Voir la carte →": "Bekijk de kaart →",
+    "Dürüms": "Dürüms",
+    "Tacos": "Taco's",
+    "Burgers": "Burgers",
+    "Bowls & Salades": "Bowls & salades",
+    "Voir la carte": "Bekijk de kaart",
+    "Nous sommes fermés": "We zijn gesloten",
+    "Ouvre": "Opent",
+    "à": "om",
+    "Réouverture bientôt": "Binnenkort weer open",
+    "Vous pouvez préparer votre commande, l’envoi se fera à la réouverture.": "U kunt uw bestelling al samenstellen; ze wordt verstuurd zodra we open zijn.",
+    "aujourd’hui": "vandaag",
+    "demain": "morgen",
+    "Suppléments au choix": "Extra's naar keuze",
+    "Allergènes": "Allergenen",
+    "Touchez un plat pour voir sa description, ses ingrédients et ses allergènes.": "Tik op een gerecht voor de beschrijving, ingrediënten en allergenen.",
+    "Boisson incluse dans le menu": "Drankje inbegrepen in het menu",
+    "En option, payant. Touchez pour ajouter ou retirer.": "Optioneel, betalend. Tik om toe te voegen of te verwijderen.",
+    "Le goût est indiqué sous chaque sauce.": "De smaak staat onder elke saus.",
+    "peu": "weinig",
+    "relevé": "pittig",
+    "très piquant": "heel pikant",
+    "Votre panier est gardé : revenez à l’ouverture pour l’envoyer.": "Uw mandje blijft bewaard: kom terug bij opening om het te versturen.",
+    "Payer": "Betalen",
+    "et commander": "en bestellen",
+    "Fermé · commande impossible": "Gesloten · bestellen niet mogelijk",
+    "Ouverture du paiement…": "Betaling wordt geopend…",
+    "Paiement en ligne indisponible : choisissez un autre mode de paiement": "Online betalen niet beschikbaar: kies een andere betaalwijze",
+    "Paiement accepté": "Betaling aanvaard",
+    "Vérification du paiement…": "Betaling wordt gecontroleerd…",
+    "Paiement non abouti : votre panier est gardé": "Betaling niet gelukt: uw mandje blijft bewaard",
+    "Préparation de votre commande…": "Uw bestelling wordt voorbereid…",
+    "Envoi…": "Verzenden…",
+    "Payé en ligne": "Online betaald",
+    "Envoyer aussi sur WhatsApp": "Ook via WhatsApp sturen",
+    "Nouveau": "Nieuw",
+    "Le plus commandé": "Meest besteld",
+    "Passez en menu ?": "Maak er een menu van?",
+    "Votre plat + des frites": "Uw gerecht + frietjes",
+    "boisson au choix": "drankje naar keuze",
+    "Oui, en menu": "Ja, als menu",
+    "Prête dans environ": "Klaar over ongeveer",
+    "Vous êtes le prochain !": "U bent de volgende!",
+    "Commande prête": "Bestelling klaar",
+    "Venez la récupérer au comptoir": "Haal ze af aan de toonbank",
+    "Dürüm": "Dürüm",
+    "Maïs": "Maïs",
+    "Salades": "Salades",
     'Composer': 'Samenstellen', 'Ajouter': 'Toevoegen', 'Ma commande': 'Mijn bestelling',
     'Sur place': 'Ter plaatse', 'À emporter': 'Meenemen', 'Votre prénom (pour vous appeler)': 'Uw voornaam',
     'Votre panier est vide.': 'Uw mandje is leeg.', 'Total': 'Totaal', 'Valider ma commande': 'Bestelling bevestigen',
@@ -41,9 +92,61 @@ const TR = {
     'Bon appétit !': 'Smakelijk!', 'Carte de fidélité': 'Klantenkaart', 'Cette commande complète votre carte :': 'Deze bestelling maakt uw kaart vol:',
     'fermé': 'gesloten', 'Lun': 'Ma', 'Mar': 'Di', 'Mer': 'Wo', 'Jeu': 'Do', 'Ven': 'Vr', 'Sam': 'Za', 'Dim': 'Zo',
     'Ouvre à': 'Opent om', 'Payer en ligne': 'Online betalen', 'Titulaire': 'Rekeninghouder', 'Banque': 'Bank',
-    'Dürüms, tacos, grillades et tajines. Composez votre commande, envoyez-la par WhatsApp.': 'Dürüms, tacos, grillades en tajines. Stel uw bestelling samen en stuur ze via WhatsApp.'
+    'Dürüms, tacos, grillades et tajines. Commandez en ligne, sur place ou à emporter.': "Dürüms, taco's, grill en tajines. Bestel online, ter plaatse of om mee te nemen."
   },
   en: {
+    "🟢 Ouvert · Commandez en ligne": "🟢 Open · Order online",
+    "🔴 Actuellement fermé": "🔴 Currently closed",
+    "✨ Nos incontournables": "✨ Our must-haves",
+    "Voir la carte →": "See the menu →",
+    "Dürüms": "Wraps",
+    "Tacos": "Tacos",
+    "Burgers": "Burgers",
+    "Bowls & Salades": "Bowls & salads",
+    "Voir la carte": "See the menu",
+    "Nous sommes fermés": "We are closed",
+    "Ouvre": "Opens",
+    "à": "at",
+    "Réouverture bientôt": "Reopening soon",
+    "Vous pouvez préparer votre commande, l’envoi se fera à la réouverture.": "You can prepare your order now; it will be sent when we reopen.",
+    "aujourd’hui": "today",
+    "demain": "tomorrow",
+    "Suppléments au choix": "Extras of your choice",
+    "Allergènes": "Allergens",
+    "Touchez un plat pour voir sa description, ses ingrédients et ses allergènes.": "Tap a dish to see its description, ingredients and allergens.",
+    "Boisson incluse dans le menu": "Drink included in the meal",
+    "En option, payant. Touchez pour ajouter ou retirer.": "Optional, extra charge. Tap to add or remove.",
+    "Le goût est indiqué sous chaque sauce.": "The taste is shown under each sauce.",
+    "peu": "mild",
+    "relevé": "spicy",
+    "très piquant": "very hot",
+    "Votre panier est gardé : revenez à l’ouverture pour l’envoyer.": "Your basket is saved: come back when we open to send it.",
+    "Payer": "Pay",
+    "et commander": "and order",
+    "Fermé · commande impossible": "Closed · ordering unavailable",
+    "Ouverture du paiement…": "Opening payment…",
+    "Paiement en ligne indisponible : choisissez un autre mode de paiement": "Online payment unavailable: choose another payment method",
+    "Paiement accepté": "Payment accepted",
+    "Vérification du paiement…": "Checking payment…",
+    "Paiement non abouti : votre panier est gardé": "Payment not completed: your basket is saved",
+    "Préparation de votre commande…": "Preparing your order…",
+    "Envoi…": "Sending…",
+    "Payé en ligne": "Paid online",
+    "Envoyer aussi sur WhatsApp": "Also send on WhatsApp",
+    "Nouveau": "New",
+    "Le plus commandé": "Most ordered",
+    "Passez en menu ?": "Make it a meal?",
+    "Votre plat + des frites": "Your dish + fries",
+    "boisson au choix": "drink of your choice",
+    "Oui, en menu": "Yes, make it a meal",
+    "Prête dans environ": "Ready in about",
+    "Vous êtes le prochain !": "You're next!",
+    "Commande prête": "Order ready",
+    "Venez la récupérer au comptoir": "Collect it at the counter",
+    "Sandwich": "Sandwich",
+    "Sauces": "Sauces",
+    "Olives": "Olives",
+    "Menus": "Meals",
     'Composer': 'Customise', 'Ajouter': 'Add', 'Ma commande': 'My order',
     'Sur place': 'Eat in', 'À emporter': 'Takeaway', 'Votre prénom (pour vous appeler)': 'Your first name',
     'Votre panier est vide.': 'Your basket is empty.', 'Total': 'Total', 'Valider ma commande': 'Confirm my order',
@@ -80,17 +183,352 @@ const TR = {
     'Bon appétit !': 'Enjoy your meal!', 'Carte de fidélité': 'Loyalty card', 'Cette commande complète votre carte :': 'This order completes your card:',
     'fermé': 'closed', 'Lun': 'Mon', 'Mar': 'Tue', 'Mer': 'Wed', 'Jeu': 'Thu', 'Ven': 'Fri', 'Sam': 'Sat', 'Dim': 'Sun',
     'Ouvre à': 'Opens at', 'Payer en ligne': 'Pay online', 'Titulaire': 'Account holder', 'Banque': 'Bank',
-    'Dürüms, tacos, grillades et tajines. Composez votre commande, envoyez-la par WhatsApp.': 'Dürüms, tacos, grills and tajines. Build your order and send it by WhatsApp.'
+    'Dürüms, tacos, grillades et tajines. Commandez en ligne, sur place ou à emporter.': "Dürüms, tacos, grills and tajines. Order online, eat in or take away."
+  },
+  es: {
+    "🟢 Ouvert · Commandez en ligne": "🟢 Abierto · Pida en línea",
+    "🔴 Actuellement fermé": "🔴 Cerrado ahora",
+    "✨ Nos incontournables": "✨ Nuestros imprescindibles",
+    "Voir la carte →": "Ver la carta →",
+    "Dürüms": "Dürüms",
+    "Tacos": "Tacos",
+    "Burgers": "Hamburguesas",
+    "Bowls & Salades": "Bowls y ensaladas",
+    "Composer": "Personalizar",
+    "Ajouter": "Añadir",
+    "Ma commande": "Mi pedido",
+    "Sur place": "Para comer aquí",
+    "À emporter": "Para llevar",
+    "Votre prénom (pour vous appeler)": "Su nombre (para llamarle)",
+    "Votre panier est vide.": "Su cesta está vacía.",
+    "Total": "Total",
+    "Valider ma commande": "Confirmar mi pedido",
+    "Paiement au comptoir": "Pago en el mostrador",
+    "Heure de retrait": "Hora de recogida",
+    "Dès que possible": "Lo antes posible",
+    "Remarque pour la commande": "Nota para el pedido",
+    "Remarque (ex. sans oignons)": "Nota (p. ej. sin cebolla)",
+    "Suivant": "Siguiente",
+    " article": " artículo",
+    " articles": " artículos",
+    "Voir mon panier": "Ver mi cesta",
+    "Rechercher un plat…": "Buscar un plato…",
+    "Cuisine halal": "Cocina halal",
+    "Faite minute": "Hecho al momento",
+    "Sur place ou à emporter": "Para comer aquí o para llevar",
+    "Appeler": "Llamar",
+    "Itinéraire": "Cómo llegar",
+    "Donner un avis": "Dejar una reseña",
+    "Épuisé": "Agotado",
+    "Ouvert": "Abierto",
+    "Fermé": "Cerrado",
+    "Commander": "Pedir",
+    "À partir de": "Desde",
+    "Fermer": "Cerrar",
+    "Copier": "Copiar",
+    "Copié ✔": "Copiado ✔",
+    "Garniture au choix": "Verduras a elegir",
+    "Sauces au choix": "Salsas a elegir",
+    "Boisson en option": "Bebida opcional",
+    "Dürüm ou Sandwich": "Dürüm o bocadillo",
+    "Dürüm ou Sandwich ?": "¿Dürüm o bocadillo?",
+    "Sandwich": "Bocadillo",
+    "Dürüm": "Dürüm",
+    "Formule": "Fórmula",
+    "Livraison à domicile": "Entrega a domicilio",
+    "Prochainement": "Próximamente",
+    "Bientôt disponible sur :": "Próximamente en:",
+    "Scannez avec votre app bancaire": "Escanee con su app bancaria",
+    "Payer en ligne": "Pagar en línea",
+    "Virement pré-rempli : montant et communication déjà remplis.": "Transferencia prerrellenada: importe y concepto ya indicados.",
+    "Vider": "Vaciar",
+    "Vider le panier ?": "¿Vaciar la cesta?",
+    "Modifier": "Modificar",
+    "Retirer": "Quitar",
+    "Enregistrer": "Guardar",
+    "Panier vidé": "Cesta vaciada",
+    "Choisir": "Elegir",
+    "Votre choix": "Su elección",
+    "Fanta Citron": "Fanta Limón",
+    "Garniture": "Verduras",
+    "Sauces": "Salsas",
+    "Boisson": "Bebida",
+    "Ajouter une boisson": "Añadir una bebida",
+    "Choisissez vos crudités": "Elija sus verduras",
+    "Choisissez vos sauces": "Elija sus salsas",
+    "Sans sauce": "Sin salsa",
+    "Non merci": "No, gracias",
+    "Sans crudités": "Sin verduras",
+    "Toutes les crudités": "Todas las verduras",
+    "Salade": "Lechuga",
+    "Tomates": "Tomates",
+    "Oignons": "Cebolla",
+    "Concombre": "Pepino",
+    "Maïs": "Maíz",
+    "Carottes": "Zanahoria",
+    "Chou blanc": "Col blanca",
+    "Olives": "Aceitunas",
+    "Poivrons": "Pimientos",
+    "Eau": "Agua",
+    "Sandwichs": "Bocadillos",
+    "Menus": "Menús",
+    "Assiettes": "Platos",
+    "Grillades": "Parrilla",
+    "Salades": "Ensaladas",
+    "Spécialités": "Especialidades",
+    "Frites & plus": "Patatas fritas y más",
+    "Suppléments": "Extras",
+    "Boissons": "Bebidas",
+    "Accompagnement : salade composée, frites, sauces": "Acompañamiento: ensalada, patatas fritas, salsas",
+    "Une boisson ou un dessert ?": "¿Una bebida o un postre?",
+    "Une boisson fraîche avec ça ?": "¿Una bebida fresca con eso?",
+    "Un petit dessert pour finir ?": "¿Un postre para terminar?",
+    "Bien choisi ! Autre chose ?": "¡Buena elección! ¿Algo más?",
+    "Juste avant d’envoyer votre commande…": "Justo antes de enviar su pedido…",
+    "Non merci, envoyer ma commande": "No, gracias, enviar mi pedido",
+    "Envoyer ma commande": "Enviar mi pedido",
+    "Recommander ma dernière commande": "Repetir mi último pedido",
+    "Commande envoyée": "Pedido enviado",
+    "Votre numéro de commande": "Su número de pedido",
+    "Reçue": "Recibido",
+    "En préparation": "En preparación",
+    "Prête": "Listo",
+    "Votre commande est prête !": "¡Su pedido está listo!",
+    "Présentez ce numéro au comptoir.": "Muestre este número en el mostrador.",
+    "Bon appétit !": "¡Buen provecho!",
+    "Carte de fidélité": "Tarjeta de fidelidad",
+    "Cette commande complète votre carte :": "Este pedido completa su tarjeta:",
+    "fermé": "cerrado",
+    "Lun": "Lun",
+    "Mar": "Mar",
+    "Mer": "Mié",
+    "Jeu": "Jue",
+    "Ven": "Vie",
+    "Sam": "Sáb",
+    "Dim": "Dom",
+    "Ouvre à": "Abre a las",
+    "Titulaire": "Titular",
+    "Banque": "Banco",
+    "Dürüms, tacos, grillades et tajines. Commandez en ligne, sur place ou à emporter.": "Dürüms, tacos, parrilla y tajines. Pida en línea, para comer aquí o para llevar.",
+    "Voir la carte": "Ver la carta",
+    "Nous sommes fermés": "Estamos cerrados",
+    "Ouvre": "Abre",
+    "à": "a las",
+    "Réouverture bientôt": "Reabrimos pronto",
+    "Vous pouvez préparer votre commande, l’envoi se fera à la réouverture.": "Puede preparar su pedido; se enviará cuando abramos.",
+    "aujourd’hui": "hoy",
+    "demain": "mañana",
+    "Suppléments au choix": "Extras a elegir",
+    "Allergènes": "Alérgenos",
+    "Touchez un plat pour voir sa description, ses ingrédients et ses allergènes.": "Toque un plato para ver su descripción, ingredientes y alérgenos.",
+    "Boisson incluse dans le menu": "Bebida incluida en el menú",
+    "En option, payant. Touchez pour ajouter ou retirer.": "Opcional, de pago. Toque para añadir o quitar.",
+    "Le goût est indiqué sous chaque sauce.": "El sabor se indica bajo cada salsa.",
+    "peu": "poco",
+    "relevé": "picante",
+    "très piquant": "muy picante",
+    "Votre panier est gardé : revenez à l’ouverture pour l’envoyer.": "Su cesta se guarda: vuelva cuando abramos para enviarla.",
+    "Payer": "Pagar",
+    "et commander": "y pedir",
+    "Fermé · commande impossible": "Cerrado · no se puede pedir",
+    "Ouverture du paiement…": "Abriendo el pago…",
+    "Paiement en ligne indisponible : choisissez un autre mode de paiement": "Pago en línea no disponible: elija otro método",
+    "Paiement accepté": "Pago aceptado",
+    "Vérification du paiement…": "Comprobando el pago…",
+    "Paiement non abouti : votre panier est gardé": "Pago no completado: su cesta se guarda",
+    "Préparation de votre commande…": "Preparando su pedido…",
+    "Envoi…": "Enviando…",
+    "Payé en ligne": "Pagado en línea",
+    "Envoyer aussi sur WhatsApp": "Enviar también por WhatsApp",
+    "Nouveau": "Nuevo",
+    "Le plus commandé": "El más pedido",
+    "Passez en menu ?": "¿Lo hacemos menú?",
+    "Votre plat + des frites": "Su plato + patatas fritas",
+    "boisson au choix": "bebida a elegir",
+    "Oui, en menu": "Sí, en menú",
+    "Prête dans environ": "Listo en unos",
+    "Vous êtes le prochain !": "¡Es el siguiente!",
+    "Commande prête": "Pedido listo",
+    "Venez la récupérer au comptoir": "Recójalo en el mostrador"
+  },
+  ar: {
+    "🟢 Ouvert · Commandez en ligne": "🟢 مفتوح · اطلب عبر الإنترنت",
+    "🔴 Actuellement fermé": "🔴 مغلق حالياً",
+    "✨ Nos incontournables": "✨ أطباقنا المميزة",
+    "Voir la carte →": "عرض القائمة ←",
+    "Dürüms": "دُروم",
+    "Tacos": "تاكوس",
+    "Burgers": "برغر",
+    "Bowls & Salades": "بولز وسلطات",
+    "Composer": "خصّص",
+    "Ajouter": "أضف",
+    "Ma commande": "طلبي",
+    "Sur place": "في المطعم",
+    "À emporter": "سفري",
+    "Votre prénom (pour vous appeler)": "اسمك (لننادي عليك)",
+    "Votre panier est vide.": "سلّتك فارغة.",
+    "Total": "المجموع",
+    "Valider ma commande": "تأكيد طلبي",
+    "Paiement au comptoir": "الدفع عند الكاونتر",
+    "Heure de retrait": "وقت الاستلام",
+    "Dès que possible": "في أقرب وقت",
+    "Remarque pour la commande": "ملاحظة على الطلب",
+    "Remarque (ex. sans oignons)": "ملاحظة (مثلاً بدون بصل)",
+    "Suivant": "التالي",
+    " article": " صنف",
+    " articles": " أصناف",
+    "Voir mon panier": "عرض سلّتي",
+    "Rechercher un plat…": "ابحث عن طبق…",
+    "Cuisine halal": "مطبخ حلال",
+    "Faite minute": "يُحضَّر فوراً",
+    "Sur place ou à emporter": "في المطعم أو سفري",
+    "Appeler": "اتصل",
+    "Itinéraire": "الاتجاهات",
+    "Donner un avis": "اترك تقييماً",
+    "Épuisé": "نفد",
+    "Ouvert": "مفتوح",
+    "Fermé": "مغلق",
+    "Commander": "اطلب",
+    "À partir de": "ابتداءً من",
+    "Fermer": "إغلاق",
+    "Copier": "نسخ",
+    "Copié ✔": "تم النسخ ✔",
+    "Garniture au choix": "خضار حسب اختيارك",
+    "Sauces au choix": "صلصات حسب اختيارك",
+    "Boisson en option": "مشروب اختياري",
+    "Dürüm ou Sandwich": "دُروم أو ساندويتش",
+    "Dürüm ou Sandwich ?": "دُروم أو ساندويتش؟",
+    "Sandwich": "ساندويتش",
+    "Dürüm": "دُروم",
+    "Formule": "الاختيار",
+    "Livraison à domicile": "التوصيل إلى المنزل",
+    "Prochainement": "قريباً",
+    "Bientôt disponible sur :": "قريباً على:",
+    "Scannez avec votre app bancaire": "امسح بتطبيق البنك",
+    "Payer en ligne": "الدفع عبر الإنترنت",
+    "Virement pré-rempli : montant et communication déjà remplis.": "تحويل جاهز: المبلغ والمرجع معبّآن مسبقاً.",
+    "Vider": "إفراغ",
+    "Vider le panier ?": "إفراغ السلّة؟",
+    "Modifier": "تعديل",
+    "Retirer": "حذف",
+    "Enregistrer": "حفظ",
+    "Panier vidé": "تم إفراغ السلّة",
+    "Choisir": "اختر",
+    "Votre choix": "اختيارك",
+    "Fanta Citron": "فانتا ليمون",
+    "Garniture": "الخضار",
+    "Sauces": "الصلصات",
+    "Boisson": "المشروب",
+    "Ajouter une boisson": "أضف مشروباً",
+    "Choisissez vos crudités": "اختر الخضار",
+    "Choisissez vos sauces": "اختر الصلصات",
+    "Sans sauce": "بدون صلصة",
+    "Non merci": "لا، شكراً",
+    "Sans crudités": "بدون خضار",
+    "Toutes les crudités": "كل الخضار",
+    "Salade": "خس",
+    "Tomates": "طماطم",
+    "Oignons": "بصل",
+    "Concombre": "خيار",
+    "Maïs": "ذرة",
+    "Carottes": "جزر",
+    "Chou blanc": "ملفوف أبيض",
+    "Olives": "زيتون",
+    "Poivrons": "فلفل",
+    "Eau": "ماء",
+    "Sandwichs": "ساندويتشات",
+    "Menus": "وجبات",
+    "Assiettes": "أطباق",
+    "Grillades": "مشويات",
+    "Salades": "سلطات",
+    "Spécialités": "أطباق خاصة",
+    "Frites & plus": "بطاطا مقلية والمزيد",
+    "Suppléments": "إضافات",
+    "Boissons": "مشروبات",
+    "Accompagnement : salade composée, frites, sauces": "مع: سلطة، بطاطا مقلية، صلصات",
+    "Une boisson ou un dessert ?": "مشروب أو حلوى؟",
+    "Une boisson fraîche avec ça ?": "مشروب بارد معه؟",
+    "Un petit dessert pour finir ?": "حلوى صغيرة للختام؟",
+    "Bien choisi ! Autre chose ?": "اختيار موفّق! شيء آخر؟",
+    "Juste avant d’envoyer votre commande…": "قبل إرسال طلبك…",
+    "Non merci, envoyer ma commande": "لا شكراً، أرسل طلبي",
+    "Envoyer ma commande": "أرسل طلبي",
+    "Recommander ma dernière commande": "أعد طلبي الأخير",
+    "Commande envoyée": "تم إرسال الطلب",
+    "Votre numéro de commande": "رقم طلبك",
+    "Reçue": "تم الاستلام",
+    "En préparation": "قيد التحضير",
+    "Prête": "جاهز",
+    "Votre commande est prête !": "طلبك جاهز!",
+    "Présentez ce numéro au comptoir.": "أظهر هذا الرقم عند الكاونتر.",
+    "Bon appétit !": "بالهناء والشفاء!",
+    "Carte de fidélité": "بطاقة الوفاء",
+    "Cette commande complète votre carte :": "هذا الطلب يكمل بطاقتك:",
+    "fermé": "مغلق",
+    "Lun": "الإثنين",
+    "Mar": "الثلاثاء",
+    "Mer": "الأربعاء",
+    "Jeu": "الخميس",
+    "Ven": "الجمعة",
+    "Sam": "السبت",
+    "Dim": "الأحد",
+    "Ouvre à": "يفتح على الساعة",
+    "Titulaire": "صاحب الحساب",
+    "Banque": "البنك",
+    "Dürüms, tacos, grillades et tajines. Commandez en ligne, sur place ou à emporter.": "دُروم، تاكوس، مشويات وطواجن. اطلب عبر الإنترنت، في المطعم أو سفري.",
+    "Voir la carte": "عرض القائمة",
+    "Nous sommes fermés": "نحن مغلقون",
+    "Ouvre": "يفتح",
+    "à": "على الساعة",
+    "Réouverture bientôt": "نفتح قريباً",
+    "Vous pouvez préparer votre commande, l’envoi se fera à la réouverture.": "يمكنك تحضير طلبك الآن، وسيُرسل عند إعادة الفتح.",
+    "aujourd’hui": "اليوم",
+    "demain": "غداً",
+    "Suppléments au choix": "إضافات حسب اختيارك",
+    "Allergènes": "مسببات الحساسية",
+    "Touchez un plat pour voir sa description, ses ingrédients et ses allergènes.": "المس طبقاً لرؤية وصفه ومكوناته ومسببات الحساسية.",
+    "Boisson incluse dans le menu": "المشروب مشمول في الوجبة",
+    "En option, payant. Touchez pour ajouter ou retirer.": "اختياري بمقابل. المس للإضافة أو الحذف.",
+    "Le goût est indiqué sous chaque sauce.": "الطعم مكتوب تحت كل صلصة.",
+    "peu": "قليلاً",
+    "relevé": "حار",
+    "très piquant": "حار جداً",
+    "Votre panier est gardé : revenez à l’ouverture pour l’envoyer.": "سلّتك محفوظة: عُد عند الفتح لإرسالها.",
+    "Payer": "ادفع",
+    "et commander": "واطلب",
+    "Fermé · commande impossible": "مغلق · لا يمكن الطلب",
+    "Ouverture du paiement…": "جارٍ فتح الدفع…",
+    "Paiement en ligne indisponible : choisissez un autre mode de paiement": "الدفع عبر الإنترنت غير متاح: اختر طريقة أخرى",
+    "Paiement accepté": "تم قبول الدفع",
+    "Vérification du paiement…": "جارٍ التحقق من الدفع…",
+    "Paiement non abouti : votre panier est gardé": "لم يكتمل الدفع: سلّتك محفوظة",
+    "Préparation de votre commande…": "جارٍ تجهيز طلبك…",
+    "Envoi…": "جارٍ الإرسال…",
+    "Payé en ligne": "مدفوع عبر الإنترنت",
+    "Envoyer aussi sur WhatsApp": "أرسل أيضاً عبر واتساب",
+    "Nouveau": "جديد",
+    "Le plus commandé": "الأكثر طلباً",
+    "Passez en menu ?": "تجعلها وجبة؟",
+    "Votre plat + des frites": "طبقك + بطاطا مقلية",
+    "boisson au choix": "مشروب حسب اختيارك",
+    "Oui, en menu": "نعم، كوجبة",
+    "Prête dans environ": "جاهز خلال حوالي",
+    "Vous êtes le prochain !": "أنت التالي!",
+    "Commande prête": "الطلب جاهز",
+    "Venez la récupérer au comptoir": "تعال لاستلامه من الكاونتر"
   }
 };
 const T = s => (TR[lang] || {})[s] || s;
+/* langue de la page (lecteurs d'écran, Google) et sens d'écriture : l'arabe se lit de droite à gauche */
+function langDir() { try { const h = document.documentElement; h.lang = lang; h.dir = lang === 'ar' ? 'rtl' : 'ltr'; } catch (e) {} }
+langDir();
 
 const DEFAULT_CFG = {
   WA: '32493393983',
   PINH: '0264d3b920ad2381a5c739fae03fdafa8f7ce9e34a9b14b74e5fb8a76604f013',
   DB: 'https://haythemfood-2f2e9-default-rtdb.europe-west1.firebasedatabase.app',
   title: 'Haythem Food',
-  sub: 'Dürüms, tacos, grillades et tajines. Composez votre commande, envoyez-la par WhatsApp.',
+  sub: 'Dürüms, tacos, grillades et tajines. Commandez en ligne, sur place ou à emporter.',
   badges: 'Cuisine halal, Faite minute, Sur place ou à emporter',
   promo: '',
   openStatus: 'auto',
@@ -745,7 +1183,7 @@ function applySiteSettings() {
   if (opEl) {
     const o = openNow();
     opEl.className = o.open ? 'on' : '';
-    opEl.textContent = o.open ? getCfg('openText') : closedTxt(o);
+    opEl.textContent = o.open ? T(getCfg('openText')) : closedTxt(o);
   }
 
   /* Bandeau « fermé » bien visible, collé en haut tant que le site est fermé */
@@ -772,7 +1210,7 @@ function applySiteSettings() {
     $('.hero').appendChild(lgEl);
   }
   if (lgEl) {
-    lgEl.innerHTML = ['fr', 'nl', 'en'].map(l => `<button class="${lang === l ? 'on' : ''}" onclick="setLang('${l}')">${l.toUpperCase()}</button>`).join('');
+    lgEl.innerHTML = ['fr', 'nl', 'en', 'es', 'ar'].map(l => `<button class="${lang === l ? 'on' : ''}" lang="${l}" onclick="setLang('${l}')">${l === 'ar' ? 'عربي' : l.toUpperCase()}</button>`).join('');
   }
 
   let promoEl = $('#promo');
@@ -804,11 +1242,13 @@ function applySiteSettings() {
   }
 
   const galH2 = $('.gal h2');
-  if (galH2) galH2.textContent = getCfg('galTitle');
+  if (galH2) galH2.textContent = T(getCfg('galTitle'));
 
   if (CF.gal && CF.gal.length && $('.gs')) {
     $('.gs').innerHTML = CF.gal.filter(Boolean).map(g => `<div class="gc" role="link" tabindex="0" data-go="${esc(g.go || 'c0')}"${bg(g.img)}><b>${esc(g.title)}</b><small>${esc(g.sub || 'Voir la carte →')}</small></div>`).join('');
   }
+  /* textes de la galerie dans la langue choisie (le texte français d'origine est gardé) */
+  document.querySelectorAll('.gc b, .gc small').forEach(e => { if (e.dataset.fr == null) e.dataset.fr = e.textContent; e.textContent = T(e.dataset.fr); });
   renderBan();
   renderDelv();
 
@@ -823,8 +1263,7 @@ function applySiteSettings() {
   }
 
   if ($('#q')) $('#q').placeholder = T('Rechercher un plat…');
-  const hb = $('.hero p .btn');
-  if (hb) hb.textContent = T('Voir mon panier');
+  heroBtn();
   const ft = $('.ft');
   if (ft) {
     let fx = ft.querySelector('.ftx');
@@ -883,7 +1322,7 @@ function openNow() {
   return { open: false };
 }
 /* Phrase complète : « Fermé · Ouvre demain à 11:30 » */
-const closedTxt = o => getCfg('closedText') + (o.next ? ' · ' + T('Ouvre') + ' ' + (o.when ? o.when + ' ' : '') + T('à') + ' ' + o.next : '');
+const closedTxt = o => T(getCfg('closedText')) + (o.next ? ' · ' + T('Ouvre') + ' ' + (o.when ? o.when + ' ' : '') + T('à') + ' ' + o.next : '');
 
 /* ---- Grande bannière publicitaire animée ---- */
 let banT = null, banI = 0;
@@ -1007,6 +1446,7 @@ addEventListener('keydown', e => { if (e.key === 'Escape') closePV(); });
 window.setLang = l => {
   lang = l;
   localStorage.setItem('hflang', l);
+  langDir();
   build();
   upd();
 };
@@ -1031,7 +1471,18 @@ const ctl = id => {
   return q ? `<button data-x="dec|${id}">−</button><b>${q}</b><button data-x="inc|${id}">+</button>` : `<button class="add" data-x="inc|${id}">${T('Ajouter')}</button>`;
 };
 
+/* Bouton du haut : « Voir la carte » tant que le panier est vide, « Voir mon panier » ensuite */
+function heroBtn() {
+  const hb = $('.hero p .btn');
+  if (hb) hb.textContent = (typeof L !== 'undefined' && L.length) ? T('Voir mon panier') : '🍽️ ' + T('Voir la carte');
+}
+window.heroGo = () => {
+  if (typeof L !== 'undefined' && L.length) { openD(); return; }
+  const n = $('.nav') || $('#carte');
+  if (n) n.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
 function upd() {
+  heroBtn();
   L = L.filter(l => I[l.id] && !I[l.id].out);
   document.querySelectorAll('.ctl[data-c]').forEach(e => e.innerHTML = ctl(e.dataset.c));
   $('#bar').classList.toggle('on', cnt() > 0);
@@ -2677,7 +3128,7 @@ async function route() {
   document.body.classList.toggle('k', k);
   document.body.classList.toggle('f', f);
   FV = f;
-  $('#kt').style.display = k ? 'flex' : 'none';
+  if ($('#kt')) $('#kt').style.display = k ? 'flex' : 'none';
   if (k) { first = true; seen = new Set(); kload(); opnDraw(); }
   if (k || f) scrWake();
   if (f) { fprev = null; fload(); }
@@ -2690,7 +3141,9 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && (d
 
 const initDBEvents = () => {
   const DB = getDB();
-  if (!DB) return;
+  /* seuls l'écran cuisine et l'écran d'attente écoutent les commandes en direct :
+     le site des clients ne télécharge plus la liste de toutes les commandes */
+  if (!DB || !SCR) return;
   try {
     const es = new EventSource(DB + '/orders.json');
     ['put', 'patch'].forEach(t => es.addEventListener(t, () => {

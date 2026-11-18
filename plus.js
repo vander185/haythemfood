@@ -20,6 +20,7 @@
 .it .m{position:relative}
 .hfb{position:absolute;top:-7px;left:-6px;z-index:3;display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:999px;font:800 11px/1.2 Inter,system-ui,sans-serif;letter-spacing:.02em;white-space:nowrap;pointer-events:none;box-shadow:0 3px 10px #0008}
 .hfb.top{background:linear-gradient(135deg,#ff7a18,#e5484d);color:#fff}
+.it .m > div > .hfb{position:static;display:flex;width:max-content;max-width:100%;margin:0 0 4px;padding:2px 8px;font-size:10.5px;box-shadow:0 2px 6px #0006}
 .hfb.new{background:linear-gradient(135deg,#1fbf75,#0e8f55);color:#fff}
 .mo{text-align:center}
 .mo .mop{width:100%;aspect-ratio:4/3;border-radius:18px;background:#0c1b3e center/cover no-repeat;border:2px solid #d4af37;margin:6px 0 14px}
@@ -106,7 +107,9 @@
       let h = '';
       if (it.isAdded || nw.has(name)) h = `<span class="hfb new">✨ ${esc(tt('Nouveau'))}</span>`;
       else if (best.has(name)) h = `<span class="hfb top">🔥 ${esc(tt('Le plus commandé'))}</span>`;
-      if (h) m.insertAdjacentHTML('afterbegin', h);
+      /* le badge se place au-dessus du nom du plat (il ne le cache plus) */
+      const tx = m.querySelector(':scope > div');
+      if (h) (tx || m).insertAdjacentHTML('afterbegin', h);
     });
   }
   if (typeof build === 'function') {
