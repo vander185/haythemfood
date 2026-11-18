@@ -179,7 +179,7 @@ const DEFAULT_OPT = {
   'Grillades': 'sxb', 'Salades': 'srxb', 'Frites & plus': 'sxb'
 };
 const DEFAULT_CRU = ['Salade', 'Tomates', 'Oignons', 'Concombre', 'Maïs', 'Carottes', 'Chou blanc', 'Olives'];
-const DEFAULT_DRK = ['Coca-Cola', 'Coca-Cola Zéro', 'Fanta', 'Fanta Citron', 'Sprite', 'Schweppes Lemon', 'Schweppes Agrumes', 'Ice Tea', 'Orangina', 'Eau'];
+const DEFAULT_DRK = ['Coca-Cola', 'Coca-Cola Zéro', 'Fanta', 'Fanta Citron', 'Sprite', 'Schweppes Lemon', 'Schweppes Agrumes', 'Ice Tea', 'Orangina', 'Caprisun', 'Eau'];
 const DEFAULT_PAYS = [
   { on: true, e: '💶', n: 'Espèces' },
   { on: true, e: '🟦', n: 'Bancontact' },
@@ -189,11 +189,15 @@ const DEFAULT_PAYS = [
 ];
 
 /* Sous-menus : un plat peut proposer une liste de choix (ex. Softs 0,33 L → les boissons) */
-const DEFAULT_VAR = { 'Boissons|Softs 0,33 L': DEFAULT_DRK.map(n => ({ n, p: '' })) };
+const DEFAULT_VAR = { 'Boissons|Softs 0,33 L': DEFAULT_DRK.map(n => ({ n, p: /capri/i.test(n) ? 1 : '' })) };
 const vrs = it => {
   if (!it) return [];
   const k = it.cat + '|' + ((base[it.id] && base[it.id].n) || it.n);
-  const v = (CF.var && (CF.var[it.id] || CF.var[k])) || DEFAULT_VAR[k] || [];
+  let v = (CF.var && (CF.var[it.id] || CF.var[k])) || DEFAULT_VAR[k] || [];
+  /* Caprisun ajouté aussi aux listes de softs déjà enregistrées (1 €, comme le Caprisun seul) */
+  if (Array.isArray(v) && /^Softs/i.test(k.split('|')[1] || '') && !v.some(x => x && /capri/i.test(x.n))) {
+    v = v.slice(); const e = v.findIndex(x => x && /^eau$/i.test(x.n)); v.splice(e >= 0 ? e : v.length, 0, { n: 'Caprisun', p: 1 });
+  }
   return Array.isArray(v) ? v.filter(x => x && x.n) : [];
 };
 const vprice = (it, v) => (v && v.p !== '' && v.p != null && !isNaN(+v.p)) ? +v.p : it.p;
@@ -208,7 +212,12 @@ const getCRU = () => ((CF.cru && CF.cru.length) ? CF.cru : DEFAULT_CRU).filter(v
 const cruNo = () => String(getCfg('cruNo')).split(',').map(x => norm(x.trim())).filter(Boolean);
 const cruAll = () => getCRU().filter(v => !cruNo().includes(norm(v)));
 const isAllCru = r => r.length === cruAll().length && cruAll().every(v => r.includes(v));
-const getDRK = () => (CF.drk && CF.drk.length) ? CF.drk : DEFAULT_DRK;
+const getDRK = () => {
+  if (!(CF.drk && CF.drk.length)) return DEFAULT_DRK;
+  /* Caprisun ajouté aussi à une liste de boissons déjà enregistrée dans les réglages */
+  if (CF.drk.some(n => /capri/i.test(n))) return CF.drk;
+  const d = CF.drk.slice(), e = d.findIndex(n => /^eau$/i.test(n)); d.splice(e >= 0 ? e : d.length, 0, 'Caprisun'); return d;
+};
 const getDP = () => +(getCfg('dp') || 1.5);
 const molOn = () => String(getCfg('molOn')) === '1' && /^https:\/\//.test(getCfg('molFn'));
 const PAYS = () => {
