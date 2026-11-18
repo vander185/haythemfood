@@ -2660,6 +2660,7 @@ async function route() {
   const k = SCR === 'cuisine', f = SCR === 'file';
   if (k && !kok) {
     while (!kok) { if (await askPin('Code cuisine')) kok = true; }
+    setTimeout(() => { try { window.kioskGo && kioskGo(); } catch (e) {} }, 60);
   }
   document.body.classList.toggle('k', k);
   document.body.classList.toggle('f', f);
@@ -2725,7 +2726,7 @@ body.ks{user-select:none;-webkit-user-select:none;overscroll-behavior:none}`;
   document.head.appendChild(css);
   const ov = document.createElement('div');
   ov.id = 'kso';
-  ov.innerHTML = '<div><b>🔒</b><p>Mode kiosque</p><small>Touchez l’écran pour revenir en plein écran</small></div>';
+  ov.innerHTML = '<div><b>🔒</b><p>Mode kiosque</p><small>Touchez l’écran pour passer en plein écran</small></div>';
   const bx = document.createElement('button');
   bx.id = 'ksx'; bx.type = 'button'; bx.title = 'Quitter le mode kiosque'; bx.textContent = '🔒';
   document.body.append(ov, bx);
@@ -2740,12 +2741,15 @@ body.ks{user-select:none;-webkit-user-select:none;overscroll-behavior:none}`;
   const goFS = () => { try { const r = de.requestFullscreen ? de.requestFullscreen({ navigationUI: 'hide' }) : de.webkitRequestFullscreen(); if (r && r.catch) r.catch(() => {}); } catch (e) {} };
   const exitFS = () => { try { if (document.exitFullscreen && document.fullscreenElement) document.exitFullscreen(); else if (document.webkitExitFullscreen && document.webkitFullscreenElement) document.webkitExitFullscreen(); } catch (e) {} };
   const wake = async () => { try { if (navigator.wakeLock && (!wl || wl.released)) wl = await navigator.wakeLock.request('screen'); } catch (e) {} };
+  /* appelé juste après le bon code PIN (le clavier compte comme un geste : plein écran direct) */
+  window.kioskGo = () => { if (!active() || inFS() || !canFS()) return; armed = true; goFS(); setTimeout(sync, 400); };
   const sync = window.kioskSync = () => {
     const a = active();
     if (a) lockH = location.hash; else if (paused || !pref()) lockH = null;
     document.body.classList.toggle('ks', a);
     ov.classList.toggle('on', a && armed && canFS() && !inFS());
     if (a) wake();
+    if (a && !armed && canFS() && !inFS()) { armed = true; ov.classList.add('on'); }
     else if (!pref() && inFS() && view()) exitFS();
   };
   const unlock = async title => {
