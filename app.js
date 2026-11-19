@@ -1854,6 +1854,8 @@ const orderGo = () => isMol() ? payGo() : send();
 async function payGo() {
   if (!L.length || payGo.b) return;
   payGo.b = 1;
+  await opnTick();
+  if (!openNow().open) { payGo.b = 0; toast('🔴 ' + T('Nous sommes fermés')); draw(); return; }
   const bt = $('#tk [data-x="send"]');
   if (bt) { bt.disabled = true; bt.textContent = T('Ouverture du paiement…'); }
   const keep = { L: L.map(l => ({ ...l })), mode, nom, pay, when, gnote, a: +tot().toFixed(2), t: Date.now() };
@@ -1972,7 +1974,7 @@ async function opnTick() {
   if (document.body.classList.contains('k')) { opnDraw(); return; }
   if (openNow().open !== before) { applySiteSettings(); if ($('#dr').classList.contains('on')) draw(); }
 }
-setInterval(opnTick, 60000);
+setInterval(opnTick, 10000);
 addEventListener('visibilitychange', () => { if (!document.hidden) opnTick(); });
 async function send() {
   if (!L.length || send.b) return;
@@ -1985,6 +1987,7 @@ async function send() {
   if (!paid) try { w = window.open('', '_blank'); if (w) w.document.write('<title>' + esc(getCfg('title')) + '</title><body style="margin:0;display:grid;place-items:center;height:100vh;background:#040914;color:#f9e29c;font:600 17px system-ui">' + esc(T('Préparation de votre commande…')) + '</body>'); } catch (e) {}
   const bt = $('#tk [data-x="send"]');
   if (bt) { bt.disabled = true; bt.textContent = T('Envoi…'); }
+  if (!paid) { await opnTick(); if (!openNow().open) { try { if (w) w.close(); } catch (e) {} send.b = 0; toast('🔴 ' + T('Nous sommes fermés')); draw(); return; } }
   let n = await takeNo(), off = 0;
   if (n == null) { n = localNo(); off = 1; }
   const o = toOrder(n, off);
@@ -2075,7 +2078,7 @@ function reorder() {
   upd();
   openD();
 }
-const openD = () => { draw(); $('#dr').classList.add('on'); }, closeD = () => $('#dr').classList.remove('on');
+const openD = () => { draw(); $('#dr').classList.add('on'); opnTick(); }, closeD = () => $('#dr').classList.remove('on');
 
 /* ---- Gestion des clics ---- */
 document.addEventListener('click', e => {
