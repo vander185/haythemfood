@@ -592,7 +592,7 @@ const DEFAULT_CFG = {
   bankNote: 'Communication : votre prénom + le numéro de commande',
   molOn: '0',
   molName: 'Payer en ligne',
-  molInfo: 'Bancontact, Payconiq, carte bancaire, Apple Pay ou Google Pay. Paiement 100 % sécurisé : votre commande part en cuisine dès que le paiement est accepté.',
+  molInfo: 'Bancontact, carte bancaire, Apple Pay, Google Pay ou virement instantané. Paiement 100 % sécurisé : votre commande part en cuisine dès que le paiement est accepté.',
   molFn: 'https://nfdcrufjjqltibqvyprz.supabase.co/functions/v1/mollie'
 };
 
@@ -2781,7 +2781,7 @@ window.showAdmTab = (tab, btn) => {
       `).join('')}
       <button class="btn g" style="width:100%" onclick="CF.pays.push({on:true,e:'💳',n:'',info:'',link:'',bank:false,qr:false});showAdmTab('opt')">➕ Ajouter un mode de paiement</button>
 
-      <h4>⚡ Paiement en ligne (Mollie : Bancontact, Payconiq, cartes, Apple Pay, Google Pay)</h4>
+      <h4>⚡ Paiement en ligne (Mollie : Bancontact, cartes, Apple Pay, Google Pay)</h4>
       <div class="seg">
         <button type="button" class="${String(getCfg('molOn')) === '1' ? 'on' : ''}" onclick="setCfg('molOn','1');showAdmTab('opt')">✅ Activé</button>
         <button type="button" class="${String(getCfg('molOn')) !== '1' ? 'on' : ''}" onclick="setCfg('molOn','0');showAdmTab('opt')">🚫 Désactivé</button>
