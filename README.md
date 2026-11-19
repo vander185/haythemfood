@@ -19,6 +19,10 @@ déjà déployée sur le projet Supabase « Haythemfood.com »).
 La commande n'arrive en cuisine que si Mollie confirme le paiement ; l'écran cuisine
 revérifie chaque paiement auprès de Mollie (« ✅ Payé en ligne » ou « ⚠ PAIEMENT NON CONFIRMÉ »).
 
+La commande est gardée dans Supabase (table `mollie_orders`) pendant le paiement. Dès que Mollie
+confirme, la fonction `mollie` l'envoie elle-même en cuisine (une seule fois), même si le client
+a fermé la page après avoir payé.
+
 ## Écrans séparés
 
 - Site clients : https://haythemfood.com/

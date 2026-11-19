@@ -1809,7 +1809,9 @@ async function payGo() {
   try {
     const ret = location.origin + location.pathname + '?pay=1';
     const r = await fetch(getCfg('molFn'), { method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount: keep.a, desc: getCfg('title') + (nom ? ' · ' + nom : ''), ret }) });
+      /* la commande part avec le paiement : elle sera envoyée en cuisine dès que Mollie confirme,
+         même si le client ferme la page après avoir payé */
+      body: JSON.stringify({ amount: keep.a, desc: getCfg('title') + (nom ? ' · ' + nom : ''), ret, o: toOrder(0, 0), nc: noCfg(), day: bday() }) });
     const j = await r.json();
     if (!r.ok || !j.url) throw j.error || 1;
     keep.id = j.id;
@@ -1830,13 +1832,29 @@ async function payBack(n) {
   try { r = await (await fetch(getCfg('molFn') + '?id=' + encodeURIComponent(k.id))).json(); } catch (e) {}
   if (st('hfpay')?.id !== k.id) return;
   const back = () => { L = k.L; mode = k.mode; nom = k.nom; pay = k.pay; when = k.when; gnote = k.gnote; };
-  if (r && r.paid) {
+  if (r && r.paid && r.k) {
+    /* payé et déjà envoyé en cuisine par le service de paiement : on affiche le numéro */
+    st('hfpay', null);
+    back();
+    const lines = toOrder(0, 0).l;
+    const wa = 'https://wa.me/' + getCfg('WA') + '?text=' + encodeURIComponent(orderText(r.no));
+    if (window.hfPopBump) try { hfPopBump(lines); } catch (e) {}
+    st('hflast', L.map(l => ({ ...l })));
+    st('hfo', { k: r.k, no: r.no, t: Date.now(), st: 0, wa, pd: { id: k.id, a: r.amount }, loy: '' });
+    L = []; when = ''; gnote = ''; upd(); closeD(); applySiteSettings(); ocDraw();
+    toast('✅ ' + T('Paiement accepté') + ' · ' + eur(r.amount));
+  } else if (r && r.paid && r.known === false) {
+    /* ancien paiement (avant la mise à jour) : envoi depuis le téléphone comme avant */
     st('hfpay', null);
     back();
     PAID = { id: k.id, a: r.amount };
     upd();
     toast('✅ ' + T('Paiement accepté') + ' · ' + eur(r.amount));
     send();
+  } else if (r && r.paid) {
+    /* payé : la commande est en train de partir en cuisine, on attend son numéro */
+    if ((n || 0) < 40) { if ((n || 0) === 0) toast('✅ ' + T('Paiement accepté') + ' · ' + T('Envoi…')); setTimeout(() => payBack((n || 0) + 1), 3000); }
+    else toast('✅ ' + T('Paiement accepté') + ' · la commande arrive en cuisine. Montrez la confirmation Mollie au comptoir.');
   } else if (r && ['open', 'pending', 'authorized'].includes(r.status) || !r) {
     if ((n || 0) < 40) { if ((n || 0) === 0) toast('⏳ ' + T('Vérification du paiement…')); setTimeout(() => payBack((n || 0) + 1), 4000); }
   } else {
