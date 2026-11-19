@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /cuisine/
+Disallow: /file/
+
+Sitemap: https://haythemfood.com/sitemap.xml

@@ -5,6 +5,7 @@ let lang = localStorage.getItem('hflang') || 'fr';
 
 const TR = {
   nl: {
+    "Même prix": "Zelfde prijs",
     "🟢 Ouvert · Commandez en ligne": "🟢 Open · Bestel online",
     "🔴 Actuellement fermé": "🔴 Momenteel gesloten",
     "✨ Nos incontournables": "✨ Onze toppers",
@@ -95,6 +96,7 @@ const TR = {
     'Dürüms, tacos, grillades et tajines. Commandez en ligne, sur place ou à emporter.': "Dürüms, taco's, grill en tajines. Bestel online, ter plaatse of om mee te nemen."
   },
   en: {
+    "Même prix": "Same price",
     "🟢 Ouvert · Commandez en ligne": "🟢 Open · Order online",
     "🔴 Actuellement fermé": "🔴 Currently closed",
     "✨ Nos incontournables": "✨ Our must-haves",
@@ -186,6 +188,7 @@ const TR = {
     'Dürüms, tacos, grillades et tajines. Commandez en ligne, sur place ou à emporter.': "Dürüms, tacos, grills and tajines. Order online, eat in or take away."
   },
   es: {
+    "Même prix": "Mismo precio",
     "🟢 Ouvert · Commandez en ligne": "🟢 Abierto · Pida en línea",
     "🔴 Actuellement fermé": "🔴 Cerrado ahora",
     "✨ Nos incontournables": "✨ Nuestros imprescindibles",
@@ -352,6 +355,7 @@ const TR = {
     "Venez la récupérer au comptoir": "Recójalo en el mostrador"
   },
   ar: {
+    "Même prix": "نفس السعر",
     "🟢 Ouvert · Commandez en ligne": "🟢 مفتوح · اطلب عبر الإنترنت",
     "🔴 Actuellement fermé": "🔴 مغلق حالياً",
     "✨ Nos incontournables": "✨ أطباقنا المميزة",
@@ -1136,8 +1140,8 @@ const dsc = l => {
   const CRU = getCRU();
   return [
     l.t && 'Formule : ' + l.t,
-    l.r && l.r.length && 'Garniture : ' + (isAllCru(l.r) ? 'toutes les crudités' : l.r.join(', ')),
-    l.s && l.s.length && 'Sauces : ' + l.s.join(', '),
+    l.r && l.r.length ? 'Garniture : ' + (isAllCru(l.r) ? 'toutes les crudités' : l.r.join(', ')) : l.no && l.no.r && 'Garniture : sans crudités',
+    l.s && l.s.length ? 'Sauces : ' + l.s.join(', ') : l.no && l.no.s && 'Sauces : sans sauce',
     l.x && l.x.length && 'Suppléments : ' + l.x.map(n => n + ' (+' + eur(supP(n)) + ')').join(', '),
     l.b && 'Boisson : ' + l.b,
     l.nt && 'Remarque : ' + l.nt
@@ -1539,7 +1543,7 @@ function sheet() {
   const CRU = getCRU(), SAU = getSAU(), DRK = getDRK();
   const N = { t: T('Dürüm ou Sandwich'), r: T('Garniture'), s: T('Sauces'), x: T('Suppléments'), b: T('Boisson') };
   const list = g === 't' ? mTypes() : g === 's' ? ['Sans sauce', ...SAU] : g === 'x' ? ['Non merci', ...SUP.map(z => z.n)] : g === 'r' ? ['Sans crudités', 'Toutes les crudités', ...CRU] : ['Non merci', ...DRK];
-  const isOn = v => v === 'Non merci' ? !!(ed.no && ed.no[g]) : sel.includes(v);
+  const isOn = v => v === 'Non merci' || v === 'Sans sauce' || v === 'Sans crudités' ? !!(ed.no && ed.no[g]) : sel.includes(v);
   const sel = g === 't' ? [ed.t] : g === 'b' ? [ed.b] : g === 'x' ? (ed.x || []) : g === 'r' ? [...ed.r, ...(isAllCru(ed.r) ? ['Toutes les crudités'] : [])] : ed.s;
   const px = v => {
     if (v === 'Non merci') return '';
@@ -1594,26 +1598,73 @@ function tg(g, v) {
   else if (g === 'x') { ed.x = ed.x || []; ed.x = ed.x.includes(v) ? ed.x.filter(a => a !== v) : [...ed.x, v]; }
   else if (g === 'b') ed.b = ed.b === v ? '' : v;
   else if (g === 's') {
-    if (v === 'Sans sauce') ed.s = [];
-    else ed.s = ed.s.includes(v) ? ed.s.filter(a => a !== v) : [...ed.s, v];
+    ed.no = ed.no || {};
+    if (v === 'Sans sauce') { ed.s = []; ed.no.s = true; return stepFwd(); }
+    ed.no.s = false;
+    ed.s = ed.s.includes(v) ? ed.s.filter(a => a !== v) : [...ed.s, v];
   } else {
-    if (v === 'Sans crudités') ed.r = [];
-    else if (v === 'Toutes les crudités') ed.r = isAllCru(ed.r) ? [] : [...cruAll()];
+    ed.no = ed.no || {};
+    if (v === 'Sans crudités') { ed.r = []; ed.no.r = true; return stepFwd(); }
+    ed.no.r = false;
+    if (v === 'Toutes les crudités') ed.r = isAllCru(ed.r) ? [] : [...cruAll()];
     else ed.r = ed.r.includes(v) ? ed.r.filter(a => a !== v) : [...ed.r, v];
   }
   sheet();
+}
+/* « Sans … » choisi : on passe tout seul à l'étape suivante */
+function stepFwd() {
+  const x = I[ed.id], n = [...'trsxb'].filter(k => opt(x).includes(k) && (k !== 'x' || getSUP().length)).length;
+  if (ed.k < n - 1) { ed.mv = 'fw'; ed.pk = ed.k; ed.k++; }
+  sheet();
+}
+/* Garniture et sauces : le client doit choisir (ou dire « Sans ») avant de continuer */
+function stepMissing(onlyCur) {
+  if (!ed) return -1;
+  const x = I[ed.id], ks = [...'trsxb'].filter(k => opt(x).includes(k) && (k !== 'x' || getSUP().length));
+  const miss = k => (k === 's' && !ed.s.length && !(ed.no && ed.no.s)) || (k === 'r' && !ed.r.length && !(ed.no && ed.no.r));
+  if (onlyCur) { const k = Math.min(ed.k, ks.length - 1); return miss(ks[k]) ? k : -1; }
+  return ks.findIndex(miss);
+}
+function stepAsk(i) {
+  const x = I[ed.id], ks = [...'trsxb'].filter(k => opt(x).includes(k) && (k !== 'x' || getSUP().length)), g = ks[i];
+  if (ed.k !== i) { ed.pk = ed.k; ed.mv = i > ed.k ? 'fw' : 'bk'; ed.k = i; sheet(); }
+  toast('👉 ' + (g === 's' ? T('Choisissez vos sauces') + ' · ' + T('Sans sauce') : T('Choisissez vos crudités') + ' · ' + T('Sans crudités')));
+  const o = $('#shk .opts'); if (o) { o.classList.remove('need'); void o.offsetWidth; o.classList.add('need'); }
 }
 
 /* ---- Panier + WhatsApp ---- */
 function orderText(no) {
   return `🧾 *Commande ${getCfg('title')}* n°${no}\n${mode}${nom ? ' · ' + nom : ''}\n💳 ${payOf()}${PAID ? ` ✅ PAYÉ EN LIGNE ${eur(PAID.a)} (${PAID.id})` : ''}\n🕒 ${whenL()}\n\n${L.map(l => `${l.q}× ${lineN(l)} · ${eur(unit(l) * l.q)}` + dsc(l).map(d => '\n   ' + d).join('')).join('\n')}${gnote ? '\n\n📝 ' + gnote : ''}\n\n*Total : ${eur(tot())}*`;
 }
+/* Heure de fermeture d'aujourd'hui en minutes (heure de Bruxelles), ou null */
+function closeMin() {
+  let d;
+  try { d = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Brussels' })); } catch (e) { d = new Date(); }
+  const now = d.getHours() * 60 + d.getMinutes();
+  const rg = String(String(getCfg('hours')).split(',')[(d.getDay() + 6) % 7] || '').split('/').map(x => {
+    const t = x.trim().match(/^(\d{1,2})[:h.](\d{2})\s*-\s*(\d{1,2})[:h.](\d{2})$/);
+    if (!t) return null;
+    const a = +t[1] * 60 + +t[2], b = +t[3] * 60 + +t[4];
+    return [a, b <= a ? b + 1440 : b];
+  }).filter(Boolean);
+  const cur = rg.find(r => now >= r[0] && now < r[1]);
+  return cur ? { now, end: cur[1] } : null;
+}
+/* Heures de retrait proposées : jamais après la fermeture */
 const WL = () => {
-  const a = [T('Dès que possible')];
+  const a = [T('Dès que possible')], c = getCfg('openStatus') === 'auto' ? closeMin() : null;
   [15, 30, 45, 60].forEach(m => {
     const d = new Date(Date.now() + m * 6e4);
     d.setMinutes(Math.ceil(d.getMinutes() / 5) * 5);
-    a.push(d.toLocaleTimeString('fr-BE', { hour: '2-digit', minute: '2-digit' }));
+    if (c) {
+      let bx;
+      try { bx = new Date(d.toLocaleString('en-US', { timeZone: 'Europe/Brussels' })); } catch (e) { bx = d; }
+      let mm = bx.getHours() * 60 + bx.getMinutes();
+      if (mm < c.now) mm += 1440;
+      if (mm > c.end - 5) return;
+    }
+    const v = d.toLocaleTimeString('fr-BE', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Brussels' });
+    if (!a.includes(v)) a.push(v);
   });
   return a;
 };
@@ -1675,7 +1726,7 @@ async function noClean() {
   } catch (e) {}
 }
 function toOrder(n, off) {
-  return { no: noFmt(n), nn: n, off: off ? 1 : 0, mode, pay: payOf(), w: whenL(), g: gnote, nom, t: Date.now(), st: 0, ...(PAID ? { pd: { id: PAID.id, a: PAID.a } } : {}), l: L.map(l => ({ q: l.q, n: lineN(l), d: dsc(l), p: unit(l) * l.q })) };
+  return { no: noFmt(n), nn: n, off: off ? 1 : 0, mode, pay: payOf(), w: when || 'Dès que possible', g: gnote, nom, t: Date.now(), st: 0, ...(PAID ? { pd: { id: PAID.id, a: PAID.a } } : {}), l: L.map(l => ({ q: l.q, n: lineN(l), d: dsc(l), p: unit(l) * l.q })) };
 }
 function draw() {
   $('#tk').innerHTML = `<div class="th"><h3>${T('Ma commande')}</h3><div style="display:flex;gap:8px">${L.length ? `<button class="chip clr" data-x="clr">🗑 ${esc(T('Vider'))}</button>` : ''}<button class="chip" data-x="cld">✕</button></div></div>
@@ -1684,8 +1735,8 @@ function draw() {
 ${L.length ? L.map((l, i) => `<div class="ln"><span>${esc(lineN(l))}<em>${esc(dsc(l).join(' · '))}</em><b>${eur(unit(l) * l.q)}</b></span><div class="ctl">${(opt(I[l.id]) || vrs(I[l.id]).length) ? `<button class="lnx" data-x="ced|${i}" title="${esc(T('Modifier'))}" aria-label="${esc(T('Modifier'))}">✏️</button>` : ''}<button class="lnx" data-x="crm|${i}" title="${esc(T('Retirer'))}" aria-label="${esc(T('Retirer'))}">🗑</button><button data-x="ln|${i}|-1">−</button><b>${l.q}</b><button data-x="ln|${i}|1">+</button></div></div>`).join('') : `<p class="nt">${T('Votre panier est vide.')}</p>${(st('hflast') || []).some(l => I[l.id] && !I[l.id].out) ? `<button class="btn g" style="width:100%;margin-bottom:10px" data-x="re">🔁 ${esc(T('Recommander ma dernière commande'))}</button>` : ''}`}
 ${upsell()}${loyLine()}<textarea id="gn" rows="2" placeholder="${T('Remarque pour la commande')}" oninput="gnote=this.value">${esc(gnote)}</textarea><div class="tot"><span>${T('Total')}</span><span>${eur(tot())}</span></div>
 ${(() => { const o = openNow(); return o.open ? '' : `<p class="shutn">🔴 <b>${esc(T('Nous sommes fermés'))}</b> · ${esc(o.next ? T('Ouvre') + ' ' + (o.when ? o.when + ' ' : '') + T('à') + ' ' + o.next : T('Réouverture bientôt'))}<em>${esc(T('Votre panier est gardé : revenez à l’ouverture pour l’envoyer.'))}</em></p>`; })()}
-<button class="btn" style="width:100%" data-x="send" ${L.length && openNow().open ? '' : 'disabled'}>${openNow().open ? (isMol() && L.length ? '⚡ ' + T('Payer') + ' ' + eur(tot()) + ' ' + T('et commander') : T('Valider ma commande')) : T('Fermé · commande impossible')}</button>
-<h4>${esc(T(getCfg('payTitle')))}</h4><div class="opts">${PAYS().map(p => `<button class="${payOf() === p[1] ? 'on' : ''}" data-x="pay|${esc(p[1])}">${esc(p[0])} ${esc(p[1])}</button>`).join('')}</div>${payBox()}`;
+<h4>${esc(T(getCfg('payTitle')))}</h4><div class="opts">${PAYS().map(p => `<button class="${payOf() === p[1] ? 'on' : ''}" data-x="pay|${esc(p[1])}">${esc(p[0])} ${esc(p[1])}</button>`).join('')}</div>${payBox()}
+<button class="btn" style="width:100%;margin-top:12px" data-x="send" ${L.length && openNow().open ? '' : 'disabled'}>${openNow().open ? (isMol() && L.length ? '⚡ ' + T('Payer') + ' ' + eur(tot()) + ' ' + T('et commander') : T('Valider ma commande')) : T('Fermé · commande impossible')}</button>`;
 }
 /* Détails du mode de paiement choisi (message, lien, compte bancaire) */
 function payBox() {
@@ -2043,7 +2094,7 @@ document.addEventListener('click', e => {
     else if (a === 'ced') {
       const l = L[+b];
       if (!l || !I[l.id]) return;
-      ed = { id: l.id, s: [...(l.s || [])], r: [...(l.r || [])], x: [...(l.x || [])], b: l.b || '', nt: l.nt || '', t: l.t || '', k: 0, ei: +b };
+      ed = { id: l.id, s: [...(l.s || [])], r: [...(l.r || [])], x: [...(l.x || [])], b: l.b || '', nt: l.nt || '', t: l.t || '', k: 0, ei: +b, no: { ...(l.no || {}), ...(l.b ? {} : { b: true }) } };
       vrs(I[l.id]).length ? vsheet() : sheet();
     }
     else if (a === 'cp') copyTxt(x.dataset.x.slice(3));
@@ -2052,9 +2103,9 @@ document.addEventListener('click', e => {
     else if (a === 'open') { ed = { id: b, s: [], r: [], x: [], b: '', nt: '', k: 0, t: opt(I[b]).includes('t') ? mTypes()[0] : '' }; sheet(); }
     else if (a === 'shut') shut();
     else if (a === 'stp') { ed.mv = +b < ed.k ? 'bk' : 'fw'; ed.pk = ed.k; ed.k = +b; sheet(); }
-    else if (a === 'nxt') { ed.mv = 'fw'; ed.pk = ed.k; ed.k++; sheet(); }
+    else if (a === 'nxt') { const m = stepMissing(1); if (m > -1) stepAsk(m); else { ed.mv = 'fw'; ed.pk = ed.k; ed.k++; sheet(); } }
     else if (a === 'tg') tg(b, c);
-    else if (a === 'done') { const o = ed; shut(); const n = { id: o.id, s: o.s, r: o.r, x: o.x || [], b: o.b, nt: o.nt, t: o.t }; if (o.ei !== undefined) setLine(o.ei, n); else { if (window.hfMoDone) hfMoDone(o); addLine(n); if (window.hfMenuOffer) hfMenuOffer(n); } }
+    else if (a === 'done') { const m = stepMissing(); if (m > -1) { stepAsk(m); return; } const o = ed; shut(); const n = { id: o.id, s: o.s, r: o.r, x: o.x || [], b: o.b, nt: o.nt, t: o.t, ...(o.no && (o.no.s || o.no.r) ? { no: { s: !!o.no.s, r: !!o.no.r } } : {}) }; if (o.ei !== undefined) setLine(o.ei, n); else { if (window.hfMoDone) hfMoDone(o); addLine(n); if (window.hfMenuOffer) hfMenuOffer(n); } }
     else if (a === 'mode') { mode = b; draw(); }
     else if (a === 'pay') { pay = b; draw(); }
     else if (a === 'wh') { when = b; draw(); }

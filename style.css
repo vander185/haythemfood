@@ -800,3 +800,8 @@ background-size:260% 100%;background-position:130% 0;animation:shn2 3.8s cubic-b
 .chip.on{isolation:isolate;background-image:radial-gradient(120% 140% at 50% 0%,#fff5,transparent 60%),var(--btn-gold);box-shadow:0 4px 16px -2px #d4af3799,inset 0 1px 0 #fff8,inset 0 -2px 4px #8a5a0055}
 @keyframes shn2{0%,45%{background-position:130% 0}100%{background-position:-30% 0}}
 @media(prefers-reduced-motion:reduce){.chip.on::after{animation:none;opacity:0}}
+
+/* étape obligatoire non choisie : petite secousse des options */
+.opts.need{animation:hfneed .45s ease}
+@keyframes hfneed{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+@media(prefers-reduced-motion:reduce){.opts.need{animation:none;outline:2px solid #f9e29c;outline-offset:4px;border-radius:12px}}

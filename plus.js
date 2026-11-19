@@ -137,11 +137,14 @@
       if (moShown >= 3 || moNo >= 2) return;
       const it = I[n.id], f = menuFor(it); if (!f) return;
       moShown++; moLine = { n, f };
-      const u = IMG(f.m), diff = f.m.p - it.p;
+      /* vrai supplément à payer : le menu (frites + boisson comprises) moins ce que le client a déjà (plat + boisson éventuelle) */
+      let diff = f.m.p - it.p;
+      try { diff = unit({ id: f.m.id, s: n.s || [], r: n.r || [], x: n.x || [], b: '', t: f.type, q: 1 }) - unit({ ...n, q: 1 }); } catch (e) {}
+      const u = IMG(f.m);
       $('#shk').innerHTML = `<div class="mo"><div class="th"><h3 style="flex:1;text-align:left">${esc(tt('Passez en menu ?'))}</h3><button class="chip" data-z="mono">✕</button></div>
 <div class="mop" style="${u ? `background-image:url('${String(u).replace(/'/g, "\\'")}')` : ''}"></div>
 <h3>${esc(full(f.m))}</h3><p>${esc(tt('Votre plat + des frites') + ' · ' + tt('boisson au choix'))}</p>
-<span class="mpx">+ ${eur(diff)}</span>
+<span class="mpx">${diff > 0.004 ? '+ ' + eur(diff) : esc(tt('Même prix')) + ' 🎉'}</span>
 <button class="btn" data-z="moyes">🍟 ${esc(tt('Oui, en menu'))}</button><button class="btn g" data-z="mono">${esc(tt('Non merci'))}</button></div>`;
       $('#sh').classList.add('on');
     } catch (e) {}
@@ -152,7 +155,7 @@
     if (a === 'mono') { moNo++; moLine = null; $('#sh').classList.remove('on'); }
     else if (a === 'moyes' && moLine) {
       const { n, f } = moLine; moLine = null;
-      const nl = { id: f.m.id, s: n.s || [], r: n.r || [], x: n.x || [], b: '', nt: n.nt || '', t: f.type };
+      const nl = { id: f.m.id, s: n.s || [], r: n.r || [], x: n.x || [], b: '', nt: n.nt || '', t: f.type, no: { ...(n.no || {}) } };
       window._moRepl = { mid: f.m.id, k: lkey(n) };
       const x = I[f.m.id], ks = [...'trsxb'].filter(c => opt(x).includes(c) && (c !== 'x' || getSUP().length));
       ed = { ...nl, k: Math.max(0, ks.indexOf('b')) };
