@@ -357,10 +357,18 @@
     const sl = FID.el.querySelectorAll('.fs'), cur = sl[fidP % 2], old = sl[(fidP + 1) % 2];
     cur.innerHTML = html; old.classList.remove('on'); void cur.offsetWidth; cur.classList.add('on');
   }
+  /* Toucher l'écran publicitaire (ou une touche de la télécommande) : la publicité s'efface 30 s
+     pour laisser accéder à la voix, au choix de la voix et aux réglages (5 touches sur le titre). */
+  let fidPause = 0;
+  const fidWake = () => { fidPause = Date.now() + 30000; fidle(false); };
+  document.addEventListener('pointerdown', () => { if (document.body.classList.contains('f')) fidPause = Date.now() + 30000; }, true);
+  document.addEventListener('keydown', () => { if (document.body.classList.contains('f')) fidWake(); }, true);
   function fidle(on) {
+    if (on && (Date.now() < fidPause || document.querySelector('#adm.on') || document.querySelector('#pin.on'))) on = false;
     if (on && !FID) {
       const el = document.createElement('div'); el.id = 'fidle'; el.innerHTML = '<div class="fs"></div><div class="fs"></div>';
       document.body.appendChild(el); fidChrome(el); FID = { el, l: fidList() };
+      el.addEventListener('pointerdown', e => { e.preventDefault(); fidWake(); });
     }
     if (!FID) return;
     if (on && !FID.el.classList.contains('on')) { FID.l = fidList(); FID.all = fidList.all; if (!FID.l.length) return; FID.el.classList.add('on'); fidStep(); clearInterval(fidT); fidT = setInterval(fidStep, 7500); }

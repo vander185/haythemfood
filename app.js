@@ -2416,6 +2416,8 @@ body.f #fs{display:flex}body.f{overflow:hidden}body.f #bar{display:none}
   d.innerHTML = `<div class="fh"><h2>🍽️ ${esc(getCfg('title'))} · Vos commandes</h2><span id="fclk" style="font:700 clamp(22px,3vw,36px) Georgia,serif"></span><button class="btn g off" id="fv" onclick="fvoice()">🔊 Activer la voix</button><select id="fvs" class="fvs" title="Choisir la voix des annonces" onchange="fvPick(this.value)" style="display:none"></select>${window.HF_SCREEN === 'file' ? '' : `<button class="btn g" onclick="go('')">⬅ Retour</button>`}</div><div class="fg"><div class="fc"><h3>⏳ En préparation</h3><div class="fl" id="fp"></div></div><div class="fc r"><h3>✅ Prêtes · venez les récupérer</h3><div class="fl" id="fr"></div></div></div>`;
   document.body.appendChild(d);
   setTimeout(fvList, 300); setTimeout(fvList, 1500);
+  /* écran d'attente : 5 touches rapides sur le titre ouvrent les réglages (avec le code PIN) */
+  try { let c = 0, t = 0; d.querySelector('.fh h2').addEventListener('click', () => { const n = Date.now(); c = n - t > 1500 ? 1 : c + 1; t = n; if (c >= 5) { c = 0; openAdmin(); } }); } catch (e) {}
 })();
 
 /* Voix des annonces : on prend la voix française la plus naturelle disponible sur l'appareil
