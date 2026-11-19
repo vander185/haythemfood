@@ -638,7 +638,7 @@ Desserts|🍰||Dame blanche 3.5;Pâtisserie marocaine 3.5;Tiramisu maison 3.5`;
 const DEFAULT_OPT = {
   'Dürüms': 'srxb', 'Sandwichs': 'srxb', 'Panini': 'srxb', 'Tacos': 'srxb',
   'Kapsalon': 'srxb', 'Menus': 'srxb', 'Bicky': 'srxb', 'Assiettes': 'sxb',
-  'Grillades': 'sxb', 'Salades': 'srxb', 'Frites & plus': 'sxb'
+  'Grillades': 'sxb', 'Salades': 'srxb', 'Frites & plus': 'sxb', 'Spécialités': 'b'
 };
 const DEFAULT_CRU = ['Salade', 'Tomates', 'Oignons', 'Concombre', 'Maïs', 'Carottes', 'Chou blanc', 'Olives'];
 const DEFAULT_DRK = ['Coca-Cola', 'Coca-Cola Zéro', 'Fanta', 'Fanta Citron', 'Sprite', 'Schweppes Lemon', 'Schweppes Agrumes', 'Ice Tea', 'Orangina', 'Caprisun', 'Eau'];
@@ -681,6 +681,15 @@ const getDRK = () => {
   const d = CF.drk.slice(), e = d.findIndex(n => /^eau$/i.test(n)); d.splice(e >= 0 ? e : d.length, 0, 'Caprisun'); return d;
 };
 const getDP = () => +(getCfg('dp') || 1.5);
+/* boisson ajoutée à un plat : prix « dp » (1,50 €), sauf si la boisson coûte moins cher seule (Caprisun 1 €) */
+const dpOf = b => {
+  try {
+    const so = Object.values(I).find(i => /^softs/i.test(i.n) && vrs(i).length);
+    const v = so && vrs(so).find(z => norm(z.n) === norm(b));
+    const p = v ? vprice(so, v) : NaN;
+    return isFinite(p) && p > 0 ? Math.min(getDP(), p) : getDP();
+  } catch (e) { return getDP(); }
+};
 const molOn = () => String(getCfg('molOn')) === '1' && /^https:\/\//.test(getCfg('molFn'));
 const PAYS = () => {
   const ps = CF.pays || DEFAULT_PAYS;
@@ -1151,7 +1160,7 @@ const unit = l => {
   const it = I[l.id];
   if (!it) return 0;
   const v = l.v && vrs(it).find(z => z.n === l.v);
-  return (v ? vprice(it, v) : it.p) + (l.b && !/^menus?$/i.test(norm(it.cat || '')) ? getDP() : 0) + supTot(l.x);
+  return (v ? vprice(it, v) : it.p) + (l.b && !/^menus?$/i.test(norm(it.cat || '')) ? dpOf(l.b) : 0) + supTot(l.x);
 };
 const lineN = l => I[l.id] ? full(I[l.id]) + (l.v ? ' · ' + l.v : '') : '';
 const cnt = () => L.reduce((n, l) => n + l.q, 0);
