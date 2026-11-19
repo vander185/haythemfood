@@ -111,6 +111,36 @@ Deno.serve(async (req) => {
     const r = await api("payments/" + id);
     return r.ok ? await r.json() : null;
   };
+  /* Remboursement d'une commande annulée en cuisine.
+     Réservé à l'écran cuisine : il doit prouver qu'il connaît le mot de passe Firebase
+     (l'écriture sur la commande n'est acceptée par Firebase qu'avec ce mot de passe). */
+  const fbProof = (wk: string, path: string, val: unknown) =>
+    fetch(`${FB}/.json`, { method: "PATCH", body: JSON.stringify({ [path]: val, proof: { k: wk, t: { ".sv": "timestamp" } } }) });
+  const refund = async (b: Record<string, unknown>) => {
+    const id = String(b.id || ""), k = String(b.k || ""), wk = String(b.wk || "");
+    if (!/^tr_\w{4,40}$/.test(id) || !/^[-\w]{10,40}$/.test(k) || !/^[0-9a-f]{64}$/.test(wk)) return out({ error: "bad" }, 400);
+    const o = await fetch(`${FB}/orders/${k}.json`).then((r) => r.json()).catch(() => null);
+    if (!o || !o.pd || o.pd.id !== id) return out({ error: "order" }, 404);
+    const a = await fbProof(wk, `orders/${k}/rf`, { st: "en cours", t: { ".sv": "timestamp" } });
+    if (!a.ok) return out({ error: "auth" }, 403);
+    const p = await pay(id);
+    if (!p) return out({ error: "mollie" }, 502);
+    const done = +(p.amountRefunded?.value || 0);
+    const left = Math.round((+p.amount.value - done) * 100) / 100;
+    let rf: Record<string, unknown> = { st: "déjà remboursé", a: done };
+    if (left > 0) {
+      if (p.status !== "paid") { await fbProof(wk, `orders/${k}/rf`, null); return out({ error: "notpaid", status: p.status }, 409); }
+      const r = await api(`payments/${id}/refunds`, {
+        method: "POST",
+        body: JSON.stringify({ amount: { currency: "EUR", value: left.toFixed(2) }, description: `Commande ${o.no || ""} annulée` }),
+      });
+      const j = await r.json();
+      if (!r.ok) { await fbProof(wk, `orders/${k}/rf`, null); return out({ error: "refund", detail: j.detail || "" }, 502); }
+      rf = { id: j.id, st: j.status, a: +j.amount.value };
+    }
+    await fbProof(wk, `orders/${k}/rf`, { ...rf, t: { ".sv": "timestamp" } });
+    return out({ ok: true, ...rf });
+  };
   try {
     const ct = req.headers.get("content-type") || "";
 
@@ -151,6 +181,7 @@ Deno.serve(async (req) => {
     /* 3) Le site crée un paiement pour une commande */
     if (req.method === "POST") {
       const b = await req.json().catch(() => ({}));
+      if (b.act === "refund") return await refund(b);
       const amount = Math.round(+b.amount * 100) / 100;
       const ret = String(b.ret || "");
       if (!(amount >= 0.5 && amount <= 500)) return out({ error: "amount" }, 400);

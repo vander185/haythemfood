@@ -43,6 +43,7 @@ const TR = {
     "Préparation de votre commande…": "Uw bestelling wordt voorbereid…",
     "Envoi…": "Verzenden…",
     "Payé en ligne": "Online betaald",
+    "Paiement reçu : votre numéro s’affiche sur la borne.": "Betaling ontvangen: je nummer verschijnt op de zuil.",
     "Paiement": "Betaling",
     "Espèces au comptoir": "Contant aan de toog",
     "Envoyer aussi sur WhatsApp": "Ook via WhatsApp sturen",
@@ -136,6 +137,7 @@ const TR = {
     "Préparation de votre commande…": "Preparing your order…",
     "Envoi…": "Sending…",
     "Payé en ligne": "Paid online",
+    "Paiement reçu : votre numéro s’affiche sur la borne.": "Payment received: your number is shown on the kiosk.",
     "Paiement": "Payment",
     "Espèces au comptoir": "Cash at the counter",
     "Envoyer aussi sur WhatsApp": "Also send on WhatsApp",
@@ -346,6 +348,7 @@ const TR = {
     "Préparation de votre commande…": "Preparando su pedido…",
     "Envoi…": "Enviando…",
     "Payé en ligne": "Pagado en línea",
+    "Paiement reçu : votre numéro s’affiche sur la borne.": "Pago recibido: tu número aparece en el quiosco.",
     "Paiement": "Pago",
     "Espèces au comptoir": "Efectivo en el mostrador",
     "Envoyer aussi sur WhatsApp": "Enviar también por WhatsApp",
@@ -515,6 +518,7 @@ const TR = {
     "Préparation de votre commande…": "جارٍ تجهيز طلبك…",
     "Envoi…": "جارٍ الإرسال…",
     "Payé en ligne": "مدفوع عبر الإنترنت",
+    "Paiement reçu : votre numéro s’affiche sur la borne.": "تم استلام الدفع: رقمك يظهر على الجهاز.",
     "Paiement": "الدفع",
     "Espèces au comptoir": "نقدًا عند الكاونتر",
     "Envoyer aussi sur WhatsApp": "أرسل أيضاً عبر واتساب",
@@ -1927,6 +1931,10 @@ async function payBack(n) {
   }
 }
 setTimeout(payBack, 600);
+if (/[?&]borne=1/.test(location.search)) setTimeout(() => {
+  try { history.replaceState(null, '', location.pathname + location.hash); } catch (e) {}
+  toast('✅ ' + T('Paiement reçu : votre numéro s’affiche sur la borne.'));
+}, 900);
 /* Cuisine : chaque paiement en ligne est revérifié auprès de Mollie (montant compris) */
 const KPAY = {};
 function kPaid(o) {
@@ -2355,7 +2363,22 @@ async function kundoGo() {
 /* Annuler une commande (client parti, erreur…) : retirée de l'écran et des statistiques */
 async function kcancel(k) {
   const o = KO.find(x => x.k === k); if (!o) return;
-  if (!confirm('Annuler la commande ' + o.no + ' ?\nElle sera retirée de l’écran et des statistiques.')) return;
+  const v = o.pd && KPAY[o.pd.id];
+  /* commande payée en ligne : on rembourse le client avant de l'annuler */
+  if (o.pd && !(v && v.test) && !(o.rf && o.rf.id)) {
+    if (!WK()) { toast(KLOCK); return; }
+    if (!confirm('Annuler la commande ' + o.no + ' et rembourser ' + eur(o.pd.a) + ' au client ?\nL’argent repart sur son compte (2 à 5 jours ouvrables).')) return;
+    toast('💸 Remboursement en cours…');
+    try {
+      const r = await fetch(getCfg('molFn'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ act: 'refund', id: o.pd.id, k: o.k, wk: WK() }) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || !j.ok) {
+        toast(j.error === 'auth' ? KLOCK : '⚠ Remboursement impossible' + (j.detail ? ' : ' + j.detail : '') + '. La commande n’est pas annulée (remboursez depuis Mollie si besoin).');
+        return;
+      }
+      toast('💸 ' + eur(j.a) + ' remboursé au client');
+    } catch (e) { toast('⚠ Erreur réseau : rien n’a été remboursé ni annulé'); return; }
+  } else if (!confirm('Annuler la commande ' + o.no + ' ?\nElle sera retirée de l’écran et des statistiques.')) return;
   try {
     await Store.del(o); KO = KO.filter(x => x.k !== k);
     try { if (window.hfStatDel) hfStatDel(k); else { const s = JSON.parse(localStorage.getItem('hfstat')) || {}; delete s[k]; localStorage.setItem('hfstat', JSON.stringify(s)); } } catch (e) {}
