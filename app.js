@@ -2153,6 +2153,9 @@ const wkHash = p => sha256('hfw|' + String(p).trim());
 const proof = k => ({ k: k || '-', t: { '.sv': 'timestamp' } });
 const rootPatch = async obj => (await fetch(getDB() + '/.json', { method: 'PATCH', body: JSON.stringify(obj) })).status;
 const same = (a, b) => a.no === b.no && a.t === b.t;
+/* réponse de Firebase à un changement de la cuisine : refus = mot de passe manquant sur cet appareil */
+const kw = code => { if (code === 401 || code === 403) { const e = new Error('lock'); e.lock = 1; throw e; } if (code !== 200) throw new Error('net'); };
+const KLOCK = '🔒 Refusé : entrez le mot de passe Firebase sur cet appareil (Réglages → Sécurité)';
 const Store = {
   async push(o) {
     const DB = getDB();
@@ -2164,19 +2167,21 @@ const Store = {
     if (DB) { const r = (await (await fetch(DB + '/orders.json')).json()) || {}; return Object.entries(r).map(([k, v]) => ({ ...v, k })); }
     return (st('hfq') || []).map(o => ({ ...o, k: o.no + '-' + o.t }));
   },
+  /* Les changements de la cuisine (lancer, prête, servie, annulée) passent avec le mot de passe Firebase
+     de l'appareil : sans lui, personne ne peut modifier ou effacer une commande. */
   async set(o, p) {
     const DB = getDB();
-    if (DB) await fetch(DB + '/orders/' + o.k + '.json', { method: 'PATCH', body: JSON.stringify(p) });
+    if (DB) { const u = { proof: proof(WK()) }; Object.keys(p).forEach(f => { u['orders/' + o.k + '/' + f] = p[f]; }); kw(await rootPatch(u)); }
     else { const q = st('hfq') || []; q.forEach(x => { if (same(x, o)) Object.assign(x, p); }); st('hfq', q); }
   },
   async restore(o) {
     const DB = getDB(), { k, ...v } = o;
-    if (DB) { const r = await fetch(DB + '/orders/' + k + '.json', { method: 'PUT', body: JSON.stringify(v) }); if (!r.ok) throw 1; }
+    if (DB) kw(await rootPatch({ ['orders/' + k]: v, proof: proof(WK()) }));
     else { const q = st('hfq') || []; if (!q.some(x => same(x, o))) q.push(v); st('hfq', q); }
   },
   async del(o) {
     const DB = getDB();
-    if (DB) await fetch(DB + '/orders/' + o.k + '.json', { method: 'DELETE' });
+    if (DB) kw(await rootPatch({ ['orders/' + o.k]: null, proof: proof(WK()) }));
     else st('hfq', (st('hfq') || []).filter(x => !same(x, o)));
   },
   async saveConfig(cfgObj) {
@@ -2280,6 +2285,12 @@ async function kload() {
 }
 let KSIG = '';
 function kdraw(force) {
+  /* rappel visible si cet appareil n'a pas le mot de passe Firebase (boutons refusés une fois le verrou actif) */
+  try {
+    const kb = $('#kt .kbar'); let w = $('#kwk');
+    if (kb && !WK()) { if (!w) { w = document.createElement('button'); w.id = 'kwk'; w.type = 'button'; w.className = 'chip'; w.style.cssText = 'background:#e5484d;color:#fff;border:0;font-weight:700'; w.textContent = '🔒 Mot de passe Firebase manquant'; w.onclick = () => toast(KLOCK); kb.appendChild(w); } }
+    else if (w) w.remove();
+  } catch (e) {}
   const q = KO.filter(o => o.t > Date.now() - 864e5).sort((a, b) => a.t - b.t);
   /* on ne redessine que si une commande a changé (ou chaque minute pour les chronos) :
      sinon un bouton touché pendant le rafraîchissement (toutes les 2,5 s) pouvait être perdu */
@@ -2307,7 +2318,7 @@ function kundo(o) {
 async function kundoGo() {
   const o = KUNDO; KUNDO = null; const u = $('#kun'); if (u) u.classList.remove('on');
   if (!o) return;
-  try { await Store.restore(o); if (!KO.some(x => x.k === o.k)) KO.push(o); seen.add(o.k); kdraw(1); toast('Commande ' + o.no + ' remise en « Prêtes »'); } catch (e) { toast('Erreur réseau'); }
+  try { await Store.restore(o); if (!KO.some(x => x.k === o.k)) KO.push(o); seen.add(o.k); kdraw(1); toast('Commande ' + o.no + ' remise en « Prêtes »'); } catch (e) { toast(e && e.lock ? KLOCK : 'Erreur réseau'); }
 }
 /* Annuler une commande (client parti, erreur…) : retirée de l'écran et des statistiques */
 async function kcancel(k) {
@@ -2318,7 +2329,7 @@ async function kcancel(k) {
     try { if (window.hfStatDel) hfStatDel(k); else { const s = JSON.parse(localStorage.getItem('hfstat')) || {}; delete s[k]; localStorage.setItem('hfstat', JSON.stringify(s)); } } catch (e) {}
     try { const c = JSON.parse(localStorage.getItem('hfcanc')) || {}; c[k] = Date.now(); localStorage.setItem('hfcanc', JSON.stringify(c)); } catch (e) {}
     toast('Commande ' + o.no + ' annulée');
-  } catch (e) { toast('Erreur réseau'); }
+  } catch (e) { toast(e && e.lock ? KLOCK : 'Erreur réseau'); }
   kdraw(1);
 }
 /* Imprimer le ticket (imprimante de cuisine 80 mm ou imprimante normale) */
@@ -2353,7 +2364,7 @@ async function mv(k, s, btn) {
   try {
     if (s > 2) { await Store.del(o); KO = KO.filter(x => x.k !== k); kundo(o); }
     else { await Store.set(o, { st: s }); o.st = s; }
-  } catch (e) { toast('Erreur réseau'); }
+  } catch (e) { toast(e && e.lock ? KLOCK : 'Erreur réseau'); }
   mv.b = 0; kdraw(1);
 }
 
