@@ -75,8 +75,33 @@ async function finalize(id: string, paidAmount: number) {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: CORS });
-  const key = Deno.env.get("MOLLIE_KEY") || "";
-  if (!/^(live|test)_\w{20,}$/.test(key)) return out({ error: "nokey" }, 503);
+  /* clé Mollie : secret MOLLIE_KEY (ou MOLLIE_API_KEY), espaces et guillemets en trop retirés */
+  const raw = Deno.env.get("MOLLIE_KEY") || Deno.env.get("MOLLIE_API_KEY") || Deno.env.get("MOLLIE") || "";
+  let key = raw.trim().replace(/^["']|["']$/g, "").trim();
+  /* si on a collé tout un bloc JSON copié depuis Mollie, on y retrouve la clé test_/live_ */
+  let fields: string[] = [];
+  if (key.startsWith("{")) {
+    try {
+      const found: string[] = [];
+      const walk = (v: unknown, path: string) => {
+        if (typeof v === "string") { if (/^(live|test)_[A-Za-z0-9]{20,}$/.test(v.trim())) found.push(v.trim()); else if (/^access_[A-Za-z0-9]{20,}$/.test(v.trim())) found.push(v.trim()); }
+        else if (v && typeof v === "object") for (const [k2, v2] of Object.entries(v)) { fields.push(path + k2); walk(v2, path + k2 + "."); }
+      };
+      walk(JSON.parse(key), "");
+      found.sort((a, b) => (/^(live|test)_/.test(a) ? 0 : 1) - (/^(live|test)_/.test(b) ? 0 : 1));
+      if (found[0]) key = found[0];
+    } catch (_) { /* pas du JSON valide */ }
+  } else {
+    const m = key.match(/\b(live|test)_[A-Za-z0-9]{20,}\b/);
+    if (m) key = m[0];
+  }
+  if (!/^(live|test|access)_[A-Za-z0-9_\-]{20,}$/.test(key)) {
+    const names = Object.keys(Deno.env.toObject()).filter((n) => /mollie/i.test(n)); // noms seulement, jamais les valeurs
+    const why = !raw ? "secret MOLLIE_KEY absent" : /^(access|org)_/.test(key) ? "clé d'accès (access_) au lieu de la clé API test_/live_" : "format de clé inattendu (doit commencer par test_ ou live_)";
+    const cls = (c: string) => /[a-z]/.test(c) ? "a" : /[A-Z]/.test(c) ? "A" : /[0-9]/.test(c) ? "9" : c === "_" ? "_" : c === "-" ? "-" : c === " " ? "sp" : "?";
+    const diag = { len: key.length, head: key.slice(0, 5), kinds: Array.from(new Set(Array.from(key).map(cls))).join(""), fields: fields.slice(0, 40) };
+    return out({ error: "nokey", why, secrets: names, diag }, 503);
+  }
   const api = (path: string, init: RequestInit = {}) =>
     fetch("https://api.mollie.com/v2/" + path, {
       ...init,
