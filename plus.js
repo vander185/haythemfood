@@ -132,6 +132,19 @@
     if (!m || !(m.p > it.p)) return null;
     return { m, type: opt(m).includes('t') ? type : '' };
   }
+  /* boisson déjà ajoutée à part dans le panier (ex. Softs 0,33 L · Coca-Cola) : elle entre dans le menu au lieu d'être payée deux fois */
+  function soloDrink() {
+    try {
+      const D = getDRK();
+      for (let i = L.length - 1; i >= 0; i--) {
+        const l = L[i], it = I[l.id];
+        if (!it || !/^boissons?$/.test(nk(it.cat))) continue;
+        const name = D.find(d => nk(d) === nk(l.v || it.n));
+        if (name) return { k: lkey(l), name, p: unit({ ...l, q: 1 }) };
+      }
+    } catch (e) {}
+    return null;
+  }
   window.hfMenuOffer = n => {
     try {
       if (moShown >= 3 || moNo >= 2) return;
@@ -140,11 +153,14 @@
       /* vrai supplément à payer : le menu (frites + boisson comprises) moins ce que le client a déjà (plat + boisson éventuelle) */
       let diff = f.m.p - it.p;
       try { diff = unit({ id: f.m.id, s: n.s || [], r: n.r || [], x: n.x || [], b: '', t: f.type, q: 1 }) - unit({ ...n, q: 1 }); } catch (e) {}
+      const dr = n.b ? null : soloDrink();
+      if (dr) { diff -= dr.p; moLine.dr = dr; }
+      diff = Math.round(diff * 100) / 100;
       const u = IMG(f.m);
       $('#shk').innerHTML = `<div class="mo"><div class="th"><h3 style="flex:1;text-align:left">${esc(tt('Passez en menu ?'))}</h3><button class="chip" data-z="mono">✕</button></div>
 <div class="mop" style="${u ? `background-image:url('${String(u).replace(/'/g, "\\'")}')` : ''}"></div>
-<h3>${esc(full(f.m))}</h3><p>${esc(tt('Votre plat + des frites') + ' · ' + tt('boisson au choix'))}</p>
-<span class="mpx">${diff > 0.004 ? '+ ' + eur(diff) : esc(tt('Même prix')) + ' 🎉'}</span>
+<h3>${esc(full(f.m))}</h3><p>${esc(tt('Votre plat + des frites') + ' · ' + (dr ? tt('avec la boisson déjà choisie') + ' (' + dr.name + ')' : tt('boisson au choix')))}</p>
+<span class="mpx">${diff > 0.004 ? '+ ' + eur(diff) : diff < -0.004 ? esc(tt('Vous économisez')) + ' ' + eur(-diff) + ' 🎉' : esc(tt('Même prix')) + ' 🎉'}</span>
 <button class="btn" data-z="moyes">🍟 ${esc(tt('Oui, en menu'))}</button><button class="btn g" data-z="mono">${esc(tt('Non merci'))}</button></div>`;
       $('#sh').classList.add('on');
     } catch (e) {}
@@ -154,9 +170,9 @@
     const a = z.dataset.z;
     if (a === 'mono') { moNo++; moLine = null; $('#sh').classList.remove('on'); }
     else if (a === 'moyes' && moLine) {
-      const { n, f } = moLine; moLine = null;
-      const nl = { id: f.m.id, s: n.s || [], r: n.r || [], x: n.x || [], b: '', nt: n.nt || '', t: f.type, no: { ...(n.no || {}) } };
-      window._moRepl = { mid: f.m.id, k: lkey(n) };
+      const { n, f, dr } = moLine; moLine = null;
+      const nl = { id: f.m.id, s: n.s || [], r: n.r || [], x: n.x || [], b: dr ? dr.name : '', nt: n.nt || '', t: f.type, no: { ...(n.no || {}) } };
+      window._moRepl = { mid: f.m.id, k: lkey(n), dk: dr ? dr.k : '' };
       const x = I[f.m.id], ks = [...'trsxb'].filter(c => opt(x).includes(c) && (c !== 'x' || getSUP().length));
       ed = { ...nl, k: Math.max(0, ks.indexOf('b')) };
       sheet();
@@ -169,6 +185,9 @@
     if (!r || !o || o.id !== r.mid || o.ei !== undefined) return;
     const i = L.findIndex(l => lkey(l) === r.k);
     if (i > -1) { L[i].q--; if (!L[i].q) L.splice(i, 1); }
+    /* la boisson prise à part est maintenant dans le menu : on la retire du panier */
+    const j = r.dk ? L.findIndex(l => lkey(l) === r.dk) : -1;
+    if (j > -1) { L[j].q--; if (!L[j].q) L.splice(j, 1); }
   };
 
   /* ---------- 3. Temps d'attente estimé ---------- */
