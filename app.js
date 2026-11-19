@@ -2413,11 +2413,37 @@ body.f #fs{display:flex}body.f{overflow:hidden}body.f #bar{display:none}
 @media(max-width:700px){#fs .fg{grid-template-columns:1fr}}`;
   document.head.appendChild(s);
   const d = document.createElement('div'); d.id = 'fs';
-  d.innerHTML = `<div class="fh"><h2>🍽️ ${esc(getCfg('title'))} · Vos commandes</h2><span id="fclk" style="font:700 clamp(22px,3vw,36px) Georgia,serif"></span><button class="btn g off" id="fv" onclick="fvoice()">🔊 Activer la voix</button>${window.HF_SCREEN === 'file' ? '' : `<button class="btn g" onclick="go('')">⬅ Retour</button>`}</div><div class="fg"><div class="fc"><h3>⏳ En préparation</h3><div class="fl" id="fp"></div></div><div class="fc r"><h3>✅ Prêtes · venez les récupérer</h3><div class="fl" id="fr"></div></div></div>`;
+  d.innerHTML = `<div class="fh"><h2>🍽️ ${esc(getCfg('title'))} · Vos commandes</h2><span id="fclk" style="font:700 clamp(22px,3vw,36px) Georgia,serif"></span><button class="btn g off" id="fv" onclick="fvoice()">🔊 Activer la voix</button><select id="fvs" class="fvs" title="Choisir la voix des annonces" onchange="fvPick(this.value)" style="display:none"></select>${window.HF_SCREEN === 'file' ? '' : `<button class="btn g" onclick="go('')">⬅ Retour</button>`}</div><div class="fg"><div class="fc"><h3>⏳ En préparation</h3><div class="fl" id="fp"></div></div><div class="fc r"><h3>✅ Prêtes · venez les récupérer</h3><div class="fl" id="fr"></div></div></div>`;
   document.body.appendChild(d);
+  setTimeout(fvList, 300); setTimeout(fvList, 1500);
 })();
 
-function say(t) { try { const u = new SpeechSynthesisUtterance(t); u.lang = 'fr-FR'; u.rate = .9; const v = (speechSynthesis.getVoices() || []).find(v => /^fr/i.test(v.lang)); if (v) u.voice = v; speechSynthesis.speak(u); } catch (e) {} }
+/* Voix des annonces : on prend la voix française la plus naturelle disponible sur l'appareil
+   (voix « Natural / Online » de Microsoft Edge, voix Google réseau, voix « Premium / Enhanced » d'Apple…),
+   ou celle choisie dans la liste en haut de l'écran d'attente. */
+function frVoices() {
+  let v = [];
+  try { v = (speechSynthesis.getVoices() || []).filter(x => /^fr/i.test(x.lang)); } catch (e) {}
+  const sc = x => (/natural|neural/i.test(x.name) ? 50 : 0) + (/online|network|réseau/i.test(x.name) ? 20 : 0) + (/premium|enhanced|améliorée/i.test(x.name) ? 25 : 0)
+    + (/google/i.test(x.name) ? 12 : 0) + (/fr[-_]fr/i.test(x.lang) ? 4 : /fr[-_]be/i.test(x.lang) ? 3 : 0) + (/denise|vivienne|eloise|remy|henri|amelie|thomas|audrey/i.test(x.name) ? 3 : 0)
+    - (/espeak|compact|eloquence/i.test(x.name) ? 40 : 0);
+  return v.sort((a, b) => sc(b) - sc(a));
+}
+function bestVoice() {
+  const all = frVoices(); let k = '';
+  try { k = localStorage.getItem('hfvoice') || ''; } catch (e) {}
+  return all.find(v => v.name === k) || all[0] || null;
+}
+function fvList() {
+  const s = $('#fvs'); if (!s) return;
+  const all = frVoices(), cur = bestVoice();
+  if (!all.length) { s.style.display = 'none'; return; }
+  s.innerHTML = all.map(v => `<option value="${esc(v.name)}" ${cur && cur.name === v.name ? 'selected' : ''}>🗣 ${esc(v.name.replace(/^Microsoft\s+/, '').replace(/\s*-\s*(French|Français).*$/i, ''))}</option>`).join('');
+  s.style.display = '';
+}
+function fvPick(n) { try { localStorage.setItem('hfvoice', n); } catch (e) {} FA = true; audio(); $('#fv').textContent = '🔊 Voix activée'; $('#fv').classList.remove('off'); speechSynthesis.cancel(); say('Commande numéro 12, votre commande est prête.'); }
+try { speechSynthesis.addEventListener('voiceschanged', fvList); } catch (e) {}
+function say(t) { try { const u = new SpeechSynthesisUtterance(t), v = bestVoice(); u.lang = v ? v.lang : 'fr-FR'; if (v) u.voice = v; u.rate = v && /natural|neural|online|premium|enhanced/i.test(v.name) ? 1 : .92; u.pitch = 1; speechSynthesis.speak(u); } catch (e) {} }
 function fvoice() { FA = true; audio(); $('#fv').textContent = '🔊 Voix activée'; $('#fv').classList.remove('off'); say('La voix est activée.'); }
 function pump() { const o = aq.shift(); if (!o) { pump.b = 0; return; } pump.b = 1; beep(); setTimeout(() => { const t = 'Commande numéro ' + (o.nn != null ? o.nn : o.no) + (o.nom ? ', ' + o.nom : '') + ', votre commande est prête.'; say(t); say(t); }, 700); setTimeout(pump, 7000); }
 function announce(o) { if (!FA) return; aq.push(o); if (!pump.b) pump(); }

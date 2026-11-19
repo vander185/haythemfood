@@ -805,3 +805,6 @@ background-size:260% 100%;background-position:130% 0;animation:shn2 3.8s cubic-b
 .opts.need{animation:hfneed .45s ease}
 @keyframes hfneed{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
 @media(prefers-reduced-motion:reduce){.opts.need{animation:none;outline:2px solid #f9e29c;outline-offset:4px;border-radius:12px}}
+/* choix de la voix des annonces (écran d'attente) */
+.fvs{font:700 15px/1.2 inherit;font-family:inherit;color:#f9e29c;background:#0c1b3e;border:1px solid #d4af3780;border-radius:12px;padding:10px 12px;max-width:260px;cursor:pointer}
+.fvs:focus{outline:2px solid #f9e29c;outline-offset:2px}
