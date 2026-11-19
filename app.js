@@ -590,7 +590,7 @@ const DEFAULT_CFG = {
   bankBic: '',
   bankName: '',
   bankNote: 'Communication : votre prénom + le numéro de commande',
-  molOn: '0',
+  molOn: '1',
   molName: 'Payer en ligne',
   molInfo: 'Bancontact, carte bancaire, Apple Pay, Google Pay ou virement instantané. Paiement 100 % sécurisé : votre commande part en cuisine dès que le paiement est accepté.',
   molFn: 'https://nfdcrufjjqltibqvyprz.supabase.co/functions/v1/mollie'
