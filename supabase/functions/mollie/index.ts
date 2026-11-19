@@ -127,6 +127,8 @@ Deno.serve(async (req) => {
     /* 2) Le site (ou l'écran cuisine) demande où en est un paiement */
     if (req.method === "GET") {
       const id = new URL(req.url).searchParams.get("id") || "";
+      /* ?ping : dit seulement si la clé est en mode test ou réel (jamais la clé) */
+      if (new URL(req.url).searchParams.has("ping")) return out({ ok: true, mode: key.startsWith("live_") ? "live" : key.startsWith("test_") ? "test" : "access" });
       if (!/^tr_\w{4,40}$/.test(id)) return out({ error: "id" }, 400);
       const q = await api("payments/" + id);
       if (!q.ok) return out({ error: "mollie", code: q.status }, 502);
