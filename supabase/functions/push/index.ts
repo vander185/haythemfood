@@ -1,0 +1,131 @@
+// Notifications de l'écran cuisine Haythem Food (Web Push), même écran éteint ou page fermée.
+//
+// GET  ?vapid=1                      -> { pub } clé publique (créée et gardée ici au premier appel)
+// POST { act:"sub", sub, wk }        -> enregistre l'appareil cuisine (wk = mot de passe Firebase de l'appareil)
+// POST { act:"unsub", endpoint }     -> retire l'appareil
+// POST { act:"new", k }              -> nouvelle commande k : prévient tous les appareils cuisine (une seule fois)
+//
+// Les clés de notification restent dans la base (table push_cfg, accès réservé à cette fonction).
+
+import webpush from "npm:web-push@3.6.7";
+
+const FB = Deno.env.get("FB_DB") || "https://haythemfood-2f2e9-default-rtdb.europe-west1.firebasedatabase.app";
+const SB = Deno.env.get("SUPABASE_URL") || "";
+const SK = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+const CORS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "content-type, authorization, apikey, x-client-info",
+};
+const out = (b: unknown, s = 200) =>
+  new Response(JSON.stringify(b), { status: s, headers: { ...CORS, "Content-Type": "application/json" } });
+
+const db = (t: string, q: string, init: RequestInit = {}) =>
+  fetch(`${SB}/rest/v1/${t}${q}`, {
+    ...init,
+    headers: { apikey: SK, Authorization: "Bearer " + SK, "Content-Type": "application/json", Prefer: "return=representation", ...(init.headers || {}) },
+  });
+
+let VAP: { pub: string; priv: string } | null = null;
+async function vapid() {
+  if (VAP) return VAP;
+  const read = async () => { const r = await db("push_cfg", "?id=eq.1&select=pub,priv"); const j = r.ok ? await r.json() : []; return j[0] || null; };
+  let v = await read();
+  if (!v) {
+    const k = webpush.generateVAPIDKeys();
+    await db("push_cfg", "", { method: "POST", headers: { Prefer: "resolution=ignore-duplicates,return=minimal" }, body: JSON.stringify({ id: 1, pub: k.publicKey, priv: k.privateKey }) });
+    v = await read();
+  }
+  if (!v) throw new Error("vapid");
+  webpush.setVapidDetails("https://haythemfood.com", v.pub, v.priv);
+  return (VAP = v);
+}
+
+/* Seul un appareil qui connaît le mot de passe Firebase peut s'inscrire :
+   Firebase n'accepte l'écriture dans hs/<clé> que si c'est la bonne clé. */
+async function isKitchen(wk: string) {
+  if (!/^[0-9a-f]{64}$/.test(wk)) return false;
+  // effacement d'un champ vide : ne change rien, mais Firebase le refuse sans le bon mot de passe
+  const r = await fetch(`${FB}/hs/${wk}/_push_check.json`, { method: "DELETE" });
+  return r.ok;
+}
+
+async function sendAll(payload: Record<string, unknown>) {
+  await vapid();
+  const r = await db("push_subs", "?select=endpoint,p256dh,auth");
+  const subs: { endpoint: string; p256dh: string; auth: string }[] = r.ok ? await r.json() : [];
+  let ok = 0;
+  const errs: string[] = [];
+  await Promise.all(subs.map(async (s) => {
+    try {
+      await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, JSON.stringify(payload), { TTL: 900, urgency: "high" });
+      ok++;
+    } catch (e) {
+      const code = (e as { statusCode?: number }).statusCode;
+      errs.push(String(code || (e as Error).message || e).slice(0, 80));
+      if (code === 404 || code === 410) await db("push_subs", "?endpoint=eq." + encodeURIComponent(s.endpoint), { method: "DELETE" });
+    }
+  }));
+  return { ok, n: subs.length, errs };
+}
+
+const eur = (n: number) => (+n || 0).toFixed(2).replace(".", ",") + " €";
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response(null, { headers: CORS });
+  try {
+    if (req.method === "GET") {
+      if (new URL(req.url).searchParams.has("vapid")) return out({ pub: (await vapid()).pub });
+      return out({ error: "method" }, 405);
+    }
+    if (req.method !== "POST") return out({ error: "method" }, 405);
+    const b = await req.json().catch(() => ({}));
+
+    if (b.act === "sub") {
+      const s = b.sub || {};
+      if (!/^https:\/\//.test(String(s.endpoint || "")) || !s.keys || !s.keys.p256dh || !s.keys.auth) return out({ error: "sub" }, 400);
+      if (!(await isKitchen(String(b.wk || "")))) return out({ error: "auth" }, 403);
+      const sub = { endpoint: s.endpoint, keys: { p256dh: s.keys.p256dh, auth: s.keys.auth } };
+      const r = await db("push_subs", "", {
+        method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
+        body: JSON.stringify({ endpoint: s.endpoint, p256dh: s.keys.p256dh, auth: s.keys.auth }),
+      });
+      if (!r.ok) return out({ error: "store" }, 500);
+      await vapid();
+      try { await webpush.sendNotification(sub, JSON.stringify({ t: "🔔 Notifications activées", b: "Les nouvelles commandes sonneront ici, même écran éteint.", k: "test" }), { TTL: 300, urgency: "high" }); } catch (_) { /* rien */ }
+      return out({ ok: true });
+    }
+
+    if (b.act === "unsub") {
+      const e = String(b.endpoint || "");
+      if (/^https:\/\//.test(e)) await db("push_subs", "?endpoint=eq." + encodeURIComponent(e), { method: "DELETE" });
+      return out({ ok: true });
+    }
+
+    if (b.act === "new") {
+      const k = String(b.k || "");
+      if (!/^[-\w]{10,40}$/.test(k)) return out({ error: "k" }, 400);
+      const o = await fetch(`${FB}/orders/${k}.json`).then((r) => r.json()).catch(() => null);
+      if (!o || !o.no || Math.abs(Date.now() - (+o.t || 0)) > 30 * 60000) return out({ ok: false, skip: "order" });
+      // une seule notification par commande, même si on prévient plusieurs fois
+      const c = await db("push_sent", "", { method: "POST", headers: { Prefer: "resolution=ignore-duplicates,return=representation" }, body: JSON.stringify({ k }) });
+      const got = c.ok ? await c.json() : [];
+      if (!got.length) return out({ ok: false, skip: "dup" });
+      if (Math.random() < 0.05) await db("push_sent", "?at=lt." + new Date(Date.now() - 3 * 864e5).toISOString(), { method: "DELETE" });
+      const l: { q?: number; n?: string; p?: number }[] = Array.isArray(o.l) ? o.l : [];
+      const tot = l.reduce((s, x) => s + (+(x.p || 0)), 0);
+      const what = l.slice(0, 4).map((x) => `${x.q || 1}× ${x.n || ""}`).join(", ") + (l.length > 4 ? "…" : "");
+      const paid = o.pd ? "✅ Payé en ligne" : String(o.pay || "");
+      const from = o.src === "borne" ? "Borne" : "Site";
+      const r = await sendAll({
+        t: `🔔 Nouvelle commande N° ${o.no}`,
+        b: `${what}\n${o.mode || "Sur place"} · ${eur(tot)} · ${paid} · ${from}`,
+        k,
+      });
+      return out({ ok: true, ...r });
+    }
+    return out({ error: "act" }, 400);
+  } catch (e) {
+    return out({ error: "server", detail: String(e) }, 500);
+  }
+});

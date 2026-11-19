@@ -64,6 +64,8 @@ async function finalize(id: string, paidAmount: number) {
     const p = await fetch(`${FB}/orders.json`, { method: "POST", body: JSON.stringify(o) });
     if (!p.ok) throw new Error("firebase " + p.status);
     const k = (await p.json()).name;
+    // fait sonner les écrans cuisine (même écran éteint)
+    try { await fetch(SB + "/functions/v1/push", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ act: "new", k }) }); } catch (_) { /* rien */ }
     await db("?id=eq." + encodeURIComponent(id), {
       method: "PATCH", body: JSON.stringify({ state: "done", fb_key: k, no, updated_at: new Date().toISOString() }),
     });

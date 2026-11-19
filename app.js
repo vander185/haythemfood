@@ -2189,6 +2189,46 @@ $('#q').addEventListener('input', e => {
 /* ---- Stockage partagé (Firebase) ou local ---- */
 const getDB = () => String(getCfg('DB') || '').replace(/\/$/, '');
 const WK = () => st('hfwk') || '';
+/* ---- Notifications cuisine (même écran éteint ou page fermée) ----
+   Chaque nouvelle commande prévient le service « push », qui fait sonner les appareils cuisine inscrits. */
+const PUSHFN = () => String(getCfg('molFn') || '').replace(/\/mollie\/?$/, '/push');
+function pushNew(k) { try { const u = PUSHFN(); if (/^https:/.test(u)) fetch(u, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ act: 'new', k }), keepalive: true }).catch(() => {}); } catch (e) {} }
+const b64u = s => { const b = atob((s + '='.repeat((4 - s.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from(b, c => c.charCodeAt(0)); };
+const kPushOk = () => { try { return Notification.permission === 'granted' && localStorage.getItem('hfpush') === '1'; } catch (e) { return false; } };
+window.kPushOn = async () => {
+  const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window))
+    return toast(ios ? '📱 Sur iPhone/iPad : touchez Partager → « Sur l’écran d’accueil », ouvrez HF Cuisine depuis l’icône, puis réessayez' : '⚠ Ce navigateur ne permet pas les notifications : utilisez Chrome');
+  if (!WK()) return toast(KLOCK);
+  const perm = await Notification.requestPermission();
+  if (perm !== 'granted') return toast('🔕 Notifications bloquées : autorisez-les pour haythemfood.com dans les réglages du navigateur');
+  try {
+    const reg = await navigator.serviceWorker.register('/sw.js'); await navigator.serviceWorker.ready;
+    const { pub } = await (await fetch(PUSHFN() + '?vapid=1')).json();
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64u(pub) });
+    const r = await fetch(PUSHFN(), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ act: 'sub', sub: sub.toJSON(), wk: WK() }) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok || !j.ok) throw (j.error === 'auth' ? 'mot de passe Firebase refusé' : (j.error || r.status));
+    localStorage.setItem('hfpush', '1');
+    toast('🔔 Notifications activées : une notification test arrive');
+  } catch (e) { toast('⚠ Activation impossible : ' + e); }
+  kPushChip();
+};
+window.kPushOff = async () => {
+  if (!confirm('Arrêter les notifications sur cet appareil ?')) return;
+  try { const reg = await navigator.serviceWorker.getRegistration('/'); const sub = reg && await reg.pushManager.getSubscription();
+    if (sub) { fetch(PUSHFN(), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ act: 'unsub', endpoint: sub.endpoint }) }).catch(() => {}); await sub.unsubscribe(); } } catch (e) {}
+  localStorage.removeItem('hfpush'); toast('🔕 Notifications arrêtées sur cet appareil'); kPushChip();
+};
+function kPushChip() {
+  const kb = $('#kt .kbar'); if (!kb) return;
+  let c = $('#kpush'); if (!c) { c = document.createElement('button'); c.id = 'kpush'; c.type = 'button'; c.className = 'chip'; kb.appendChild(c); }
+  const on = kPushOk();
+  c.textContent = on ? '🔔 Notif. actives' : '🔕 Activer les notifications (écran éteint)';
+  c.style.cssText = on ? 'background:#1f9d55;color:#fff;border:0' : 'background:#f5a524;color:#111;border:0;font-weight:700';
+  c.onclick = on ? kPushOff : kPushOn;
+}
 const wkHash = p => sha256('hfw|' + String(p).trim());
 const proof = k => ({ k: k || '-', t: { '.sv': 'timestamp' } });
 const rootPatch = async obj => (await fetch(getDB() + '/.json', { method: 'PATCH', body: JSON.stringify(obj) })).status;
@@ -2199,7 +2239,7 @@ const KLOCK = '🔒 Refusé : entrez le mot de passe Firebase sur cet appareil (
 const Store = {
   async push(o) {
     const DB = getDB();
-    if (DB) { const r = await fetch(DB + '/orders.json', { method: 'POST', body: JSON.stringify(o) }); if (!r.ok) throw 1; const j = await r.json().catch(() => null); return j && j.name; }
+    if (DB) { const r = await fetch(DB + '/orders.json', { method: 'POST', body: JSON.stringify(o) }); if (!r.ok) throw 1; const j = await r.json().catch(() => null); if (j && j.name) pushNew(j.name); return j && j.name; }
     else { const q = st('hfq') || []; q.push(o); st('hfq', q); try { new BroadcastChannel('hf').postMessage(1); } catch (e) {} return o.no + '-' + o.t; }
   },
   async list() {
@@ -2327,6 +2367,7 @@ let KSIG = '';
 function kdraw(force) {
   /* rappel visible si cet appareil n'a pas le mot de passe Firebase (boutons refusés une fois le verrou actif) */
   try {
+    kPushChip();
     const kb = $('#kt .kbar'); let w = $('#kwk');
     if (kb && !WK()) { if (!w) { w = document.createElement('button'); w.id = 'kwk'; w.type = 'button'; w.className = 'chip'; w.style.cssText = 'background:#e5484d;color:#fff;border:0;font-weight:700'; w.textContent = '🔒 Mot de passe Firebase manquant'; w.onclick = () => toast(KLOCK); kb.appendChild(w); } }
     else if (w) w.remove();
