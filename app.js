@@ -1854,7 +1854,7 @@ const orderGo = () => isMol() ? payGo() : send();
 async function payGo() {
   if (!L.length || payGo.b) return;
   payGo.b = 1;
-  await opnTick();
+  await opnTick(1);
   if (!openNow().open) { payGo.b = 0; toast('🔴 ' + T('Nous sommes fermés')); draw(); return; }
   const bt = $('#tk [data-x="send"]');
   if (bt) { bt.disabled = true; bt.textContent = T('Ouverture du paiement…'); }
@@ -1963,19 +1963,40 @@ window.setOpen = v => {
   opnDraw();
   toast(v === 'closed' ? '🔴 Site fermé : commandes bloquées' : v === 'open' ? '🟢 Site ouvert' : '🕒 Automatique selon les horaires');
 };
-/* Côté client : l'état est relu chaque minute (et l'horaire « Auto » recalculé) */
-async function opnTick() {
+/* Ouvert / Fermé côté clients : branché en direct sur Firebase (changement visible en moins d'une seconde),
+   avec une vérification de secours toutes les 10 s si la connexion directe est coupée. */
+function opnSet(v) {
+  const before = openNow().open;
+  if (typeof v === 'string' && v !== getCfg('openStatus')) { CF.cfg = CF.cfg || {}; CF.cfg.openStatus = v; st('hfc', CF); }
+  if (document.body.classList.contains('k')) { opnDraw(); return; }
+  if (openNow().open !== before) { applySiteSettings(); if ($('#dr') && $('#dr').classList.contains('on')) draw(); }
+}
+async function opnTick(force) {
   if (document.hidden) return;
-  const before = openNow().open, DB = getDB();
+  if (!force && opnES && opnES.readyState === 1) { opnSet(); return; } /* le direct fonctionne : on recalcule juste l'horaire « Auto » */
+  const DB = getDB();
+  let v;
   if (DB) try {
     const r = await fetch(DB + '/site_config/cfg/openStatus.json', { cache: 'no-store' });
-    if (r.ok) { const v = await r.json(); if (typeof v === 'string' && v !== getCfg('openStatus')) { CF.cfg = CF.cfg || {}; CF.cfg.openStatus = v; st('hfc', CF); } }
+    if (r.ok) v = await r.json();
   } catch (e) {}
-  if (document.body.classList.contains('k')) { opnDraw(); return; }
-  if (openNow().open !== before) { applySiteSettings(); if ($('#dr').classList.contains('on')) draw(); }
+  opnSet(v);
 }
-setInterval(opnTick, 10000);
-addEventListener('visibilitychange', () => { if (!document.hidden) opnTick(); });
+let opnES = null;
+function opnLive() {
+  const DB = getDB();
+  if (opnES || document.hidden || !DB || !window.EventSource) return;
+  try {
+    const es = new EventSource(DB + '/site_config/cfg/openStatus.json');
+    opnES = es;
+    const h = e => { try { const j = JSON.parse(e.data); if (j && j.path === '/' && typeof j.data === 'string') opnSet(j.data); } catch (_) {} };
+    es.addEventListener('put', h); es.addEventListener('patch', h);
+  } catch (e) { opnES = null; }
+}
+function opnOff() { try { if (opnES) opnES.close(); } catch (e) {} opnES = null; }
+setInterval(() => opnTick(), 10000);
+addEventListener('visibilitychange', () => { if (document.hidden) opnOff(); else { opnLive(); opnTick(1); } });
+setTimeout(opnLive, 1200);
 async function send() {
   if (!L.length || send.b) return;
   if (!PAID && !openNow().open) { toast('🔴 ' + T('Nous sommes fermés')); draw(); return; }
@@ -1987,7 +2008,7 @@ async function send() {
   if (!paid) try { w = window.open('', '_blank'); if (w) w.document.write('<title>' + esc(getCfg('title')) + '</title><body style="margin:0;display:grid;place-items:center;height:100vh;background:#040914;color:#f9e29c;font:600 17px system-ui">' + esc(T('Préparation de votre commande…')) + '</body>'); } catch (e) {}
   const bt = $('#tk [data-x="send"]');
   if (bt) { bt.disabled = true; bt.textContent = T('Envoi…'); }
-  if (!paid) { await opnTick(); if (!openNow().open) { try { if (w) w.close(); } catch (e) {} send.b = 0; toast('🔴 ' + T('Nous sommes fermés')); draw(); return; } }
+  if (!paid) { await opnTick(1); if (!openNow().open) { try { if (w) w.close(); } catch (e) {} send.b = 0; toast('🔴 ' + T('Nous sommes fermés')); draw(); return; } }
   let n = await takeNo(), off = 0;
   if (n == null) { n = localNo(); off = 1; }
   const o = toOrder(n, off);
@@ -2078,7 +2099,7 @@ function reorder() {
   upd();
   openD();
 }
-const openD = () => { draw(); $('#dr').classList.add('on'); opnTick(); }, closeD = () => $('#dr').classList.remove('on');
+const openD = () => { draw(); $('#dr').classList.add('on'); opnTick(1); }, closeD = () => $('#dr').classList.remove('on');
 
 /* ---- Gestion des clics ---- */
 document.addEventListener('click', e => {
