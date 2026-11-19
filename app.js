@@ -43,6 +43,8 @@ const TR = {
     "Préparation de votre commande…": "Uw bestelling wordt voorbereid…",
     "Envoi…": "Verzenden…",
     "Payé en ligne": "Online betaald",
+    "Paiement": "Betaling",
+    "Espèces au comptoir": "Contant aan de toog",
     "Envoyer aussi sur WhatsApp": "Ook via WhatsApp sturen",
     "Nouveau": "Nieuw",
     "Le plus commandé": "Meest besteld",
@@ -134,6 +136,8 @@ const TR = {
     "Préparation de votre commande…": "Preparing your order…",
     "Envoi…": "Sending…",
     "Payé en ligne": "Paid online",
+    "Paiement": "Payment",
+    "Espèces au comptoir": "Cash at the counter",
     "Envoyer aussi sur WhatsApp": "Also send on WhatsApp",
     "Nouveau": "New",
     "Le plus commandé": "Most ordered",
@@ -342,6 +346,8 @@ const TR = {
     "Préparation de votre commande…": "Preparando su pedido…",
     "Envoi…": "Enviando…",
     "Payé en ligne": "Pagado en línea",
+    "Paiement": "Pago",
+    "Espèces au comptoir": "Efectivo en el mostrador",
     "Envoyer aussi sur WhatsApp": "Enviar también por WhatsApp",
     "Nouveau": "Nuevo",
     "Le plus commandé": "El más pedido",
@@ -509,6 +515,8 @@ const TR = {
     "Préparation de votre commande…": "جارٍ تجهيز طلبك…",
     "Envoi…": "جارٍ الإرسال…",
     "Payé en ligne": "مدفوع عبر الإنترنت",
+    "Paiement": "الدفع",
+    "Espèces au comptoir": "نقدًا عند الكاونتر",
     "Envoyer aussi sur WhatsApp": "أرسل أيضاً عبر واتساب",
     "Nouveau": "جديد",
     "Le plus commandé": "الأكثر طلباً",
@@ -584,7 +592,7 @@ const DEFAULT_CFG = {
   loyOn: '0',
   loyN: 10,
   loyGift: 'Un dürüm offert',
-  payTitle: 'Paiement au comptoir',
+  payTitle: 'Paiement',
   bankHolder: '',
   bankIban: '',
   bankBic: '',
@@ -623,10 +631,10 @@ const DEFAULT_OPT = {
 const DEFAULT_CRU = ['Salade', 'Tomates', 'Oignons', 'Concombre', 'Maïs', 'Carottes', 'Chou blanc', 'Olives'];
 const DEFAULT_DRK = ['Coca-Cola', 'Coca-Cola Zéro', 'Fanta', 'Fanta Citron', 'Sprite', 'Schweppes Lemon', 'Schweppes Agrumes', 'Ice Tea', 'Orangina', 'Caprisun', 'Eau'];
 const DEFAULT_PAYS = [
-  { on: true, e: '💶', n: 'Espèces' },
-  { on: true, e: '🟦', n: 'Bancontact' },
-  { on: true, e: '📱', n: 'Payconiq' },
-  { on: true, e: '💳', n: 'Visa / Mastercard' },
+  { on: true, e: '💶', n: 'Espèces au comptoir' },
+  { on: false, e: '🟦', n: 'Bancontact' },
+  { on: false, e: '📱', n: 'Payconiq' },
+  { on: false, e: '💳', n: 'Visa / Mastercard' },
   { on: false, e: '🏦', n: 'Virement bancaire', bank: true }
 ];
 
@@ -1735,7 +1743,7 @@ function draw() {
 ${L.length ? L.map((l, i) => `<div class="ln"><span>${esc(lineN(l))}<em>${esc(dsc(l).join(' · '))}</em><b>${eur(unit(l) * l.q)}</b></span><div class="ctl">${(opt(I[l.id]) || vrs(I[l.id]).length) ? `<button class="lnx" data-x="ced|${i}" title="${esc(T('Modifier'))}" aria-label="${esc(T('Modifier'))}">✏️</button>` : ''}<button class="lnx" data-x="crm|${i}" title="${esc(T('Retirer'))}" aria-label="${esc(T('Retirer'))}">🗑</button><button data-x="ln|${i}|-1">−</button><b>${l.q}</b><button data-x="ln|${i}|1">+</button></div></div>`).join('') : `<p class="nt">${T('Votre panier est vide.')}</p>${(st('hflast') || []).some(l => I[l.id] && !I[l.id].out) ? `<button class="btn g" style="width:100%;margin-bottom:10px" data-x="re">🔁 ${esc(T('Recommander ma dernière commande'))}</button>` : ''}`}
 ${upsell()}${loyLine()}<textarea id="gn" rows="2" placeholder="${T('Remarque pour la commande')}" oninput="gnote=this.value">${esc(gnote)}</textarea><div class="tot"><span>${T('Total')}</span><span>${eur(tot())}</span></div>
 ${(() => { const o = openNow(); return o.open ? '' : `<p class="shutn">🔴 <b>${esc(T('Nous sommes fermés'))}</b> · ${esc(o.next ? T('Ouvre') + ' ' + (o.when ? o.when + ' ' : '') + T('à') + ' ' + o.next : T('Réouverture bientôt'))}<em>${esc(T('Votre panier est gardé : revenez à l’ouverture pour l’envoyer.'))}</em></p>`; })()}
-<h4>${esc(T(getCfg('payTitle')))}</h4><div class="opts">${PAYS().map(p => `<button class="${payOf() === p[1] ? 'on' : ''}" data-x="pay|${esc(p[1])}">${esc(p[0])} ${esc(p[1])}</button>`).join('')}</div>${payBox()}
+<h4>${esc(T(getCfg('payTitle')))}</h4><div class="opts">${PAYS().map(p => `<button class="${payOf() === p[1] ? 'on' : ''}" data-x="pay|${esc(p[1])}">${esc(p[0])} ${esc(T(p[1]))}</button>`).join('')}</div>${payBox()}
 <button class="btn" style="width:100%;margin-top:12px" data-x="send" ${L.length && openNow().open ? '' : 'disabled'}>${openNow().open ? (isMol() && L.length ? '⚡ ' + T('Payer') + ' ' + eur(tot()) + ' ' + T('et commander') : T('Valider ma commande')) : T('Fermé · commande impossible')}</button>`;
 }
 /* Détails du mode de paiement choisi (message, lien, compte bancaire) */
