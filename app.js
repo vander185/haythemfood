@@ -63,7 +63,7 @@ const TR = {
     "Maïs": "Maïs",
     "Salades": "Salades",
     'Composer': 'Samenstellen', 'Ajouter': 'Toevoegen', 'Ma commande': 'Mijn bestelling',
-    'Sur place': 'Ter plaatse', 'À emporter': 'Meenemen', 'Votre prénom (pour vous appeler)': 'Uw voornaam',
+    'Sur place': 'Ter plaatse', 'À emporter': 'Meenemen', 'Votre prénom (pour vous appeler)': 'Uw voornaam', 'Veuillez entrer votre prénom pour commander': 'Vul uw voornaam in om te bestellen', 
     'Votre panier est vide.': 'Uw mandje is leeg.', 'Total': 'Totaal', 'Valider ma commande': 'Bestelling bevestigen',
     'Paiement au comptoir': 'Betaling aan de toonbank', 'Heure de retrait': 'Afhaaltijd',
     'Dès que possible': 'Zo snel mogelijk', 'Remarque pour la commande': 'Opmerking bij de bestelling',
@@ -160,7 +160,7 @@ const TR = {
     "Olives": "Olives",
     "Menus": "Meals",
     'Composer': 'Customise', 'Ajouter': 'Add', 'Ma commande': 'My order',
-    'Sur place': 'Eat in', 'À emporter': 'Takeaway', 'Votre prénom (pour vous appeler)': 'Your first name',
+    'Sur place': 'Eat in', 'À emporter': 'Takeaway', 'Votre prénom (pour vous appeler)': 'Your first name', 'Veuillez entrer votre prénom pour commander': 'Please enter your first name to order', 
     'Votre panier est vide.': 'Your basket is empty.', 'Total': 'Total', 'Valider ma commande': 'Confirm my order',
     'Paiement au comptoir': 'Pay at the counter', 'Heure de retrait': 'Pickup time',
     'Dès que possible': 'As soon as possible', 'Remarque pour la commande': 'Note for the order',
@@ -212,7 +212,7 @@ const TR = {
     "Ma commande": "Mi pedido",
     "Sur place": "Para comer aquí",
     "À emporter": "Para llevar",
-    "Votre prénom (pour vous appeler)": "Su nombre (para llamarle)",
+    "Votre prénom (pour vous appeler)": "Su nombre (para llamarle)", "Veuillez entrer votre prénom pour commander": "Escriba su nombre para hacer el pedido", 
     "Votre panier est vide.": "Su cesta está vacía.",
     "Total": "Total",
     "Valider ma commande": "Confirmar mi pedido",
@@ -384,7 +384,7 @@ const TR = {
     "Ma commande": "طلبي",
     "Sur place": "في المطعم",
     "À emporter": "سفري",
-    "Votre prénom (pour vous appeler)": "اسمك (لننادي عليك)",
+    "Votre prénom (pour vous appeler)": "اسمك (لننادي عليك)", "Veuillez entrer votre prénom pour commander": "يرجى كتابة اسمك لإتمام الطلب", 
     "Votre panier est vide.": "سلّتك فارغة.",
     "Total": "المجموع",
     "Valider ma commande": "تأكيد طلبي",
@@ -1760,7 +1760,7 @@ function toOrder(n, off) {
 function draw() {
   $('#tk').innerHTML = `<div class="th"><h3>${T('Ma commande')}</h3><div style="display:flex;gap:8px">${L.length ? `<button class="chip clr" data-x="clr">🗑 ${esc(T('Vider'))}</button>` : ''}<button class="chip" data-x="cld">✕</button></div></div>
 <div class="seg"><button class="${mode === 'Sur place' ? 'on' : ''}" data-x="mode|Sur place">${T('Sur place')}</button><button class="${mode === 'À emporter' ? 'on' : ''}" data-x="mode|À emporter">${T('À emporter')}</button></div><h4>${T('Heure de retrait')}</h4><div class="opts">${WL().map(w => `<button class="${whenL() === w ? 'on' : ''}" data-x="wh|${w}">${w}</button>`).join('')}</div>
-<input id="nm" placeholder="${T('Votre prénom (pour vous appeler)')}" value="${esc(nom)}" oninput="nom=this.value">
+<input id="nm" required autocomplete="given-name" placeholder="${T('Votre prénom (pour vous appeler)')} *" value="${esc(nom)}" oninput="nom=this.value;if(this.value.trim())this.classList.remove('err')">
 ${L.length ? L.map((l, i) => `<div class="ln"><span>${esc(lineN(l))}<em>${esc(dsc(l).join(' · '))}</em><b>${eur(unit(l) * l.q)}</b></span><div class="ctl">${(opt(I[l.id]) || vrs(I[l.id]).length) ? `<button class="lnx" data-x="ced|${i}" title="${esc(T('Modifier'))}" aria-label="${esc(T('Modifier'))}">✏️</button>` : ''}<button class="lnx" data-x="crm|${i}" title="${esc(T('Retirer'))}" aria-label="${esc(T('Retirer'))}">🗑</button><button data-x="ln|${i}|-1">−</button><b>${l.q}</b><button data-x="ln|${i}|1">+</button></div></div>`).join('') : `<p class="nt">${T('Votre panier est vide.')}</p>${(st('hflast') || []).some(l => I[l.id] && !I[l.id].out) ? `<button class="btn g" style="width:100%;margin-bottom:10px" data-x="re">🔁 ${esc(T('Recommander ma dernière commande'))}</button>` : ''}`}
 ${upsell()}${loyLine()}<textarea id="gn" rows="2" placeholder="${T('Remarque pour la commande')}" oninput="gnote=this.value">${esc(gnote)}</textarea><div class="tot"><span>${T('Total')}</span><span>${eur(tot())}</span></div>
 ${(() => { const o = openNow(); return o.open ? '' : `<p class="shutn">🔴 <b>${esc(T('Nous sommes fermés'))}</b> · ${esc(o.next ? T('Ouvre') + ' ' + (o.when ? o.when + ' ' : '') + T('à') + ' ' + o.next : T('Réouverture bientôt'))}<em>${esc(T('Votre panier est gardé : revenez à l’ouverture pour l’envoyer.'))}</em></p>`; })()}
@@ -1879,6 +1879,14 @@ function loyLine() {
    2) au retour, le site demande à Mollie si c'est payé ;
    3) payé → la commande part en cuisine avec « ✅ Payé en ligne » ; annulé → le panier revient. */
 let PAID = null;
+/* Le prénom est obligatoire pour commander */
+function needNom() {
+  if ((nom || '').trim()) return true;
+  const f = $('#nm');
+  toast('✍️ ' + T('Veuillez entrer votre prénom pour commander'));
+  if (f) { f.classList.remove('err'); void f.offsetWidth; f.classList.add('err'); f.scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => f.focus(), 250); }
+  return false;
+}
 const orderGo = () => isMol() ? payGo() : send();
 async function payGo() {
   if (!L.length || payGo.b) return;
@@ -2168,7 +2176,7 @@ document.addEventListener('click', e => {
     else if (a === 'wh') { when = b; draw(); }
     else if (a === 'ln') { L[+b].q += +c; if (L[+b].q < 1) L.splice(+b, 1); upd(); }
     else if (a === 'cld') closeD();
-    else if (a === 'send') { if (upNeed()) { upAsk = 1; upSheet(); } else orderGo(); }
+    else if (a === 'send') { if (!needNom()) return; if (upNeed()) { upAsk = 1; upSheet(); } else orderGo(); }
     else if (a === 'upgo') { shut(); orderGo(); }
     else if (a === 'upa') { upBmp = b + '|' + (c || ''); addLine({ id: b, s: [], r: [], b: '', ...(c ? { v: c } : {}) }); upBmp = ''; }
     else if (a === 'upd') { const i = L.findLastIndex(l => l.id === b && (l.v || '') === (c || '')); if (i > -1) { L[i].q--; if (!L[i].q) L.splice(i, 1); } upd(); }
