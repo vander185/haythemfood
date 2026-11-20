@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Haythem Food – Menu</title>
+<style>
+  html,body{margin:0;height:100%;background:radial-gradient(circle at 50% 35%,#1d3fa0 0%,#0b1f5c 70%);font-family:Georgia,serif;color:#e8c766}
+  .box{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;box-sizing:border-box}
+  h1{margin:0 0 6px;font-size:30px;letter-spacing:3px;text-transform:uppercase;background:linear-gradient(180deg,#fff1b8,#d4a937 55%,#9c7417);-webkit-background-clip:text;background-clip:text;color:transparent}
+  p{margin:0;color:#f3e2a6;font-size:15px;opacity:.9}
+  .spin{width:42px;height:42px;margin:26px auto;border:3px solid rgba(232,199,102,.25);border-top-color:#e8c766;border-radius:50%;animation:s 0.9s linear infinite}
+  @keyframes s{to{transform:rotate(360deg)}}
+  a{color:#e8c766}
+</style>
+</head>
+<body>
+<div class="box">
+  <h1>Haythem Food</h1>
+  <p>Ouverture du menu…</p>
+  <div class="spin"></div>
+  <p><a id="go" href="https://haythemfood.com/">Appuyez ici si rien ne se passe</a></p>
+</div>
+<script>
+// Lien par défaut si lien.json est illisible
+var DEFAUT = "https://haythemfood.com/";
+var fait = false;
+function aller(url){
+  if (fait) return; fait = true;
+  if (!/^https?:\/\//i.test(url || "")) url = DEFAUT;
+  document.getElementById("go").href = url;
+  location.replace(url);
+}
+setTimeout(function(){ aller(DEFAUT); }, 4000);
+fetch("lien.json?t=" + Date.now(), {cache: "no-store"})
+  .then(function(r){ return r.json(); })
+  .then(function(d){ aller(d && d.lien); })
+  .catch(function(){ aller(DEFAUT); });
+</script>
+<noscript><meta http-equiv="refresh" content="0;url=https://haythemfood.com/"></noscript>
+</body>
+</html>
