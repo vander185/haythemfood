@@ -4,6 +4,9 @@
 // POST { act:"sub", sub, wk }        -> enregistre l'appareil cuisine (wk = mot de passe Firebase de l'appareil)
 // POST { act:"unsub", endpoint }     -> retire l'appareil
 // POST { act:"new", k }              -> nouvelle commande k : prévient tous les appareils cuisine (une seule fois)
+// POST { act:"csub", k, sub, t, b }  -> CLIENT : « me prévenir quand ma commande k est prête » (texte dans sa langue)
+// POST { act:"ready", k }            -> la cuisine a mis la commande k sur « Prête » : prévient le(s) téléphone(s) du client
+//                                        (envoyé seulement si Firebase confirme que la commande est bien prête)
 //
 // Les clés de notification restent dans la base (table push_cfg, accès réservé à cette fonction).
 
@@ -69,6 +72,24 @@ async function sendAll(payload: Record<string, unknown>) {
   return { ok, n: subs.length, errs };
 }
 
+/* Prévient le téléphone du client que sa commande est prête, puis oublie l'abonnement (une seule fois) */
+async function readyNotify(k: string, o: { no?: string }) {
+  await vapid();
+  const r = await db("push_cust", "?k=eq." + encodeURIComponent(k) + "&select=endpoint,p256dh,auth,t,b");
+  const subs: { endpoint: string; p256dh: string; auth: string; t: string; b: string }[] = r.ok ? await r.json() : [];
+  let ok = 0;
+  await Promise.all(subs.map(async (s) => {
+    try {
+      await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
+        JSON.stringify({ c: 1, k, t: s.t || `✅ N° ${o.no} · Votre commande est prête !`, b: s.b || "Présentez ce numéro au comptoir." }),
+        { TTL: 1800, urgency: "high" });
+      ok++;
+    } catch (_) { /* téléphone injoignable : rien */ }
+  }));
+  if (subs.length) await db("push_cust", "?k=eq." + encodeURIComponent(k), { method: "DELETE" });
+  return { ok, n: subs.length };
+}
+
 const eur = (n: number) => (+n || 0).toFixed(2).replace(".", ",") + " €";
 
 Deno.serve(async (req) => {
@@ -123,6 +144,31 @@ Deno.serve(async (req) => {
         k,
       });
       return out({ ok: true, ...r });
+    }
+    if (b.act === "csub") {
+      const k = String(b.k || ""), s = b.sub || {};
+      if (!/^[-\w]{10,40}$/.test(k)) return out({ error: "k" }, 400);
+      if (!/^https:\/\//.test(String(s.endpoint || "")) || !s.keys || !s.keys.p256dh || !s.keys.auth) return out({ error: "sub" }, 400);
+      const o = await fetch(`${FB}/orders/${k}.json`).then((r) => r.json()).catch(() => null);
+      if (!o || !o.no || Date.now() - (+o.t || 0) > 3 * 3600e3) return out({ error: "order" }, 404);
+      const clip = (x: unknown, n: number) => String(x || "").replace(/[\u0000-\u001f]/g, " ").slice(0, n);
+      const r = await db("push_cust", "", {
+        method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
+        body: JSON.stringify({ k, endpoint: s.endpoint, p256dh: s.keys.p256dh, auth: s.keys.auth, t: clip(b.t, 90), b: clip(b.b, 160) }),
+      });
+      if (!r.ok) return out({ error: "store" }, 500);
+      if (Math.random() < 0.1) await db("push_cust", "?at=lt." + new Date(Date.now() - 864e5).toISOString(), { method: "DELETE" });
+      // déjà prête au moment de l'inscription : on prévient tout de suite
+      if ((+o.st || 0) >= 2) await readyNotify(k, o);
+      return out({ ok: true });
+    }
+
+    if (b.act === "ready") {
+      const k = String(b.k || "");
+      if (!/^[-\w]{10,40}$/.test(k)) return out({ error: "k" }, 400);
+      const o = await fetch(`${FB}/orders/${k}.json`).then((r) => r.json()).catch(() => null);
+      if (!o || (+o.st || 0) !== 2) return out({ ok: false, skip: "notready" });
+      return out({ ok: true, ...(await readyNotify(k, o)) });
     }
     return out({ error: "act" }, 400);
   } catch (e) {

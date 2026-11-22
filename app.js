@@ -5,6 +5,7 @@ let lang = localStorage.getItem('hflang') || 'fr';
 
 const TR = {
   nl: {
+    'Me prévenir quand c’est prêt': 'Laat me weten wanneer het klaar is', 'Vous serez prévenu dès que c’est prêt ✅': 'U krijgt een melding zodra het klaar is ✅', 'Notifications bloquées : autorisez-les dans le navigateur': 'Meldingen geblokkeerd: sta ze toe in de browser',
     "Même prix": "Zelfde prijs",
     "🟢 Ouvert · Commandez en ligne": "🟢 Open · Bestel online",
     "🔴 Actuellement fermé": "🔴 Momenteel gesloten",
@@ -101,6 +102,7 @@ const TR = {
     'Dürüms, tacos, grillades et tajines. Commandez en ligne, sur place ou à emporter.': "Dürüms, taco's, grill en tajines. Bestel online, ter plaatse of om mee te nemen."
   },
   en: {
+    'Me prévenir quand c’est prêt': 'Notify me when it’s ready', 'Vous serez prévenu dès que c’est prêt ✅': 'You’ll be notified as soon as it’s ready ✅', 'Notifications bloquées : autorisez-les dans le navigateur': 'Notifications blocked: allow them in your browser',
     "Même prix": "Same price",
     "🟢 Ouvert · Commandez en ligne": "🟢 Open · Order online",
     "🔴 Actuellement fermé": "🔴 Currently closed",
@@ -198,6 +200,7 @@ const TR = {
     'Dürüms, tacos, grillades et tajines. Commandez en ligne, sur place ou à emporter.': "Dürüms, tacos, grills and tajines. Order online, eat in or take away."
   },
   es: {
+    'Me prévenir quand c’est prêt': 'Avísame cuando esté listo', 'Vous serez prévenu dès que c’est prêt ✅': 'Te avisaremos en cuanto esté listo ✅', 'Notifications bloquées : autorisez-les dans le navigateur': 'Notificaciones bloqueadas: permítelas en el navegador',
     "Même prix": "Mismo precio",
     "🟢 Ouvert · Commandez en ligne": "🟢 Abierto · Pida en línea",
     "🔴 Actuellement fermé": "🔴 Cerrado ahora",
@@ -370,6 +373,7 @@ const TR = {
     "Venez la récupérer au comptoir": "Recójalo en el mostrador"
   },
   ar: {
+    'Me prévenir quand c’est prêt': 'أعلمني عندما يكون جاهزاً', 'Vous serez prévenu dès que c’est prêt ✅': 'سنُعلمك فور أن يكون جاهزاً ✅', 'Notifications bloquées : autorisez-les dans le navigateur': 'الإشعارات محظورة: اسمح بها في المتصفح',
     "Même prix": "نفس السعر",
     "🟢 Ouvert · Commandez en ligne": "🟢 مفتوح · اطلب عبر الإنترنت",
     "🔴 Actuellement fermé": "🔴 مغلق حالياً",
@@ -2102,11 +2106,14 @@ function ocDraw() {
 ${o.k ? `<div class="ocs">${STL().map((t, i) => `<span class="${i <= s ? 'on' : ''}">${['📨', '👨‍🍳', '✅'][i]} ${esc(t)}</span>`).join('')}</div>` : ''}
 <p>${esc(s === 3 ? T('Bon appétit !') : s === 2 ? T('Votre commande est prête !') : T('Présentez ce numéro au comptoir.'))}</p>
 ${o.pd ? `<p class="loy">✅ ${esc(T('Payé en ligne'))} · <b>${eur(o.pd.a)}</b></p>` : ''}${o.loy ? `<p class="loy">${esc(o.loy)}</p>` : ''}
+${o.k && s < 2 && o.np ? `<p class="loy">🔔 ${esc(T('Vous serez prévenu dès que c’est prêt ✅'))}</p>` : o.k && s < 2 && cpOk() ? `<button class="btn g" style="width:100%;margin-bottom:8px" data-x="cpush">🔔 ${esc(T('Me prévenir quand c’est prêt'))}</button>` : ''}
 ${o.wa && s < 2 ? `<a class="btn g" style="width:100%;margin-bottom:8px" href="${esc(o.wa)}" target="_blank" rel="noopener">📲 ${esc(T('Envoyer aussi sur WhatsApp'))}</a>` : ''}
 ${s >= 2 && /^https?:\/\//i.test(rv) ? `<a class="btn g" style="width:100%;margin-bottom:8px" href="${esc(rv)}" target="_blank" rel="noopener">⭐ ${esc(T('Donner un avis'))}</a>` : ''}
 <button class="btn" style="width:100%" data-x="occ">OK</button></div>`;
   requestAnimationFrame(() => el.classList.add('on'));
   trkDrawPill();
+  /* déjà autorisé sur ce téléphone : on s'inscrit sans rien demander */
+  if (o.k && s < 2 && !o.np && !o.npT && cpOk() && Notification.permission === 'granted') { o.npT = 1; st('hfo', o); custPush(true); }
 }
 const trkDrawPill = () => { const oc = $('#oc'), on = oc && oc.classList.contains('on'); if (on) oc.classList.remove('on'); trkDraw(); if (on) oc.classList.add('on'); };
 async function trkTick() {
@@ -2150,6 +2157,7 @@ document.addEventListener('click', e => {
     if (a === 'pvc') closePV();
     else if (a === 're') reorder();
     else if (a === 'occ') $('#oc').classList.remove('on');
+    else if (a === 'cpush') custPush();
     else if (a === 'oco') ocDraw();
     else if (a === 'pva') { closePV(); if (I[b] && vrs(I[b]).length) { ed = { id: b }; vsheet(); } else if (I[b] && opt(I[b])) { ed = { id: b, s: [], r: [], x: [], b: '', nt: '', k: 0, t: opt(I[b]).includes('t') ? mTypes()[0] : '' }; sheet(); } else addLine({ id: b, s: [], r: [], b: '' }); }
     else if (a === 'vo') { ed = { id: b }; vsheet(); }
@@ -2238,6 +2246,25 @@ async function boardSync(list) {   /* appareil de la cuisine : met le tableau pu
 /* ---- Notifications cuisine (même écran éteint ou page fermée) ----
    Chaque nouvelle commande prévient le service « push », qui fait sonner les appareils cuisine inscrits. */
 const PUSHFN = () => String(getCfg('molFn') || '').replace(/\/mollie\/?$/, '/push');
+/* Client : notification sur le téléphone dès que la commande est prête (même page fermée ou écran éteint) */
+const cpOk = () => { try { return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window && Notification.permission !== 'denied' && /^https:/.test(PUSHFN()); } catch (e) { return false; } };
+async function custPush(silent) {
+  const o = st('hfo'); if (!o || !o.k || o.np || !cpOk()) return;
+  try {
+    const perm = Notification.permission === 'granted' ? 'granted' : silent ? 'default' : await Notification.requestPermission();
+    if (perm !== 'granted') { if (!silent) toast('🔕 ' + T('Notifications bloquées : autorisez-les dans le navigateur')); ocDraw(); return; }
+    const reg = await navigator.serviceWorker.register('/sw.js'); await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) { const { pub } = await (await fetch(PUSHFN() + '?vapid=1')).json(); sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64u(pub) }); }
+    const r = await fetch(PUSHFN(), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ act: 'csub', k: o.k, sub: sub.toJSON(), t: '✅ N° ' + o.no + ' · ' + T('Votre commande est prête !'), b: T('Présentez ce numéro au comptoir.') }) });
+    if (!r.ok) throw r.status;
+    const cur = st('hfo'); if (cur && cur.k === o.k) { cur.np = 1; st('hfo', cur); }
+    if (!silent) toast('🔔 ' + T('Vous serez prévenu dès que c’est prêt ✅'));
+    if ($('#oc') && $('#oc').classList.contains('on')) ocDraw();
+  } catch (e) { if (!silent) toast('⚠ ' + T('Erreur réseau')); }
+}
+/* Cuisine : la commande passe sur « Prête » -> le téléphone du client sonne */
+function pushReady(k) { try { const u = PUSHFN(); if (/^https:/.test(u)) fetch(u, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ act: 'ready', k }), keepalive: true }).catch(() => {}); } catch (e) {} }
 function pushNew(k) { try { const u = PUSHFN(); if (/^https:/.test(u)) fetch(u, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ act: 'new', k }), keepalive: true }).catch(() => {}); } catch (e) {} }
 const b64u = s => { const b = atob((s + '='.repeat((4 - s.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from(b, c => c.charCodeAt(0)); };
 const kPushOk = () => { try { return Notification.permission === 'granted' && localStorage.getItem('hfpush') === '1'; } catch (e) { return false; } };
@@ -2513,7 +2540,7 @@ async function mv(k, s, btn) {
   mv.b = 1; if (btn) btn.disabled = true;
   try {
     if (s > 2) { await Store.del(o); KO = KO.filter(x => x.k !== k); kundo(o); }
-    else { await Store.set(o, { st: s }); o.st = s; }
+    else { await Store.set(o, { st: s }); o.st = s; if (s === 2) pushReady(k); }
   } catch (e) { toast(e && e.lock ? KLOCK : 'Erreur réseau'); }
   mv.b = 0; kdraw(1);
 }

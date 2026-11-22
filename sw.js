@@ -2,7 +2,7 @@
 // Pages, scripts et styles : réseau d'abord (les mises à jour arrivent tout de suite).
 // Photos et icônes : cache d'abord (chargement instantané).
 // Firebase et les autres sites ne passent jamais par le cache.
-const V = 'hf-v18', PH = 'hf-photos-v2';
+const V = 'hf-v19', PH = 'hf-photos-v2';
 const CORE = ['./', 'index.html', 'app.js', 'style.css', 'fx.js', 'plus.js', 'photos-borne.js', 'manifest.webmanifest', 'cuisine/', 'file/'];
 
 self.addEventListener('install', e => {
@@ -35,6 +35,14 @@ self.addEventListener('fetch', e => {
 self.addEventListener('push', e => {
   let d = {};
   try { d = e.data ? e.data.json() : {}; } catch (x) { d = { t: e.data ? e.data.text() : '' }; }
+  /* client : « votre commande est prête » */
+  if (d.c) {
+    e.waitUntil(self.registration.showNotification(d.t || '✅ Votre commande est prête !', {
+      body: d.b || '', tag: 'hfc-' + (d.k || ''), renotify: true, requireInteraction: true,
+      vibrate: [300, 120, 300, 120, 600], icon: '/icons/icon-192.png', badge: '/icons/icon-192.png', data: { url: '/' }
+    }));
+    return;
+  }
   e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(cs => {
     /* écran cuisine déjà ouvert et allumé : il annonce déjà la commande à voix haute, la notification reste discrète */
     const vis = cs.some(c => c.visibilityState === 'visible' && /\/cuisine\//.test(c.url));
@@ -47,8 +55,9 @@ self.addEventListener('push', e => {
 });
 self.addEventListener('notificationclick', e => {
   e.notification.close();
+  const url = (e.notification.data && e.notification.data.url) || '/cuisine/';
   e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(cs => {
-    const c = cs.find(x => /\/cuisine\//.test(x.url));
-    return c ? c.focus() : self.clients.openWindow('/cuisine/');
+    const c = url === '/' ? cs.find(x => !/\/(cuisine|file)\//.test(x.url)) : cs.find(x => /\/cuisine\//.test(x.url));
+    return c ? c.focus() : self.clients.openWindow(url);
   }));
 });
