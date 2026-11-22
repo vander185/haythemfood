@@ -2214,6 +2214,27 @@ $('#q').addEventListener('input', e => {
 /* ---- Stockage partagé (Firebase) ou local ---- */
 const getDB = () => String(getCfg('DB') || '').replace(/\/$/, '');
 const WK = () => st('hfwk') || '';
+/* Confidentialité des clients : la liste complète des commandes (articles, remarques, paiement) n'est lisible
+   que par les appareils qui ont le mot de passe Firebase (règle « orders » : la requête doit porter le mot de passe haché).
+   L'écran d'attente et les clients n'utilisent que le « tableau » public : numéro, prénom, état, heure. */
+const OQ = () => '?orderBy=' + encodeURIComponent('"$priority"') + '&endAt=' + encodeURIComponent('"' + WK() + '"');
+const BOARD = o => ({ no: o.no, nn: o.nn != null ? o.nn : null, st: o.st || 0, t: o.t, nom: o.nom || '' });
+let BSIG = '', BSYNC = 0;
+async function boardSync(list) {   /* appareil de la cuisine : met le tableau public à jour (sans données privées) */
+  const DB = getDB(); if (!DB || !WK() || Date.now() - BSYNC < 4000) return;
+  const want = {}; list.filter(o => o.t > Date.now() - 864e5).forEach(o => { want[o.k] = BOARD(o); });
+  const sig = JSON.stringify(want); if (sig === BSIG) return;
+  BSYNC = Date.now();
+  try {
+    const cur = (await (await fetch(DB + '/board.json')).json()) || {};
+    const u = {};
+    Object.keys(want).forEach(k => { if (JSON.stringify(cur[k] || null) !== JSON.stringify(want[k])) u['board/' + k] = want[k]; });
+    Object.keys(cur).forEach(k => { if (!want[k]) u['board/' + k] = null; });
+    if (!Object.keys(u).length) { BSIG = sig; return; }
+    u.proof = proof(WK());
+    if ((await rootPatch(u)) === 200) BSIG = sig;
+  } catch (e) {}
+}
 /* ---- Notifications cuisine (même écran éteint ou page fermée) ----
    Chaque nouvelle commande prévient le service « push », qui fait sonner les appareils cuisine inscrits. */
 const PUSHFN = () => String(getCfg('molFn') || '').replace(/\/mollie\/?$/, '/push');
@@ -2264,12 +2285,20 @@ const KLOCK = '🔒 Refusé : entrez le mot de passe Firebase sur cet appareil (
 const Store = {
   async push(o) {
     const DB = getDB();
-    if (DB) { const r = await fetch(DB + '/orders.json', { method: 'POST', body: JSON.stringify(o) }); if (!r.ok) throw 1; const j = await r.json().catch(() => null); if (j && j.name) pushNew(j.name); return j && j.name; }
+    if (DB) { const r = await fetch(DB + '/orders.json', { method: 'POST', body: JSON.stringify(o) }); if (!r.ok) throw 1; const j = await r.json().catch(() => null); if (j && j.name) { pushNew(j.name); fetch(DB + '/board/' + j.name + '.json', { method: 'PUT', body: JSON.stringify(BOARD(o)) }).catch(() => {}); } return j && j.name; }
     else { const q = st('hfq') || []; q.push(o); st('hfq', q); try { new BroadcastChannel('hf').postMessage(1); } catch (e) {} return o.no + '-' + o.t; }
   },
   async list() {
     const DB = getDB();
-    if (DB) { const r = (await (await fetch(DB + '/orders.json')).json()) || {}; return Object.entries(r).map(([k, v]) => ({ ...v, k })); }
+    if (DB) {
+      if (WK()) {
+        const q = await fetch(DB + '/orders.json' + OQ());
+        if (q.ok) { const r = (await q.json()) || {}; const L = Object.entries(r).map(([k, v]) => ({ ...v, k })); boardSync(L); return L; }
+        if (q.status !== 401 && q.status !== 403) throw 1;   // mot de passe Firebase refusé : on passe au tableau public
+      }
+      const r = (await (await fetch(DB + '/board.json')).json()) || {};
+      return Object.entries(r).map(([k, v]) => ({ ...v, k, pub: 1 }));
+    }
     return (st('hfq') || []).map(o => ({ ...o, k: o.no + '-' + o.t }));
   },
   /* Les changements de la cuisine (lancer, prête, servie, annulée) passent avec le mot de passe Firebase
@@ -3374,7 +3403,7 @@ const initDBEvents = () => {
      le site des clients ne télécharge plus la liste de toutes les commandes */
   if (!DB || !SCR) return;
   try {
-    const es = new EventSource(DB + '/orders.json');
+    const es = new EventSource(DB + (WK() ? '/orders.json' + OQ() : '/board.json'));
     ['put', 'patch'].forEach(t => es.addEventListener(t, () => {
       if (kok && document.body.classList.contains('k')) kload();
       if (FV) fload();

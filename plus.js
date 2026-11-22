@@ -195,7 +195,7 @@
     const o = st('hfo'); const DB = DBU();
     if (!o || !o.k || o.done || (o.st || 0) >= 2 || !DB || document.hidden) return;
     try {
-      const all = (await (await fetch(DB + '/orders.json')).json()) || {};
+      const all = (await (await fetch(DB + '/board.json')).json()) || {};   /* tableau public : sans données privées */
       const me = all[o.k]; if (!me) return;
       const ahead = Object.values(all).filter(x => x && (x.st || 0) < 2 && x.t <= me.t && x.t > Date.now() - 864e5).length;
       const per = Math.max(1, +getCfg('prepMin') || 4);
