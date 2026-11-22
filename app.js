@@ -5,6 +5,7 @@ let lang = localStorage.getItem('hflang') || 'fr';
 
 const TR = {
   nl: {
+    'WA_PH': '📲 WhatsApp-nummer om verwittigd te worden (optioneel)', 'WA_OK': '📲 U krijgt een WhatsApp-bericht zodra het klaar is',
     'Me prévenir quand c’est prêt': 'Laat me weten wanneer het klaar is', 'Vous serez prévenu dès que c’est prêt ✅': 'U krijgt een melding zodra het klaar is ✅', 'Notifications bloquées : autorisez-les dans le navigateur': 'Meldingen geblokkeerd: sta ze toe in de browser',
     "Même prix": "Zelfde prijs",
     "🟢 Ouvert · Commandez en ligne": "🟢 Open · Bestel online",
@@ -102,6 +103,7 @@ const TR = {
     'Dürüms, tacos, grillades et tajines. Commandez en ligne, sur place ou à emporter.': "Dürüms, taco's, grill en tajines. Bestel online, ter plaatse of om mee te nemen."
   },
   en: {
+    'WA_PH': '📲 WhatsApp number to be notified (optional)', 'WA_OK': '📲 You’ll get a WhatsApp message as soon as it’s ready',
     'Me prévenir quand c’est prêt': 'Notify me when it’s ready', 'Vous serez prévenu dès que c’est prêt ✅': 'You’ll be notified as soon as it’s ready ✅', 'Notifications bloquées : autorisez-les dans le navigateur': 'Notifications blocked: allow them in your browser',
     "Même prix": "Same price",
     "🟢 Ouvert · Commandez en ligne": "🟢 Open · Order online",
@@ -200,6 +202,7 @@ const TR = {
     'Dürüms, tacos, grillades et tajines. Commandez en ligne, sur place ou à emporter.': "Dürüms, tacos, grills and tajines. Order online, eat in or take away."
   },
   es: {
+    'WA_PH': '📲 Número de WhatsApp para avisarte (opcional)', 'WA_OK': '📲 Recibirás un WhatsApp en cuanto esté listo',
     'Me prévenir quand c’est prêt': 'Avísame cuando esté listo', 'Vous serez prévenu dès que c’est prêt ✅': 'Te avisaremos en cuanto esté listo ✅', 'Notifications bloquées : autorisez-les dans le navigateur': 'Notificaciones bloqueadas: permítelas en el navegador',
     "Même prix": "Mismo precio",
     "🟢 Ouvert · Commandez en ligne": "🟢 Abierto · Pida en línea",
@@ -373,6 +376,7 @@ const TR = {
     "Venez la récupérer au comptoir": "Recójalo en el mostrador"
   },
   ar: {
+    'WA_PH': '📲 رقم واتساب لإعلامك (اختياري)', 'WA_OK': '📲 ستصلك رسالة واتساب فور أن يكون جاهزاً',
     'Me prévenir quand c’est prêt': 'أعلمني عندما يكون جاهزاً', 'Vous serez prévenu dès que c’est prêt ✅': 'سنُعلمك فور أن يكون جاهزاً ✅', 'Notifications bloquées : autorisez-les dans le navigateur': 'الإشعارات محظورة: اسمح بها في المتصفح',
     "Même prix": "نفس السعر",
     "🟢 Ouvert · Commandez en ligne": "🟢 مفتوح · اطلب عبر الإنترنت",
@@ -546,7 +550,8 @@ const TR = {
     "Venez la récupérer au comptoir": "تعال لاستلامه من الكاونتر"
   }
 };
-const T = s => (TR[lang] || {})[s] || s;
+const TFR = { WA_PH: '📲 WhatsApp pour être prévenu quand c’est prêt (facultatif)', WA_OK: '📲 Vous recevrez un WhatsApp dès que c’est prêt' };
+const T = s => (TR[lang] || {})[s] || TFR[s] || s;
 /* langue de la page (lecteurs d'écran, Google) et sens d'écriture : l'arabe se lit de droite à gauche */
 function langDir() { try { const h = document.documentElement; h.lang = lang; h.dir = lang === 'ar' ? 'rtl' : 'ltr'; } catch (e) {} }
 langDir();
@@ -1764,7 +1769,7 @@ function toOrder(n, off) {
 function draw() {
   $('#tk').innerHTML = `<div class="th"><h3>${T('Ma commande')}</h3><div style="display:flex;gap:8px">${L.length ? `<button class="chip clr" data-x="clr">🗑 ${esc(T('Vider'))}</button>` : ''}<button class="chip" data-x="cld">✕</button></div></div>
 <div class="seg"><button class="${mode === 'Sur place' ? 'on' : ''}" data-x="mode|Sur place">${T('Sur place')}</button><button class="${mode === 'À emporter' ? 'on' : ''}" data-x="mode|À emporter">${T('À emporter')}</button></div><h4>${T('Heure de retrait')}</h4><div class="opts">${WL().map(w => `<button class="${whenL() === w ? 'on' : ''}" data-x="wh|${w}">${w}</button>`).join('')}</div>
-<input id="nm" required autocomplete="given-name" placeholder="${T('Votre prénom (pour vous appeler)')} *" value="${esc(nom)}" oninput="nom=this.value;if(this.value.trim())this.classList.remove('err')">
+<input id="nm" required autocomplete="given-name" placeholder="${T('Votre prénom (pour vous appeler)')} *" value="${esc(nom)}" oninput="nom=this.value;if(this.value.trim())this.classList.remove('err')">${WAON ? `<input id="wt" type="tel" inputmode="tel" autocomplete="tel" placeholder="${esc(T('WA_PH'))}" value="${esc(wtel)}" oninput="wtel=this.value">` : ''}
 ${L.length ? L.map((l, i) => `<div class="ln"><span>${esc(lineN(l))}<em>${esc(dsc(l).join(' · '))}</em><b>${eur(unit(l) * l.q)}</b></span><div class="ctl">${(opt(I[l.id]) || vrs(I[l.id]).length) ? `<button class="lnx" data-x="ced|${i}" title="${esc(T('Modifier'))}" aria-label="${esc(T('Modifier'))}">✏️</button>` : ''}<button class="lnx" data-x="crm|${i}" title="${esc(T('Retirer'))}" aria-label="${esc(T('Retirer'))}">🗑</button><button data-x="ln|${i}|-1">−</button><b>${l.q}</b><button data-x="ln|${i}|1">+</button></div></div>`).join('') : `<p class="nt">${T('Votre panier est vide.')}</p>${(st('hflast') || []).some(l => I[l.id] && !I[l.id].out) ? `<button class="btn g" style="width:100%;margin-bottom:10px" data-x="re">🔁 ${esc(T('Recommander ma dernière commande'))}</button>` : ''}`}
 ${upsell()}${loyLine()}<textarea id="gn" rows="2" placeholder="${T('Remarque pour la commande')}" oninput="gnote=this.value">${esc(gnote)}</textarea><div class="tot"><span>${T('Total')}</span><span>${eur(tot())}</span></div>
 ${(() => { const o = openNow(); return o.open ? '' : `<p class="shutn">🔴 <b>${esc(T('Nous sommes fermés'))}</b> · ${esc(o.next ? T('Ouvre') + ' ' + (o.when ? o.when + ' ' : '') + T('à') + ' ' + o.next : T('Réouverture bientôt'))}<em>${esc(T('Votre panier est gardé : revenez à l’ouverture pour l’envoyer.'))}</em></p>`; })()}
@@ -1934,7 +1939,7 @@ async function payBack(n) {
     const wa = 'https://wa.me/' + getCfg('WA') + '?text=' + encodeURIComponent(orderText(r.no));
     if (window.hfPopBump) try { hfPopBump(lines); } catch (e) {}
     st('hflast', L.map(l => ({ ...l })));
-    st('hfo', { k: r.k, no: r.no, t: Date.now(), st: 0, wa, pd: { id: k.id, a: r.amount }, loy: '' });
+    st('hfo', { k: r.k, no: r.no, t: Date.now(), st: 0, wa, pd: { id: k.id, a: r.amount }, loy: '' }); waSub(r.k);
     L = []; when = ''; gnote = ''; upd(); closeD(); applySiteSettings(); ocDraw();
     toast('✅ ' + T('Paiement accepté') + ' · ' + eur(r.amount));
   } else if (r && r.paid && r.known === false) {
@@ -2072,7 +2077,7 @@ async function send() {
   PAID = null;
   if (lon) st('hfloy', c);
   st('hflast', L.map(l => ({ ...l })));
-  st('hfo', { k, no: o.no, t: o.t, st: 0, ...(paid ? { wa, pd: o.pd } : {}), loy: !lon ? '' : gift || '🎁 ' + T('Carte de fidélité') + ' : ' + c + '/' + N + ' · ' + getCfg('loyGift') });
+  st('hfo', { k, no: o.no, t: o.t, st: 0, ...(paid ? { wa, pd: o.pd } : {}), loy: !lon ? '' : gift || '🎁 ' + T('Carte de fidélité') + ' : ' + c + '/' + N + ' · ' + getCfg('loyGift') }); waSub(k);
   L = []; when = ''; gnote = ''; upd(); closeD(); applySiteSettings(); ocDraw();
   send.b = 0;
 }
@@ -2106,7 +2111,7 @@ function ocDraw() {
 ${o.k ? `<div class="ocs">${STL().map((t, i) => `<span class="${i <= s ? 'on' : ''}">${['📨', '👨‍🍳', '✅'][i]} ${esc(t)}</span>`).join('')}</div>` : ''}
 <p>${esc(s === 3 ? T('Bon appétit !') : s === 2 ? T('Votre commande est prête !') : T('Présentez ce numéro au comptoir.'))}</p>
 ${o.pd ? `<p class="loy">✅ ${esc(T('Payé en ligne'))} · <b>${eur(o.pd.a)}</b></p>` : ''}${o.loy ? `<p class="loy">${esc(o.loy)}</p>` : ''}
-${o.k && s < 2 && o.np ? `<p class="loy">🔔 ${esc(T('Vous serez prévenu dès que c’est prêt ✅'))}</p>` : o.k && s < 2 && cpOk() ? `<button class="btn g" style="width:100%;margin-bottom:8px" data-x="cpush">🔔 ${esc(T('Me prévenir quand c’est prêt'))}</button>` : ''}
+${o.k && s < 2 && o.wn ? `<p class="loy">${esc(T('WA_OK'))}</p>` : ''}${o.k && s < 2 && o.np ? `<p class="loy">🔔 ${esc(T('Vous serez prévenu dès que c’est prêt ✅'))}</p>` : o.k && s < 2 && cpOk() ? `<button class="btn g" style="width:100%;margin-bottom:8px" data-x="cpush">🔔 ${esc(T('Me prévenir quand c’est prêt'))}</button>` : ''}
 ${o.wa && s < 2 ? `<a class="btn g" style="width:100%;margin-bottom:8px" href="${esc(o.wa)}" target="_blank" rel="noopener">📲 ${esc(T('Envoyer aussi sur WhatsApp'))}</a>` : ''}
 ${s >= 2 && /^https?:\/\//i.test(rv) ? `<a class="btn g" style="width:100%;margin-bottom:8px" href="${esc(rv)}" target="_blank" rel="noopener">⭐ ${esc(T('Donner un avis'))}</a>` : ''}
 <button class="btn" style="width:100%" data-x="occ">OK</button></div>`;
@@ -2262,6 +2267,16 @@ async function custPush(silent) {
     if (!silent) toast('🔔 ' + T('Vous serez prévenu dès que c’est prêt ✅'));
     if ($('#oc') && $('#oc').classList.contains('on')) ocDraw();
   } catch (e) { if (!silent) toast('⚠ ' + T('Erreur réseau')); }
+}
+/* Client : message WhatsApp quand c'est prêt (affiché seulement si WhatsApp est activé sur le serveur) */
+let WAON = false, wtel = st('hfwt') || '';
+(async () => { try { const u = PUSHFN(); if (/^https:/.test(u)) { WAON = !!(await (await fetch(u + '?wa=1')).json()).on; if (WAON && $('#tk') && $('#tk').classList.contains('on')) draw(); } } catch (e) {} })();
+const telOk = t => /^\+?\d{9,15}$/.test(String(t || '').replace(/[\s.\-\/()]/g, ''));
+function waSub(k) {
+  if (!WAON || !k || !telOk(wtel)) return;
+  st('hfwt', wtel);
+  try { fetch(PUSHFN(), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ act: 'wsub', k, tel: wtel, lang }), keepalive: true }).catch(() => {}); } catch (e) {}
+  const cur = st('hfo'); if (cur && cur.k === k) { cur.wn = 1; st('hfo', cur); }
 }
 /* Cuisine : la commande passe sur « Prête » -> le téléphone du client sonne */
 function pushReady(k) { try { const u = PUSHFN(); if (/^https:/.test(u)) fetch(u, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ act: 'ready', k }), keepalive: true }).catch(() => {}); } catch (e) {} }

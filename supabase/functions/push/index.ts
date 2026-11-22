@@ -7,6 +7,15 @@
 // POST { act:"csub", k, sub, t, b }  -> CLIENT : « me prévenir quand ma commande k est prête » (texte dans sa langue)
 // POST { act:"ready", k }            -> la cuisine a mis la commande k sur « Prête » : prévient le(s) téléphone(s) du client
 //                                        (envoyé seulement si Firebase confirme que la commande est bien prête)
+// GET  ?wa=1                         -> { on } la notification WhatsApp est-elle activée ?
+// POST { act:"wsub", k, tel, lang }  -> CLIENT : « me prévenir sur WhatsApp » (numéro gardé ici, jamais dans Firebase)
+//
+// WhatsApp (API Cloud de Meta) : secrets à ajouter dans Supabase -> Edge Functions -> Secrets :
+//   WA_TOKEN    = jeton d'accès permanent (utilisateur système Meta Business)
+//   WA_PHONE_ID = identifiant du numéro WhatsApp Business (« Phone number ID »)
+//   WA_TPL      = nom du modèle de message validé par Meta (par défaut : commande_prete)
+//   Modèle « Utilitaire », corps : « ✅ Haythem Food : votre commande N° {{1}} est prête ! Présentez ce numéro au comptoir. »
+//   (créé en français, néerlandais et anglais)
 //
 // Les clés de notification restent dans la base (table push_cfg, accès réservé à cette fonction).
 
@@ -87,7 +96,40 @@ async function readyNotify(k: string, o: { no?: string }) {
     } catch (_) { /* téléphone injoignable : rien */ }
   }));
   if (subs.length) await db("push_cust", "?k=eq." + encodeURIComponent(k), { method: "DELETE" });
-  return { ok, n: subs.length };
+  const w = await waNotify(k, o).catch(() => ({ wa: 0 }));
+  return { ok, n: subs.length, ...w };
+}
+
+/* ---------- WhatsApp ---------- */
+const WA_TOKEN = Deno.env.get("WA_TOKEN") || "", WA_PHONE_ID = Deno.env.get("WA_PHONE_ID") || "", WA_TPL = Deno.env.get("WA_TPL") || "commande_prete";
+const waOn = () => !!(WA_TOKEN && WA_PHONE_ID);
+function normTel(x: unknown) {
+  let t = String(x || "").replace(/[\s.\-\/()]/g, "");
+  if (t.startsWith("00")) t = "+" + t.slice(2);
+  else if (/^0\d{8,9}$/.test(t)) t = "+32" + t.slice(1);   // numéro belge : 04xx xx xx xx
+  return /^\+\d{8,15}$/.test(t) ? t : "";
+}
+async function waNotify(k: string, o: { no?: string }) {
+  const r = await db("push_wa", "?k=eq." + encodeURIComponent(k) + "&select=tel,lang");
+  const rows: { tel: string; lang: string }[] = r.ok ? await r.json() : [];
+  if (!rows.length) return { wa: 0 };
+  let ok = 0;
+  if (waOn()) {
+    await Promise.all(rows.map(async (x) => {
+      const lang = ({ fr: "fr", nl: "nl", en: "en" } as Record<string, string>)[x.lang] || "fr";
+      const res = await fetch(`https://graph.facebook.com/v21.0/${WA_PHONE_ID}/messages`, {
+        method: "POST",
+        headers: { Authorization: "Bearer " + WA_TOKEN, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messaging_product: "whatsapp", to: x.tel.replace("+", ""), type: "template",
+          template: { name: WA_TPL, language: { code: lang }, components: [{ type: "body", parameters: [{ type: "text", text: String(o.no || "") }] }] },
+        }),
+      }).catch(() => null);
+      if (res && res.ok) ok++;
+    }));
+  }
+  await db("push_wa", "?k=eq." + encodeURIComponent(k), { method: "DELETE" });
+  return { wa: ok };
 }
 
 const eur = (n: number) => (+n || 0).toFixed(2).replace(".", ",") + " €";
@@ -97,6 +139,7 @@ Deno.serve(async (req) => {
   try {
     if (req.method === "GET") {
       if (new URL(req.url).searchParams.has("vapid")) return out({ pub: (await vapid()).pub });
+      if (new URL(req.url).searchParams.has("wa")) return out({ on: waOn() });
       return out({ error: "method" }, 405);
     }
     if (req.method !== "POST") return out({ error: "method" }, 405);
@@ -161,6 +204,22 @@ Deno.serve(async (req) => {
       // déjà prête au moment de l'inscription : on prévient tout de suite
       if ((+o.st || 0) >= 2) await readyNotify(k, o);
       return out({ ok: true });
+    }
+
+    if (b.act === "wsub") {
+      const k = String(b.k || ""), tel = normTel(b.tel);
+      if (!/^[-\w]{10,40}$/.test(k)) return out({ error: "k" }, 400);
+      if (!tel) return out({ error: "tel" }, 400);
+      const o = await fetch(`${FB}/orders/${k}.json`).then((r) => r.json()).catch(() => null);
+      if (!o || !o.no || Date.now() - (+o.t || 0) > 3 * 3600e3) return out({ error: "order" }, 404);
+      const r = await db("push_wa", "", {
+        method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
+        body: JSON.stringify({ k, tel, lang: String(b.lang || "fr").slice(0, 5) }),
+      });
+      if (!r.ok) return out({ error: "store" }, 500);
+      if (Math.random() < 0.1) await db("push_wa", "?at=lt." + new Date(Date.now() - 864e5).toISOString(), { method: "DELETE" });
+      if ((+o.st || 0) >= 2) await waNotify(k, o);
+      return out({ ok: true, on: waOn() });
     }
 
     if (b.act === "ready") {
