@@ -1208,7 +1208,7 @@ const dscT = l => {
   return [
     l.t && k('Formule') + T(l.t),
     l.r && l.r.length ? k('Garniture') + (isAllCru(l.r) ? T('Toutes les crudités') : tl(l.r)) : l.no && l.no.r && k('Garniture') + T('Sans crudités'),
-    l.s && l.s.length ? k('Sauces') + tl(l.s) : l.no && l.no.s && k('Sauces') + T('Sans sauce'),
+    l.s && l.s.length ? k('Sauces') + l.s.map(v => (window.HFL && HFL.SAU[lang] && HFL.SAU[lang][v]) || T(v)).join(sepL()) : l.no && l.no.s && k('Sauces') + T('Sans sauce'),
     l.x && l.x.length && k('Suppléments') + l.x.map(n => T(n) + ' (+' + eur(supP(n)) + ')').join(sepL()),
     l.b && k('Boisson') + T(l.b),
     l.nt && k('Remarque') + l.nt
@@ -1455,7 +1455,7 @@ function renderBan() {
   const sec = Math.max(2, +getCfg('banSec') || 5);
   el.innerHTML = `<div class="bn" style="--bsec:${sec}s">${sl.map((s, i) => {
     const sub = banSub(s);
-    return `<div class="bs${i ? '' : ' on'}" role="link" tabindex="0" data-go="${esc(s.go || 'c0')}"><i class="bi"${bg(BIGSCR() ? HDU(s.img) : s.img, !i)}></i><div class="bx">${s.tag ? `<em>${esc(s.tag)}</em>` : ''}<b>${esc(s.title || '')}</b>${sub ? `<span>${esc(sub)}</span>` : ''}<u class="btn">${esc(T('Commander'))} →</u></div><i class="bp"></i></div>`;
+    return `<div class="bs${i ? '' : ' on'}" role="link" tabindex="0" data-go="${esc(s.go || 'c0')}"><i class="bi"${bg(BIGSCR() ? HDU(s.img) : s.img, !i)}></i><div class="bx">${s.tag ? `<em>${esc(T(s.tag))}</em>` : ''}<b>${esc(T(s.title || ''))}</b>${sub ? `<span>${esc(sub)}</span>` : ''}<u class="btn">${esc(T('Commander'))} ${lang === 'ar' ? '←' : '→'}</u></div><i class="bp"></i></div>`;
   }).join('')}${sl.length > 1 ? `<div class="bd">${sl.map((s, i) => `<button type="button" class="${i ? '' : 'on'}" data-bn="${i}" aria-label="${i + 1}"></button>`).join('')}</div>` : ''}</div>`;
   if (sl.length > 1) banStart();
 }
@@ -1610,6 +1610,7 @@ function sheet() {
   const CRU = getCRU(), SAU = getSAU(), DRK = getDRK();
   const N = { t: T('Dürüm ou Sandwich'), r: T('Garniture'), s: T('Sauces'), x: T('Suppléments'), b: T('Boisson') };
   const list = g === 't' ? mTypes() : g === 's' ? ['Sans sauce', ...SAU] : g === 'x' ? ['Non merci', ...SUP.map(z => z.n)] : g === 'r' ? ['Sans crudités', 'Toutes les crudités', ...CRU] : ['Non merci', ...DRK];
+  const TS = v => g === 's' && lang !== 'fr' && window.HFL && HFL.SAU[lang] && HFL.SAU[lang][v] || T(v);
   const isOn = v => v === 'Non merci' || v === 'Sans sauce' || v === 'Sans crudités' ? !!(ed.no && ed.no[g]) : sel.includes(v);
   const sel = g === 't' ? [ed.t] : g === 'b' ? [ed.b] : g === 'x' ? (ed.x || []) : g === 'r' ? [...ed.r, ...(isAllCru(ed.r) ? ['Toutes les crudités'] : [])] : ed.s;
   const px = v => {
@@ -1625,7 +1626,7 @@ function sheet() {
  <div class="chips" style="margin:12px 0 0">${ks.map((s, j) => `<button class="chip ${j === k ? 'on' + (ed.mv ? ' mv' : '') : j < k ? 'dn' + (ed.mv && j === ed.pk ? ' jd' : '') : ''}" data-x="stp|${j}">${N[s]}</button>`).join('')}</div>
  ${ks.length > 1 ? (() => { const p = Math.round((k + 1) / ks.length * 100), p0 = window._lpE === ed && window._lp != null ? window._lp : 0; window._lpE = ed; window._lp = p; return `<div class="spb" style="--p0:${p0}%;--p:${p}%"><i></i></div>`; })() : ''}
  <div class="stepw${ed.mv ? ' mv-' + ed.mv : ''}"><h4>${ttl}</h4>${g === 'x' ? `<p class="nt" style="margin:-4px 0 8px">${esc(T('En option, payant. Touchez pour ajouter ou retirer.'))}${sup ? ' · <b>+' + eur(sup) + '</b>' : ''}</p>` : ''}${g === 's' ? `<p class="nt" style="margin:-4px 0 8px">${esc(T('Le goût est indiqué sous chaque sauce.'))} 🌶️ ${esc(T('peu'))} · 🌶️🌶️ ${esc(T('relevé'))} · 🌶️🌶️🌶️ ${esc(T('très piquant'))}</p>` : ''}
- <div class="opts og${g === 'x' ? ' ox' : ''}">${list.map(v => `<button class="${isOn(v) ? 'on' : ''}${v === 'Non merci' ? ' nox' : ''}" data-x="tg|${g}|${esc(v)}">${oi(g, v)}<span>${esc(T(v))}${px(v)}</span></button>`).join('')}</div></div>
+ <div class="opts og${g === 'x' ? ' ox' : ''}">${list.map(v => `<button class="${isOn(v) ? 'on' : ''}${v === 'Non merci' ? ' nox' : ''}" data-x="tg|${g}|${esc(v)}">${oi(g, v)}<span>${esc(TS(v))}${px(v)}</span></button>`).join('')}</div></div>
  ${last ? `<textarea rows="2" placeholder="${T('Remarque (ex. sans oignons)')}" oninput="ed.nt=this.value">${esc(ed.nt || '')}</textarea>` : ''}<div class="shf"><button class="btn" style="width:100%" data-x="${last ? 'done' : 'nxt'}">${last ? (ed.ei !== undefined ? T('Enregistrer') : T('Ajouter')) + ' · ' + eur(unit(ed)) : T('Suivant')}</button></div>`;
   $('#sh').classList.add('on');
   if (ed.mv) { ed.mv = ''; $('#shk').scrollTop = 0; }
@@ -1879,7 +1880,7 @@ const upTtl = cs => !cs.length ? '✨ ' + T('Bien choisi ! Autre chose ?')
 const upQ = x => L.filter(l => l.id === x.id && (l.v || '') === x.v).reduce((s, l) => s + l.q, 0);
 const upCard = (x, k) => {
   const q = upQ(x), a = 'upa|' + x.id + '|' + esc(x.v), d = 'upd|' + x.id + '|' + esc(x.v);
-  return `<div class="upc${q ? ' in' : ''}${upBmp === x.id + '|' + x.v ? ' bmp' : ''}" style="--k:${k}"><button class="upb" data-x="${a}" aria-label="${esc(T('Ajouter'))} : ${esc(x.n)}"><i class="upi"${bg(x.u, 1)}>${x.u ? '' : x.e}</i><span class="upn">${esc(x.n)}</span><b class="upp">${eur(x.p)}</b></button>${q
+  return `<div class="upc${q ? ' in' : ''}${upBmp === x.id + '|' + x.v ? ' bmp' : ''}" style="--k:${k}"><button class="upb" data-x="${a}" aria-label="${esc(T('Ajouter'))}${colon()}${esc(x.n)}"><i class="upi"${bg(x.u, 1)}>${x.u ? '' : x.e}</i><span class="upn">${esc(x.n)}</span><b class="upp">${eur(x.p)}</b></button>${q
     ? `<div class="upq"><button data-x="${d}" aria-label="−">−</button><b>${q}</b><button data-x="${a}" aria-label="+">+</button></div>`
     : `<button class="upplus" data-x="${a}" tabindex="-1" aria-hidden="true">+</button>`}</div>`;
 };

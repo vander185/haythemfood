@@ -424,7 +424,7 @@
       'Poulycroc': 'بوليكروك', 'Boulettes': 'كرات لحم', 'Fricadelles': 'فريكانديل',
       'Thé à la menthe 1 pers.': 'أتاي بالنعناع (لشخص)', 'Thé à la menthe 2 pers.': 'أتاي بالنعناع (لشخصين)', 'Thé à la menthe 5 pers.': 'أتاي بالنعناع (لـ5 أشخاص)',
       'Café noir': 'قهوة سوداء', 'Café au lait': 'قهوة بالحليب', 'Redbull': 'ريد بُل', 'Freez': 'فريز', 'Softs 0,33 L': 'مشروب غازي (33 سل)', 'Caprisun': 'كابري صن',
-      'Dame blanche': 'دام بلانش (آيس كريم بالشوكولاتة)', 'Pâtisserie marocaine': 'حلويات مغربية', 'Tiramisu maison': 'تيراميسو منزلي',
+      'Dame blanche': 'دام بلانش', 'Pâtisserie marocaine': 'حلويات مغربية', 'Tiramisu maison': 'تيراميسو منزلي',
       'Supplément Extra sauce': 'صلصة إضافية', 'Supplément Côte d’agneau': 'ريش غنم إضافية', 'Extra sauce': 'صلصة إضافية', 'Côte d’agneau': 'ريش غنم', 'Viande au choix': 'لحم حسب اختيارك'
     }
   };
