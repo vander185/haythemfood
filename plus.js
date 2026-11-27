@@ -159,7 +159,7 @@
       const u = IMG(f.m);
       $('#shk').innerHTML = `<div class="mo"><div class="th"><h3 style="flex:1;text-align:left">${esc(tt('Passez en menu ?'))}</h3><button class="chip" data-z="mono">✕</button></div>
 <div class="mop" style="${u ? `background-image:url('${String(u).replace(/'/g, "\\'")}')` : ''}"></div>
-<h3>${esc(full(f.m))}</h3><p>${esc(tt('Votre plat + des frites') + ' · ' + (dr ? tt('avec la boisson déjà choisie') + ' (' + dr.name + ')' : tt('boisson au choix')))}</p>
+<h3>${esc(typeof TN === 'function' ? TN(full(f.m)) : full(f.m))}</h3><p>${esc(tt('Votre plat + des frites') + ' · ' + (dr ? tt('avec la boisson déjà choisie') + ' (' + dr.name + ')' : tt('boisson au choix')))}</p>
 <span class="mpx">${diff > 0.004 ? '+ ' + eur(diff) : diff < -0.004 ? esc(tt('Vous économisez')) + ' ' + eur(-diff) + ' 🎉' : esc(tt('Même prix')) + ' 🎉'}</span>
 <button class="btn" data-z="moyes">🍟 ${esc(tt('Oui, en menu'))}</button><button class="btn g" data-z="mono">${esc(tt('Non merci'))}</button></div>`;
       $('#sh').classList.add('on');

@@ -551,7 +551,14 @@ const TR = {
   }
 };
 const TFR = { WA_PH: '📲 WhatsApp pour être prévenu quand c’est prêt (facultatif)', WA_OK: '📲 Vous recevrez un WhatsApp dès que c’est prêt' };
-const T = s => (TR[lang] || {})[s] || TFR[s] || s;
+/* traductions naturelles (lang.js) : elles complètent et remplacent celles ci-dessus */
+if (window.HFL && HFL.UI) for (const k in HFL.UI) TR[k] = Object.assign(TR[k] || {}, HFL.UI[k]);
+const T = s => (TR[lang] || {})[s] || TFR[s] || (lang !== 'fr' && window.HFL && HFL.exact(s, lang)) || s;
+/* nom d'un plat pour le client (la cuisine et WhatsApp gardent toujours le nom français) */
+const TN = s => lang === 'fr' || !window.HFL ? s : HFL.TN(s, lang);
+/* « Allergènes : » en français, « Allergens: » ailleurs */
+const colon = () => lang === 'fr' ? ' : ' : ': ';
+const sepL = () => lang === 'ar' ? '، ' : ', ';
 /* langue de la page (lecteurs d'écran, Google) et sens d'écriture : l'arabe se lit de droite à gauche */
 function langDir() { try { const h = document.documentElement; h.lang = lang; h.dir = lang === 'ar' ? 'rtl' : 'ltr'; } catch (e) {} }
 langDir();
@@ -1137,6 +1144,13 @@ const DESC_SOLO = {"Menus|Menu enfant": "Portion adaptée aux enfants : une peti
 const autoDesc = it => {
   if (!it) return '';
   const n = (base[it.id] && base[it.id].n) || it.n, k = it.cat + '|' + n;
+  const D = lang !== 'fr' && window.HFL && HFL.DESC[lang];
+  if (D) {
+    if (D.solo[k]) return D.solo[k];
+    if (it.cat === 'Sauces') { const g = goutOf(it); return D.sauce(TN('Sauce ' + n.replace(/^Sauce /i, '')), g ? T(g[1]) : ''); }
+    const c = D.cat[it.cat], g = D.ing[n];
+    if (c && g) return c.replace('{}', g);
+  }
   if (DESC_SOLO[k]) return DESC_SOLO[k];
   if (it.cat === 'Sauces') {
     const g = goutOf(it);
@@ -1172,6 +1186,8 @@ const unit = l => {
   return (v ? vprice(it, v) : it.p) + (l.b && !/^menus?$/i.test(norm(it.cat || '')) ? dpOf(l.b) : 0) + supTot(l.x);
 };
 const lineN = l => I[l.id] ? full(I[l.id]) + (l.v ? ' · ' + l.v : '') : '';
+/* même ligne, traduite pour le client */
+const lineNT = l => I[l.id] ? TN(full(I[l.id])) + (l.v ? ' · ' + T(l.v) : '') : '';
 const cnt = () => L.reduce((n, l) => n + l.q, 0);
 const tot = () => L.reduce((s, l) => s + unit(l) * l.q, 0);
 const dsc = l => {
@@ -1183,6 +1199,19 @@ const dsc = l => {
     l.x && l.x.length && 'Suppléments : ' + l.x.map(n => n + ' (+' + eur(supP(n)) + ')').join(', '),
     l.b && 'Boisson : ' + l.b,
     l.nt && 'Remarque : ' + l.nt
+  ].filter(Boolean);
+};
+/* détails d'une ligne pour le client, dans sa langue (dsc reste en français pour la cuisine) */
+const dscT = l => {
+  if (lang === 'fr') return dsc(l);
+  const k = s => T(s) + colon(), tl = a => a.map(T).join(sepL());
+  return [
+    l.t && k('Formule') + T(l.t),
+    l.r && l.r.length ? k('Garniture') + (isAllCru(l.r) ? T('Toutes les crudités') : tl(l.r)) : l.no && l.no.r && k('Garniture') + T('Sans crudités'),
+    l.s && l.s.length ? k('Sauces') + tl(l.s) : l.no && l.no.s && k('Sauces') + T('Sans sauce'),
+    l.x && l.x.length && k('Suppléments') + l.x.map(n => T(n) + ' (+' + eur(supP(n)) + ')').join(sepL()),
+    l.b && k('Boisson') + T(l.b),
+    l.nt && k('Remarque') + l.nt
   ].filter(Boolean);
 };
 const toast = m => {
@@ -1287,7 +1316,7 @@ function applySiteSettings() {
   if (galH2) galH2.textContent = T(getCfg('galTitle'));
 
   if (CF.gal && CF.gal.length && $('.gs')) {
-    $('.gs').innerHTML = CF.gal.filter(Boolean).map(g => `<div class="gc" role="link" tabindex="0" data-go="${esc(g.go || 'c0')}"${bg(g.img)}><b>${esc(g.title)}</b><small>${esc(g.sub || 'Voir la carte →')}</small></div>`).join('');
+    $('.gs').innerHTML = CF.gal.filter(Boolean).map(g => `<div class="gc" role="link" tabindex="0" data-go="${esc(g.go || 'c0')}"${bg(g.img)}><b>${esc(T(g.title))}</b><small>${esc(T(g.sub || 'Voir la carte →'))}</small></div>`).join('');
   }
   /* textes de la galerie dans la langue choisie (le texte français d'origine est gardé) */
   document.querySelectorAll('.gc b, .gc small').forEach(e => { if (e.dataset.fr == null) e.dataset.fr = e.textContent; e.textContent = T(e.dataset.fr); });
@@ -1315,7 +1344,7 @@ function applySiteSettings() {
       fx.className = 'ftx';
       ft.appendChild(fx);
     }
-    fx.textContent = getCfg('footer');
+    fx.textContent = T(getCfg('footer'));
     let fh = ft.querySelector('.fth');
     if (!fh) { fh = document.createElement('span'); fh.className = 'fth'; ft.appendChild(fh); }
     fh.textContent = '🕒 ' + hoursTxt();
@@ -1468,16 +1497,16 @@ function openPV(id) {
   }
   const u = IMG(it), o = opt(it), c = cats.find(c => c.n === it.cat) || {};
   const gt = goutOf(it);
-  const feats = [gt && goutTxt(gt), o.includes('r') && T('Garniture au choix'), o.includes('s') && T('Sauces au choix'), o.includes('x') && getSUP().length && T('Suppléments au choix'), o.includes('b') && T('Boisson en option') + ' (+' + eur(getDP()) + ')'].filter(Boolean);
+  const feats = [gt && hot(gt[0]) + T(gt[1]), o.includes('r') && T('Garniture au choix'), o.includes('s') && T('Sauces au choix'), o.includes('x') && getSUP().length && T('Suppléments au choix'), o.includes('b') && T('Boisson en option') + ' (+' + eur(getDP()) + ')'].filter(Boolean);
   const desc = descOf(it);
   el.innerHTML = `<div class="pvc"><button class="pvx" data-x="pvc" aria-label="${esc(T('Fermer'))}">✕</button>
 <div class="pvi">${u ? `<i${bg(HDU(u), 1)}></i>` : `<span>${it.e}</span>`}<small>${c.e || ''} ${esc(T(c.l || it.cat))}</small></div>
-<div class="pvb"><h3>${esc(full(it))}</h3><div class="pvp">${eur(it.p)}</div>${desc ? `<p>${esc(desc)}</p>` : ''}
+<div class="pvb"><h3>${esc(TN(full(it)))}</h3><div class="pvp">${eur(it.p)}</div>${desc ? `<p>${esc(desc)}</p>` : ''}
 ${feats.length ? `<div class="pvf">${feats.map(f => `<span>✦ ${esc(f)}</span>`).join('')}</div>` : ''}${o ? `<p class="nt">${esc(T(getCfg('accNote')))}</p>` : ''}
 ${(() => {
   const a = algShow(it), ck = String(getCfg('algChecked')) === '1';
   if (!a) return algLine() ? `<p class="alg">${esc(T(algLine()))}</p>` : '';
-  return `<p class="alg">⚠️ <b>${esc(T('Allergènes'))}</b> : ${esc(a)}<em>${esc(T(ck ? getCfg('algCross') : 'Liste indicative : en cas d’allergie, confirmez avec nous avant de commander.'))}</em></p>`;
+  return `<p class="alg">⚠️ <b>${esc(T('Allergènes'))}</b>${colon()}${esc(algSplit(a).map(T).join(sepL()))}<em>${esc(T(ck ? getCfg('algCross') : 'Liste indicative : en cas d’allergie, confirmez avec nous avant de commander.'))}</em></p>`;
 })()}
 ${it.out ? `<span class="so">${esc(T('Épuisé'))}</span>` : `<button class="btn" style="width:100%" data-x="pva|${id}">${vrs(it).length ? T('Choisir') : o ? T('Composer') : T('Ajouter')} · ${eur(it.p)}</button>`}</div></div>`;
   requestAnimationFrame(() => el.classList.add('on'));
@@ -1500,7 +1529,7 @@ function build() {
   const vis = cats.filter(c => !c.hide && c.items.length);
   $('#chips').innerHTML = vis.map(c => `<button class="chip" data-k="c${c.i}">${c.e} ${esc(T(c.l))}</button>`).join('');
   trkDraw();
-  $('#carte').innerHTML = (st('hfpv') ? '' : `<p class="tip" id="pvtip">${esc(T('Touchez un plat pour voir sa description, ses ingrédients et ses allergènes.'))}</p>`) + vis.map(c => `<section id="c${c.i}"><h2>${c.e} ${esc(T(c.l))}</h2>${c.d ? `<p class="nt">${esc(c.d)}</p>` : ''}${opt(c.items[0]) ? `<p class="nt">${esc(T(getCfg('accNote')))}</p>` : ''}<div class="grid">${c.items.map(it => `<div class="it v ${it.out ? 'out' : ''}" data-s="${esc(norm(c.n + ' ' + c.l + ' ' + T(c.l) + ' ' + full(it) + ' ' + vrs(it).map(v => v.n).join(' ')))}"><div class="m" data-pv="${it.id}">${th(it)}<div><b>${esc(full(it))}</b><span class="prow"><small>${eur(it.p)}</small><i class="pvb" aria-hidden="true">i</i></span></div></div><div class="ctl" data-c="${it.id}"></div></div>`).join('')}</div></section>`).join('');
+  $('#carte').innerHTML = (st('hfpv') ? '' : `<p class="tip" id="pvtip">${esc(T('Touchez un plat pour voir sa description, ses ingrédients et ses allergènes.'))}</p>`) + vis.map(c => `<section id="c${c.i}"><h2>${c.e} ${esc(T(c.l))}</h2>${c.d ? `<p class="nt">${esc(c.d)}</p>` : ''}${opt(c.items[0]) ? `<p class="nt">${esc(T(getCfg('accNote')))}</p>` : ''}<div class="grid">${c.items.map(it => `<div class="it v ${it.out ? 'out' : ''}" data-s="${esc(norm(c.n + ' ' + c.l + ' ' + T(c.l) + ' ' + full(it) + ' ' + TN(full(it)) + ' ' + vrs(it).map(v => v.n + ' ' + T(v.n)).join(' ')))}"><div class="m" data-pv="${it.id}">${th(it)}<div><b>${esc(TN(full(it)))}</b><span class="prow"><small>${eur(it.p)}</small><i class="pvb" aria-hidden="true">i</i></span></div></div><div class="ctl" data-c="${it.id}"></div></div>`).join('')}</div></section>`).join('');
 }
 
 const ctl = id => {
@@ -1592,7 +1621,7 @@ function sheet() {
   const ttl = g === 't' ? T('Dürüm ou Sandwich ?') : g === 'b' ? (/^menus?$/i.test(norm(x.cat || '')) ? T('Boisson incluse dans le menu') : T('Ajouter une boisson') + ' (+' + eur(getDP()) + ')')
     : g === 'x' ? T(getCfg('supTitle')) : g === 'r' ? T('Choisissez vos crudités') : T('Choisissez vos sauces');
   const sup = supTot(ed.x);
-  $('#shk').innerHTML = `<div class="th"><h3>${esc(full(x))}</h3><button class="chip" data-x="shut">✕</button></div>
+  $('#shk').innerHTML = `<div class="th"><h3>${esc(TN(full(x)))}</h3><button class="chip" data-x="shut">✕</button></div>
  <div class="chips" style="margin:12px 0 0">${ks.map((s, j) => `<button class="chip ${j === k ? 'on' + (ed.mv ? ' mv' : '') : j < k ? 'dn' + (ed.mv && j === ed.pk ? ' jd' : '') : ''}" data-x="stp|${j}">${N[s]}</button>`).join('')}</div>
  ${ks.length > 1 ? (() => { const p = Math.round((k + 1) / ks.length * 100), p0 = window._lpE === ed && window._lp != null ? window._lp : 0; window._lpE = ed; window._lp = p; return `<div class="spb" style="--p0:${p0}%;--p:${p}%"><i></i></div>`; })() : ''}
  <div class="stepw${ed.mv ? ' mv-' + ed.mv : ''}"><h4>${ttl}</h4>${g === 'x' ? `<p class="nt" style="margin:-4px 0 8px">${esc(T('En option, payant. Touchez pour ajouter ou retirer.'))}${sup ? ' · <b>+' + eur(sup) + '</b>' : ''}</p>` : ''}${g === 's' ? `<p class="nt" style="margin:-4px 0 8px">${esc(T('Le goût est indiqué sous chaque sauce.'))} 🌶️ ${esc(T('peu'))} · 🌶️🌶️ ${esc(T('relevé'))} · 🌶️🌶️🌶️ ${esc(T('très piquant'))}</p>` : ''}
@@ -1603,7 +1632,7 @@ function sheet() {
 }
 function vsheet() {
   const x = I[ed.id], vs = vrs(x);
-  $('#shk').innerHTML = `<div class="th"><h3>${esc(full(x))}</h3><button class="chip" data-x="shut">✕</button></div>
+  $('#shk').innerHTML = `<div class="th"><h3>${esc(TN(full(x)))}</h3><button class="chip" data-x="shut">✕</button></div>
  <h4>${esc(T('Votre choix'))}</h4>
  <div class="grid vgl">${vs.map(v => {
     const u = oUrl('b', v.n);
@@ -1770,7 +1799,7 @@ function draw() {
   $('#tk').innerHTML = `<div class="th"><h3>${T('Ma commande')}</h3><div style="display:flex;gap:8px">${L.length ? `<button class="chip clr" data-x="clr">🗑 ${esc(T('Vider'))}</button>` : ''}<button class="chip" data-x="cld">✕</button></div></div>
 <div class="seg"><button class="${mode === 'Sur place' ? 'on' : ''}" data-x="mode|Sur place">${T('Sur place')}</button><button class="${mode === 'À emporter' ? 'on' : ''}" data-x="mode|À emporter">${T('À emporter')}</button></div><h4>${T('Heure de retrait')}</h4><div class="opts">${WL().map(w => `<button class="${whenL() === w ? 'on' : ''}" data-x="wh|${w}">${w}</button>`).join('')}</div>
 <input id="nm" required autocomplete="given-name" placeholder="${T('Votre prénom (pour vous appeler)')} *" value="${esc(nom)}" oninput="nom=this.value;if(this.value.trim())this.classList.remove('err')">${WAON ? `<input id="wt" type="tel" inputmode="tel" autocomplete="tel" placeholder="${esc(T('WA_PH'))}" value="${esc(wtel)}" oninput="wtel=this.value">` : ''}
-${L.length ? L.map((l, i) => `<div class="ln"><span>${esc(lineN(l))}<em>${esc(dsc(l).join(' · '))}</em><b>${eur(unit(l) * l.q)}</b></span><div class="ctl">${(opt(I[l.id]) || vrs(I[l.id]).length) ? `<button class="lnx" data-x="ced|${i}" title="${esc(T('Modifier'))}" aria-label="${esc(T('Modifier'))}">✏️</button>` : ''}<button class="lnx" data-x="crm|${i}" title="${esc(T('Retirer'))}" aria-label="${esc(T('Retirer'))}">🗑</button><button data-x="ln|${i}|-1">−</button><b>${l.q}</b><button data-x="ln|${i}|1">+</button></div></div>`).join('') : `<p class="nt">${T('Votre panier est vide.')}</p>${(st('hflast') || []).some(l => I[l.id] && !I[l.id].out) ? `<button class="btn g" style="width:100%;margin-bottom:10px" data-x="re">🔁 ${esc(T('Recommander ma dernière commande'))}</button>` : ''}`}
+${L.length ? L.map((l, i) => `<div class="ln"><span>${esc(lineNT(l))}<em>${esc(dscT(l).join(' · '))}</em><b>${eur(unit(l) * l.q)}</b></span><div class="ctl">${(opt(I[l.id]) || vrs(I[l.id]).length) ? `<button class="lnx" data-x="ced|${i}" title="${esc(T('Modifier'))}" aria-label="${esc(T('Modifier'))}">✏️</button>` : ''}<button class="lnx" data-x="crm|${i}" title="${esc(T('Retirer'))}" aria-label="${esc(T('Retirer'))}">🗑</button><button data-x="ln|${i}|-1">−</button><b>${l.q}</b><button data-x="ln|${i}|1">+</button></div></div>`).join('') : `<p class="nt">${T('Votre panier est vide.')}</p>${(st('hflast') || []).some(l => I[l.id] && !I[l.id].out) ? `<button class="btn g" style="width:100%;margin-bottom:10px" data-x="re">🔁 ${esc(T('Recommander ma dernière commande'))}</button>` : ''}`}
 ${upsell()}${loyLine()}<textarea id="gn" rows="2" placeholder="${T('Remarque pour la commande')}" oninput="gnote=this.value">${esc(gnote)}</textarea><div class="tot"><span>${T('Total')}</span><span>${eur(tot())}</span></div>
 ${(() => { const o = openNow(); return o.open ? '' : `<p class="shutn">🔴 <b>${esc(T('Nous sommes fermés'))}</b> · ${esc(o.next ? T('Ouvre') + ' ' + (o.when ? o.when + ' ' : '') + T('à') + ' ' + o.next : T('Réouverture bientôt'))}<em>${esc(T('Votre panier est gardé : revenez à l’ouverture pour l’envoyer.'))}</em></p>`; })()}
 <h4>${esc(T(getCfg('payTitle')))}</h4><div class="opts">${PAYS().map(p => `<button class="${payOf() === p[1] ? 'on' : ''}" data-x="pay|${esc(p[1])}">${esc(p[0])} ${esc(T(p[1]))}</button>`).join('')}</div>${payBox()}
@@ -1832,7 +1861,7 @@ function upPick(c, n) {
   c.items.filter(i => !i.out && !opt(i)).forEach(i => {
     const vs = vrs(i);
     if (vs.length) vs.forEach(v => r.push({ id: i.id, v: v.n, n: T(v.n), p: vprice(i, v), u: oUrl('b', v.n) || IMG(i), e: i.e }));
-    else r.push({ id: i.id, v: '', n: full(i), p: i.p, u: IMG(i), e: i.e });
+    else r.push({ id: i.id, v: '', n: TN(full(i)), p: i.p, u: IMG(i), e: i.e });
   });
   /* d'abord les petits prix (achat « coup de cœur »), une seule fois la même photo, les photos avant les icônes */
   const seen = new Set(), u = [];
@@ -1987,7 +2016,7 @@ window.molTest = async () => {
     const r = await fetch(u + '?id=tr_test0000');
     const j = await r.json();
     toast(j.error === 'nokey' ? '⚠ Service en ligne, mais la clé Mollie n’est pas encore mise dans Supabase' : j.code === 401 ? '⚠ Clé Mollie refusée : vérifiez-la dans Supabase' : '✅ Connexion Mollie OK');
-  } catch (e) { toast('⚠ Service de paiement injoignable'); }
+  } catch (e) { toast(T('⚠ Service de paiement injoignable')); }
 };
 /* ---- Ouvert / Fermé en un geste ----
    Boutons sur l'écran cuisine (protégé par le code PIN) et dans les réglages.
@@ -2070,7 +2099,7 @@ async function send() {
   const wa = 'https://wa.me/' + getCfg('WA') + '?text=' + encodeURIComponent(txt);
   if (!paid) try { if (w && !w.closed) w.location.href = wa; else window.open(wa, '_blank'); } catch (e) {}
   let k = '';
-  try { k = (await Store.push(o)) || ''; if (window.hfPopBump) hfPopBump(o.l); } catch (e) { const p = st('hfp') || []; p.push(o); st('hfp', p); toast('Réseau faible : nouvel essai automatique'); }
+  try { k = (await Store.push(o)) || ''; if (window.hfPopBump) hfPopBump(o.l); } catch (e) { const p = st('hfp') || []; p.push(o); st('hfp', p); toast(T('Réseau faible : nouvel essai automatique')); }
   /* après un paiement en ligne, le navigateur bloque l'ouverture automatique de WhatsApp :
      la commande est déjà en cuisine, un bouton WhatsApp est proposé dans la confirmation */
   if (paid) { try { if (!window.open(wa, '_blank')) throw 0; } catch (e) {} }
@@ -2289,7 +2318,7 @@ window.kPushOn = async () => {
     return toast(ios ? '📱 Sur iPhone/iPad : touchez Partager → « Sur l’écran d’accueil », ouvrez HF Cuisine depuis l’icône, puis réessayez' : '⚠ Ce navigateur ne permet pas les notifications : utilisez Chrome');
   if (!WK()) return toast(KLOCK);
   const perm = await Notification.requestPermission();
-  if (perm !== 'granted') return toast('🔕 Notifications bloquées : autorisez-les pour haythemfood.com dans les réglages du navigateur');
+  if (perm !== 'granted') return toast(T('🔕 Notifications bloquées : autorisez-les pour haythemfood.com dans les réglages du navigateur'));
   try {
     const reg = await navigator.serviceWorker.register('/sw.js'); await navigator.serviceWorker.ready;
     const { pub } = await (await fetch(PUSHFN() + '?vapid=1')).json();
@@ -2299,7 +2328,7 @@ window.kPushOn = async () => {
     const j = await r.json().catch(() => ({}));
     if (!r.ok || !j.ok) throw (j.error === 'auth' ? 'mot de passe Firebase refusé' : (j.error || r.status));
     localStorage.setItem('hfpush', '1');
-    toast('🔔 Notifications activées : une notification test arrive');
+    toast(T('🔔 Notifications activées : une notification test arrive'));
   } catch (e) { toast('⚠ Activation impossible : ' + e); }
   kPushChip();
 };
@@ -2307,7 +2336,7 @@ window.kPushOff = async () => {
   if (!confirm('Arrêter les notifications sur cet appareil ?')) return;
   try { const reg = await navigator.serviceWorker.getRegistration('/'); const sub = reg && await reg.pushManager.getSubscription();
     if (sub) { fetch(PUSHFN(), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ act: 'unsub', endpoint: sub.endpoint }) }).catch(() => {}); await sub.unsubscribe(); } } catch (e) {}
-  localStorage.removeItem('hfpush'); toast('🔕 Notifications arrêtées sur cet appareil'); kPushChip();
+  localStorage.removeItem('hfpush'); toast(T('🔕 Notifications arrêtées sur cet appareil')); kPushChip();
 };
 function kPushChip() {
   const kb = $('#kt .kbar'); if (!kb) return;
